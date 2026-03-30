@@ -5,3 +5,4 @@ __pycache__/
 data/faiss_store/
 *.faiss
 timings.csv
+.venv/
