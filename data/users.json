@@ -1,0 +1,25 @@
+{
+  "users": [
+    {
+      "id": "mia_chen",
+      "name": "Mia Chen",
+      "condition": "cerebral palsy",
+      "style": "witty, dry humour, short punchy sentences, uses sarcasm",
+      "file": "memories/mia_chen.json"
+    },
+    {
+      "id": "gerald_okafor",
+      "name": "Gerald Okafor",
+      "condition": "ALS (early-to-mid stage)",
+      "style": "formal, measured, eloquent, longer structured sentences",
+      "file": "memories/gerald_okafor.json"
+    },
+    {
+      "id": "arjun_mehta",
+      "name": "Arjun Mehta",
+      "condition": "autism spectrum disorder (non-verbal)",
+      "style": "direct, topic-specific, narrow vocabulary, code-switches Hindi/English, routine-focused",
+      "file": "memories/arjun_mehta.json"
+    }
+  ]
+}
