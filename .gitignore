@@ -1,0 +1,46 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+*.egg-info/
+dist/
+build/
+
+# Virtual environment
+.venv/
+venv/
+env/
+
+# Environment secrets
+.env
+
+# Data — indexes are rebuilt from source; do NOT commit binaries
+data/faiss_store/
+
+# Air-writing templates (large numpy files, track separately if needed)
+data/air_write_templates/
+
+# MLflow run artifacts
+mlruns/
+
+# Latency logs
+timings.csv
+*.csv
+
+# IDE
+.vscode/
+.idea/
+*.swp
+
+# Claude Code — local settings and generated knowledge graph
+.claude/
+.code-review-graph/
+
+# macOS
+.DS_Store
+
+# Jupyter
+.ipynb_checkpoints/
+*.ipynb
