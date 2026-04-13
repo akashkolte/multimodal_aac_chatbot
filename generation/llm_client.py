@@ -107,16 +107,18 @@ def chat_complete(
     patched_messages = messages
     extra_body: dict[str, Any] = kwargs.pop("extra_body", {})
 
-    if settings.thinking_mode == "off":
+    # "suppress" = actively inject /no_think or vLLM flag for models
+    # like Qwen3 that think by default and need explicit suppression.
+    if settings.thinking_mode == "suppress":
         if resolved_tier == "local":
             patched_messages = _apply_no_think(messages)
         else:
             extra_body = {**extra_body, "chat_template_kwargs": {"enable_thinking": False}}
 
-    # When thinking is enabled, add the configured budget so the model
+    # When thinking is enabled (strip/full), add budget so the model
     # has room to reason without truncating the actual answer.
     effective_max_tokens = max_tokens
-    if settings.thinking_mode != "off":
+    if settings.thinking_mode in ("strip", "full"):
         effective_max_tokens = max_tokens + settings.thinking_token_budget
 
     resp = client.chat.completions.create(

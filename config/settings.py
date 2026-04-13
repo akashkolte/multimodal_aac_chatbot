@@ -36,8 +36,12 @@ class Settings(BaseSettings):
     # Active tier: "primary" | "fallback" | "local"
     active_llm_tier: str = "local"
 
-    # Thinking mode: "off" = disable <think> (fastest), "strip" = allow
-    # thinking but strip <think> tags from output, "full" = keep everything
+    # Thinking mode: "off" = plain completion, no thinking whatsoever
+    # "strip" = let model think, but strip <think> tags from output
+    # "full" = return raw response including <think> blocks
+    # "suppress" = actively suppress thinking via /no_think (Ollama) or
+    #              chat_template_kwargs (vLLM). Use for models like Qwen3
+    #              that think by default and need explicit suppression.
     thinking_mode: str = "off"
 
     # Extra token budget added on top of max_tokens when thinking is enabled
