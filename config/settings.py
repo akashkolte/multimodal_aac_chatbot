@@ -36,6 +36,14 @@ class Settings(BaseSettings):
     # Active tier: "primary" | "fallback" | "local"
     active_llm_tier: str = "local"
 
+    # Thinking mode: "off" = disable <think> (fastest), "strip" = allow
+    # thinking but strip <think> tags from output, "full" = keep everything
+    thinking_mode: str = "off"
+
+    # Extra token budget added on top of max_tokens when thinking is enabled
+    # (thinking_mode = "strip" or "full"). Set to 0 if using a non-thinking model.
+    thinking_token_budget: int = 4096
+
     # Wall-clock threshold (seconds) that triggers fallback within a turn
     fallback_latency_threshold: float = 3.5
 
