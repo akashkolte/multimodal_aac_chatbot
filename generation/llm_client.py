@@ -11,22 +11,20 @@ Tier 3 — local:    Qwen3-8B via Ollama on MacBook M2 (dev / offline)
 Active tier is controlled by settings.active_llm_tier or the `tier`
 argument passed explicitly by the planner node.
 
-Qwen3 note: Qwen3 defaults to thinking mode (<think>…</think> tokens).
-For AAC we always use non-thinking mode (sub-6 s latency requirement).
-We prepend /no_think to the first user message — this is the Ollama-
-compatible way. vLLM uses extra_body chat_template_kwargs instead.
+Thinking mode is controlled by settings.thinking_mode:
+  "off"   — prepend /no_think (Ollama) or chat_template_kwargs (vLLM)
+  "strip" — let the model think, but strip <think>…</think> from output
+  "full"  — return everything including <think> blocks
 """
 from __future__ import annotations
 
+import re
 from functools import lru_cache
 from typing import Any
 
 from openai import OpenAI
 
 from config.settings import settings
-
-# Models that require non-thinking mode enforcement
-_QWEN3_MODELS = {"qwen3", "qwen/qwen3"}
 
 
 @lru_cache(maxsize=3)
@@ -62,15 +60,10 @@ def active_model(tier: str | None = None) -> str:
     }[resolved]
 
 
-def _is_qwen3(model: str) -> bool:
-    return any(model.lower().startswith(prefix) for prefix in _QWEN3_MODELS)
-
-
 def _apply_no_think(messages: list[dict]) -> list[dict]:
     """
-    Prepend /no_think to the first user message to disable Qwen3 thinking mode.
-    This is the Ollama-compatible approach (works with the OpenAI-compat endpoint).
-    vLLM uses extra_body instead — handled separately in chat_complete().
+    Prepend /no_think to the first user message.
+    This is the Ollama-compatible way to suppress thinking mode.
     """
     result = list(messages)
     for i, msg in enumerate(result):
@@ -78,6 +71,11 @@ def _apply_no_think(messages: list[dict]) -> list[dict]:
             result[i] = {**msg, "content": f"/no_think\n\n{msg['content']}"}
             break
     return result
+
+
+def _strip_think_tags(text: str) -> str:
+    """Remove <think>…</think> blocks from model output."""
+    return re.sub(r"<think>.*?</think>", "", text, flags=re.DOTALL).strip()
 
 
 def chat_complete(
@@ -88,11 +86,12 @@ def chat_complete(
     **kwargs: Any,
 ) -> str:
     """
-    Unified chat completion that always enforces Qwen3 non-thinking mode.
-    Returns the response text string directly.
+    Model-agnostic chat completion. Returns the response text directly.
 
-    Use this in pipeline nodes instead of calling client.chat.completions.create
-    directly — it handles the thinking-mode suppression for all tiers.
+    Thinking mode behaviour is controlled entirely by settings.thinking_mode:
+      "off"   — suppress thinking via /no_think (Ollama) or extra_body (vLLM)
+      "strip" — allow thinking but remove <think> tags from the response
+      "full"  — return the raw response including any <think> blocks
 
     In local dev mode (active_llm_tier="local"), all tier requests are
     redirected to Ollama — there is no separate fallback server locally.
@@ -108,23 +107,32 @@ def chat_complete(
     patched_messages = messages
     extra_body: dict[str, Any] = kwargs.pop("extra_body", {})
 
-    if _is_qwen3(model):
+    if settings.thinking_mode == "off":
         if resolved_tier == "local":
-            # Ollama: /no_think prefix in the user message
             patched_messages = _apply_no_think(messages)
         else:
-            # vLLM: disable via chat template kwargs
             extra_body = {**extra_body, "chat_template_kwargs": {"enable_thinking": False}}
+
+    # When thinking is enabled, add the configured budget so the model
+    # has room to reason without truncating the actual answer.
+    effective_max_tokens = max_tokens
+    if settings.thinking_mode != "off":
+        effective_max_tokens = max_tokens + settings.thinking_token_budget
 
     resp = client.chat.completions.create(
         model=model,
         messages=patched_messages,
-        max_tokens=max_tokens,
+        max_tokens=effective_max_tokens,
         temperature=temperature,
         extra_body=extra_body or None,
         **kwargs,
     )
-    return (resp.choices[0].message.content or "").strip()
+    raw = resp.choices[0].message.content or ""
+
+    if settings.thinking_mode in ("off", "strip"):
+        raw = _strip_think_tags(raw)
+
+    return raw.strip()
 
 
 def warmup(tier: str | None = None) -> None:

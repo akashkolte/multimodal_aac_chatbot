@@ -7,6 +7,7 @@ IntentRoute that drives all downstream routing decisions.
 """
 from __future__ import annotations
 
+import re
 import time
 from typing import Literal, Optional
 
@@ -134,7 +135,10 @@ def run(state: PipelineState) -> dict:
         )
 
         try:
-            parsed = IntentRouteSchema.model_validate_json(raw)
+            # Strip markdown fences (```json ... ```) that many models add
+            cleaned = re.sub(r"^```(?:json)?\s*", "", raw.strip())
+            cleaned = re.sub(r"\s*```$", "", cleaned.strip())
+            parsed = IntentRouteSchema.model_validate_json(cleaned)
             route = {
                 "sub_intents": [si.model_dump() for si in parsed.sub_intents],
                 "style_constraints": parsed.style_constraints.model_dump(),
