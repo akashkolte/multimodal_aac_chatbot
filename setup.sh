@@ -43,7 +43,7 @@ fi
 
 # ── FAISS index build ────────────────────────────────────────────────────────
 info "Building FAISS indexes (downloads BGE embedder + reranker on first run)..."
-python -m retrieval.vector_store
+python -m backend.retrieval.vector_store
 ok "FAISS indexes built in data/faiss_store/"
 
 # ── Ollama model pull ────────────────────────────────────────────────────────
@@ -57,6 +57,15 @@ else
   ok "Ollama model $LOCAL_MODEL ready"
 fi
 
+# ── Frontend dependencies ────────────────────────────────────────────────────
+if command -v pnpm >/dev/null 2>&1; then
+  info "Installing frontend dependencies..."
+  pnpm --dir frontend install --silent
+  ok "Frontend dependencies installed"
+else
+  warn "pnpm not found — install it (npm i -g pnpm) then run: pnpm --dir frontend install"
+fi
+
 # ── Done ──────────────────────────────────────────────────────────────────────
 echo ""
 ok "Setup complete!"
@@ -65,9 +74,9 @@ echo "  Activate the environment:"
 echo "    conda activate $CONDA_ENV"
 echo ""
 echo "  Run the CLI:"
-echo "    python main.py --debug"
+echo "    python -m backend.main --debug"
 echo ""
 echo "  Or start the full stack:"
-echo "    uvicorn api.main:app --reload    # FastAPI on :8000"
-echo "    streamlit run ui/app.py          # Streamlit on :8501"
+echo "    uvicorn backend.api.main:app --reload    # FastAPI on :8000"
+echo "    pnpm --dir frontend dev                  # React on :7550"
 echo ""

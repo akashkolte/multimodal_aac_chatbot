@@ -12,18 +12,25 @@ Orchestrated as a **LangGraph stateful directed graph** across five layers.
 ## Architecture
 
 ```
-main.py  /  api/main.py  /  ui/app.py
-  └── pipeline/graph.py              ← LangGraph StateGraph (5 nodes + cond. edges)
-        ├── pipeline/nodes/intent.py      L2 — LLM + Pydantic intent routing
-        ├── pipeline/nodes/retrieval.py   L3 — FAISS + BGE retrieval (fast / full)
-        ├── pipeline/nodes/planner.py     L4 — expression-conditioned generation
-        └── pipeline/nodes/feedback.py    L5 — MLflow logging + Bayesian priors
+frontend/                         React + Vite + TypeScript
+  src/hooks/useSensing.ts         MediaPipe JS — affect, gesture, gaze, air-writing (browser-side)
+  src/components/ChatPanel.tsx    Chat UI → POST /chat with sensing labels
 
-sensing/          L1 — MediaPipe face mesh, gesture, gaze, air writing
-retrieval/        FAISS ops, HDBSCAN clustering, Bayesian bucket priors
-generation/       Multi-tier LLM client (vLLM primary / fallback / Ollama local)
-guardrails/       Input + output safety checks
-config/           Pydantic BaseSettings — all config in one place
+backend/                          Python (conda env: aac-chatbot)
+  main.py                         CLI entry point
+  api/main.py                     FastAPI REST API
+  pipeline/graph.py               LangGraph StateGraph (5 nodes + conditional edges)
+    pipeline/nodes/intent.py        L2 — LLM + Pydantic intent routing
+    pipeline/nodes/retrieval.py     L3 — FAISS + BGE retrieval (fast / full)
+    pipeline/nodes/planner.py       L4 — expression-conditioned generation
+    pipeline/nodes/feedback.py      L5 — MLflow logging + Bayesian priors
+  sensing/                        L1 — MediaPipe face mesh, gesture, gaze, air writing (Python, CLI use)
+  retrieval/                      FAISS ops, HDBSCAN clustering, Bayesian bucket priors
+  generation/                     Multi-tier LLM client (vLLM primary / fallback / Ollama local)
+  guardrails/                     Input + output safety checks
+  config/                         Pydantic BaseSettings — all config in one place
+
+data/                             Shared data (personas, FAISS indexes)
 ```
 
 ## Key Design Decisions
@@ -39,6 +46,8 @@ config/           Pydantic BaseSettings — all config in one place
 - **Expression-conditioned response shaping** — affect steers tone, retrieval depth,
   and candidate ranking (not just metadata annotation)
 - **Bayesian bucket priors** — session-level P(bucket) updated after each accepted turn
+- **Browser-side sensing** — MediaPipe JS runs in React frontend, only classified
+  labels (affect, gesture, gaze bucket) are sent to the backend API
 
 ---
 
@@ -57,22 +66,22 @@ config/           Pydantic BaseSettings — all config in one place
 ## How to Run
 
 ```bash
-# One-time setup: rebuild FAISS indexes with BGE embedder
-python -m retrieval.vector_store
+# One-time setup
+bash setup.sh
 
-# CLI (local Ollama tier, set ACTIVE_LLM_TIER=local in .env)
-python main.py --debug
+# CLI (local Ollama tier)
+python -m backend.main --debug
 
 # Full stack
-uvicorn api.main:app --reload        # FastAPI on :8000
-streamlit run ui/app.py              # Streamlit on :8501
+uvicorn backend.api.main:app --reload    # FastAPI on :8000
+pnpm --dir frontend dev                  # React on :7550
 ```
 
 ---
 
 ## Configuration
 
-All config lives in [config/settings.py](config/settings.py) as Pydantic `BaseSettings`.
+All config lives in [backend/config/settings.py](backend/config/settings.py) as Pydantic `BaseSettings`.
 Copy `.env.example` → `.env` and set:
 
 - `ACTIVE_LLM_TIER` — `local` (dev) | `primary` (GCP A100) | `fallback` (Qwen3-8B)
@@ -95,12 +104,12 @@ Copy `.env.example` → `.env` and set:
 ## Development Notes
 
 - **Adding a persona**: add to `PERSONAS` in `data/generate_users.py`, re-run it,
-  then `python -m retrieval.vector_store` to rebuild indexes
+  then `python -m backend.retrieval.vector_store` to rebuild indexes
 - **Changing LLM**: set `ACTIVE_LLM_TIER` in `.env` — no code changes needed
-- **Extending sensing**: add module under `sensing/`, wire output into
-  `PipelineState` fields in `pipeline/state.py`
-- **Guardrail tuning**: edit signal lists in `guardrails/checks.py`
-- **Affect → generation mapping**: `_AFFECT_CONFIG` in `pipeline/nodes/intent.py`
-  and `_PERSONA_TONE_OVERRIDES` in `pipeline/nodes/planner.py`
-- The `.venv/` directory is local — do not read or modify files inside it
+- **Extending sensing**: add module under `backend/sensing/`, wire output into
+  `PipelineState` fields in `backend/pipeline/state.py`
+- **Guardrail tuning**: edit signal lists in `backend/guardrails/checks.py`
+- **Affect → generation mapping**: `_AFFECT_CONFIG` in `backend/pipeline/nodes/intent.py`
+  and `_PERSONA_TONE_OVERRIDES` in `backend/pipeline/nodes/planner.py`
 - FAISS indexes in `data/faiss_store/` are gitignored — rebuilt from source JSONs
+- Frontend uses pnpm, Node 22+

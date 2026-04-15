@@ -22,12 +22,17 @@ data/faiss_store/
 # Air-writing templates (large numpy files, track separately if needed)
 data/air_write_templates/
 
-# MLflow run artifacts
+# MLflow
 mlruns/
+mlflow.db
 
 # Latency logs
 timings.csv
 *.csv
+
+# Frontend
+node_modules/
+frontend/dist/
 
 # IDE
 .vscode/
