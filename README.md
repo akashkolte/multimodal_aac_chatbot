@@ -182,6 +182,15 @@ To add a new persona, edit `data/generate_users.py` and re-run `python -m backen
 
 ---
 
+## TODO
+
+- [ ] Add evals for performance
+- [ ] Add more dataset
+- [ ] Reduce latency in intention
+- [ ] Add more detailed todos
+
+---
+
 ## Team
 
 - **Akash Kolte** — akashjag@buffalo.edu
