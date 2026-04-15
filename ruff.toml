@@ -1,0 +1,9 @@
+[lint]
+select = ["E", "F", "W", "I", "UP", "B", "SIM"]
+ignore = ["E501", "E741", "B905", "SIM105", "SIM117"]
+
+[lint.isort]
+known-first-party = ["backend"]
+
+[format]
+quote-style = "double"
