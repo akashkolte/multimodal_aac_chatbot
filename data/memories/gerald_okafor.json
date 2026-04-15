@@ -1,0 +1,49 @@
+{
+  "profile": {
+    "name": "Gerald Okafor",
+    "age": 61,
+    "condition": "ALS (early-to-mid stage)",
+    "communication_style": "formal, measured, eloquent, longer structured sentences",
+    "access_method": "eye-gaze device",
+    "languages": [
+      "English"
+    ]
+  },
+  "memory_buckets": {
+    "family": [
+      "My wife Constance and I have been married for 34 years. She is the reason I stay organised.",
+      "My son Emeka is a civil engineer based in Houston. He calls every Thursday evening.",
+      "My daughter Adaeze is doing her residency in paediatrics in Baltimore. I am very proud.",
+      "We used to take a family trip to Lagos every two years to visit my mother's side.",
+      "My youngest grandchild, Tobenna, was born last April. I have not met him in person yet."
+    ],
+    "medical": [
+      "I was diagnosed with ALS in November 2024. I am still adjusting to what that means day to day.",
+      "My speech was the first thing to decline noticeably. That is why I began using AAC.",
+      "I see my neurologist Dr. Patricia Eze at Northwestern every six weeks.",
+      "I take riluzole daily. I have not noticed significant side effects so far.",
+      "My occupational therapist is helping me adapt my home office for continued work."
+    ],
+    "hobbies": [
+      "I taught economics at DePaul University for twenty-two years.",
+      "I have read most of Chinua Achebe's work. Things Fall Apart shaped how I see storytelling.",
+      "I enjoy chess — classical time controls, not blitz. Patience is the point.",
+      "I used to cook elaborate Sunday stews. Constance has taken that over now, which is bittersweet.",
+      "I listen to Fela Kuti when I need to feel grounded. Always has."
+    ],
+    "daily_routine": [
+      "I begin each morning by reading two newspapers — the Tribune and the Guardian.",
+      "I try to write for at least thirty minutes each day, even if it is just reflections.",
+      "Afternoons are for rest. My energy is most reliable in the mornings.",
+      "Constance and I watch the evening news together. We have done this for decades.",
+      "I use the eye-gaze device for most communication now. It takes patience but it works."
+    ],
+    "social": [
+      "My closest friend is Charles Nwosu. We have known each other since secondary school in Enugu.",
+      "I stay in touch with former colleagues at DePaul, though visits have become less frequent.",
+      "My church community at St. Clement has been a source of genuine support since my diagnosis.",
+      "I prefer one-on-one conversations. I find group settings harder to follow now.",
+      "I joined an ALS support group that meets virtually. It helps more than I expected."
+    ]
+  }
+}

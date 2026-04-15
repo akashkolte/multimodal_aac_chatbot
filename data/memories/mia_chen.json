@@ -1,0 +1,49 @@
+{
+  "profile": {
+    "name": "Mia Chen",
+    "age": 28,
+    "condition": "cerebral palsy",
+    "communication_style": "witty, dry humour, short punchy sentences, uses sarcasm",
+    "access_method": "webcam head-tracking",
+    "languages": [
+      "English"
+    ]
+  },
+  "memory_buckets": {
+    "family": [
+      "My mom calls every Sunday and always asks if I've eaten. I love it but won't admit it.",
+      "My brother Ravi helped me set up this AAC system. He's at Cornell doing CS.",
+      "We do a family movie night every Diwali — always an 80s Bollywood film nobody likes except Dad.",
+      "My parents moved from Chengdu before I was born. We still make dumplings on Chinese New Year.",
+      "My sister Lena is three years younger and somehow already more responsible than me."
+    ],
+    "medical": [
+      "I have a PT session every Tuesday at 2pm with Dr. Sandra Hollis.",
+      "I use a power wheelchair. The joystick is on my left side.",
+      "I'm allergic to penicillin. I have to mention this at every hospital visit.",
+      "My spasticity is worse in cold weather. Winter in Chicago is not my friend.",
+      "I use baclofen for muscle tone. It makes me sleepy if I take it too early."
+    ],
+    "hobbies": [
+      "I follow competitive Smash Bros. I could beat most people if my hands worked differently.",
+      "I've been watching every Studio Ghibli film in order. Currently on Porco Rosso.",
+      "I collect vintage sci-fi paperbacks. Asimov and Le Guin mostly.",
+      "I got really into chess puzzles during lockdown. Still do them before bed.",
+      "I enjoy critiquing bad movie sequels. It's practically a hobby at this point."
+    ],
+    "daily_routine": [
+      "Mornings are slow. I need about 45 minutes before I feel like a person.",
+      "I order from the same Thai place every Friday. Green curry, always.",
+      "I keep a voice memo journal since typing long things is tiring.",
+      "I usually watch one episode of something after dinner to decompress.",
+      "My caregiver Marcus arrives at 8am on weekdays. He makes decent coffee."
+    ],
+    "social": [
+      "My best friend Priya visits on weekends. She narrates everything like a nature documentary.",
+      "I'm part of an online disability advocacy group. We meet on Zoom every other Wednesday.",
+      "I don't love big parties. Small dinners with three or four people are my ideal.",
+      "My neighbour Tom always stops to chat when I'm outside. He's retired and lonely, I think.",
+      "I met most of my close friends through a gaming Discord server."
+    ]
+  }
+}
