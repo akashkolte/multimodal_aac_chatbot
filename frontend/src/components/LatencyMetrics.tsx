@@ -16,8 +16,8 @@ export function LatencyMetrics({ latency }: Props) {
   if (!latency) return <p className="no-metrics">No turn yet</p>;
 
   return (
-    <div className="latency-metrics">
-      <h3>Latency</h3>
+    <div>
+      <div className="section-title">Latency</div>
       {FIELDS.map(({ key, label }) => (
         <div key={key} className="metric-row">
           <span className="metric-label">{label}</span>

@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import type { ChatMessage, SensingState, Affect, LatencyLog } from "../types";
 import { sendChat } from "../lib/api";
+import { EvalPanel } from "./EvalPanel";
 
 interface Props {
   userId: string | null;
@@ -59,6 +60,7 @@ export function ChatPanel({
           content: res.response,
           latency: res.latency,
           affect: res.affect,
+          evalScores: res.eval_scores,
         },
       ]);
       onLatency(res.latency);
@@ -88,6 +90,9 @@ export function ChatPanel({
               {msg.role === "partner" ? "Partner" : "AAC User"}
             </span>
             <p>{msg.content}</p>
+            {msg.role === "aac_user" && msg.evalScores && (
+              <EvalPanel evalScores={msg.evalScores} />
+            )}
           </div>
         ))}
         {loading && (

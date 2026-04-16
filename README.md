@@ -184,10 +184,31 @@ To add a new persona, edit `data/generate_users.py` and re-run `python -m backen
 
 ## TODO
 
-- [ ] Add evals for performance
 - [ ] Add more dataset
 - [ ] Reduce latency in intention
 - [ ] Add more detailed todos
+
+### Evals (`backend/evals/`)
+
+Per-turn metrics returned in `ChatResponse.eval_scores` and rendered in the React debug panel.
+
+| Metric | File | Status |
+|--------|------|--------|
+| Communication Efficiency | `efficiency.py` | Done — SLO check on `t_total` |
+| Factual Faithfulness | `faithfulness.py` | Stub |
+| Multimodal Alignment | `multimodal_alignment.py` | Stub |
+| Perceived Authenticity | (frontend) | UI star rating; not persisted yet |
+
+- [ ] **Faithfulness** — Load cross-encoder NLI model (e.g. `cross-encoder/nli-deberta-v3-small`),
+  split response into sentences, check entailment against evidence chunks. Groundedness =
+  fraction with max entailment > 0.5; hallucination rate = fraction with contradiction > 0.5
+  and entailment < 0.3. Empty `chunks` → `no_evidence=True`.
+- [ ] **Multimodal Alignment** — Rule-based (no model):
+  - Affect → sentiment-word overlap (reuse `affect_positive_map` from planner)
+  - Gesture → expected-word overlap (reuse `gesture_word_map` from planner)
+  - Gaze → check whether retrieved chunks came from `gaze_bucket` and response references them
+  - Overall = mean of non-None sub-scores
+- [ ] **Authenticity** — Persist Likert ratings (currently client-side only). Add `POST /chat/rate`.
 
 ---
 

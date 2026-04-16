@@ -103,6 +103,9 @@ Copy `.env.example` → `.env` and set:
 
 ## Development Notes
 
+- **NEVER use local Ollama models** (e.g. `qwen3:8b`, `gemma3:1b`) — this machine
+  is not powerful enough and will break. Always use cloud-backed models like
+  `qwen3.5:397b-cloud` or `gpt-oss:20b-cloud` via Ollama, or vLLM tiers.
 - **Adding a persona**: add to `PERSONAS` in `data/generate_users.py`, re-run it,
   then `python -m backend.retrieval.vector_store` to rebuild indexes
 - **Changing LLM**: set `ACTIVE_LLM_TIER` in `.env` — no code changes needed

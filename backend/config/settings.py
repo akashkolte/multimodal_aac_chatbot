@@ -69,5 +69,8 @@ class Settings(BaseSettings):
     rank_beta: float = 0.3  # style similarity weight
     rank_gamma: float = 0.3  # affect-match weight
 
+    # ── Evaluation ────────────────────────────────────────────────────────────
+    slo_target_s: float = 6.0  # max acceptable response latency (seconds)
+
 
 settings = Settings()

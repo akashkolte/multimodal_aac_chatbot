@@ -124,14 +124,15 @@ select:focus, input[type="text"]:focus {
   font-weight: 500;
 }
 
-/* ── Latency metrics ──────────────────────────────────────────────── */
+/* ── Shared metric primitives (latency, eval) ─────────────────────── */
 
-.latency-metrics h3 {
+.section-title {
   font-size: 12px;
   color: #888;
   text-transform: uppercase;
   letter-spacing: 0.5px;
   margin-bottom: 6px;
+  font-weight: 600;
 }
 
 .metric-row {
@@ -139,6 +140,13 @@ select:focus, input[type="text"]:focus {
   justify-content: space-between;
   font-size: 13px;
   padding: 2px 0;
+  color: #aaa;
+}
+
+.metric-row.sub {
+  padding-left: 12px;
+  font-size: 11px;
+  color: #777;
 }
 
 .metric-label {
@@ -148,6 +156,14 @@ select:focus, input[type="text"]:focus {
 .metric-value {
   color: #ccc;
   font-family: monospace;
+}
+
+.metric-value.pass {
+  color: #4caf50;
+}
+
+.metric-value.fail {
+  color: #f44336;
 }
 
 .no-metrics {
@@ -259,4 +275,110 @@ select:focus, input[type="text"]:focus {
 .error {
   color: #e55;
   font-size: 13px;
+}
+
+/* ── Eval panel ──────────────────────────────────────────────────── */
+
+.eval-panel {
+  margin-top: 8px;
+  border-top: 1px solid #3a3d47;
+  padding-top: 6px;
+}
+
+.eval-toggle {
+  background: none;
+  border: none;
+  color: #888;
+  font-size: 12px;
+  cursor: pointer;
+  padding: 2px 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.eval-toggle:hover {
+  color: #bbb;
+}
+
+.slo-badge {
+  font-size: 10px;
+  padding: 1px 6px;
+  border-radius: 3px;
+  font-weight: 600;
+}
+
+.slo-badge.pass {
+  background: #1b3a1b;
+  color: #4caf50;
+}
+
+.slo-badge.fail {
+  background: #3a1b1b;
+  color: #f44336;
+}
+
+.eval-details {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 8px;
+}
+
+.eval-section {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.eval-na {
+  font-size: 11px;
+  color: #666;
+  font-style: italic;
+}
+
+.score-bar {
+  height: 4px;
+  background: #2a2d37;
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.score-bar-fill {
+  height: 100%;
+  border-radius: 2px;
+  transition: width 0.3s ease;
+}
+
+/* ── Star rating ─────────────────────────────────────────────────── */
+
+.star-rating {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.star-rating .star {
+  background: none;
+  border: none;
+  font-size: 18px;
+  cursor: pointer;
+  color: #3a3d47;
+  padding: 0;
+  line-height: 1;
+  transition: color 0.15s;
+}
+
+.star-rating .star.active {
+  color: #ff9800;
+}
+
+.star-rating .star:hover {
+  color: #ffb74d;
+}
+
+.star-label {
+  font-size: 11px;
+  color: #888;
+  margin-left: 6px;
 }

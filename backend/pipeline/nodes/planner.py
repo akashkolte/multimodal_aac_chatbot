@@ -4,7 +4,7 @@ from __future__ import annotations
 import time
 
 from backend.config.settings import settings
-from backend.generation.llm_client import chat_complete
+from backend.generation.llm_client import active_model, chat_complete
 from backend.guardrails.checks import check_output
 from backend.pipeline.state import PipelineState
 from backend.sensing.gesture import GESTURE_TO_TAG
@@ -94,11 +94,16 @@ def _run(state: PipelineState, tier: str) -> dict:
         4,
     )
 
+    # Mirror chat_complete's tier collapsing so the reported model matches what ran.
+    actual_tier = "local" if settings.active_llm_tier == "local" else tier
+    actual_model = active_model(actual_tier)
+
     return {
         "augmented_prompt": prompt,
         "candidates": candidates,
         "selected_response": selected,
-        "llm_tier_used": tier,
+        "llm_tier_used": actual_tier,
+        "llm_model_used": actual_model,
         "latency_log": latency_log,
         "guardrail_passed": guard["passed"],
     }
