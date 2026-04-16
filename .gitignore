@@ -19,14 +19,10 @@ env/
 # Data — indexes are rebuilt from source; do NOT commit binaries
 data/faiss_store/
 
-# Air-writing templates (large numpy files, track separately if needed)
-data/air_write_templates/
+# Per-turn JSONL logs (contain user conversation content)
+logs/
 
-# MLflow
-mlruns/
-mlflow.db
-
-# Latency logs
+# Latency CSVs (legacy)
 timings.csv
 *.csv
 

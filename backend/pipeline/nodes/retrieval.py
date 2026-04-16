@@ -26,14 +26,13 @@ def run_fast(state: PipelineState) -> dict:
         top_k=settings.retrieval_fast_k,
         rerank_k=settings.retrieval_fast_k,
         bucket_filter=bucket_hint,
-        use_reranker=False,
     )
 
     return _build_return(state, chunks, "fast", t0)
 
 
 def run_full(state: PipelineState) -> dict:
-    """Full retrieval path with BGE cross-encoder reranking."""
+    """Full retrieval path: top_k cosine matches narrowed to rerank_k."""
     t0 = time.perf_counter()
 
     # Prefer gaze hint > intent bucket hint > None
@@ -49,7 +48,6 @@ def run_full(state: PipelineState) -> dict:
         top_k=settings.retrieval_top_k,
         rerank_k=settings.retrieval_rerank_k,
         bucket_filter=bucket_hint,
-        use_reranker=True,
     )
 
     return _build_return(state, chunks, "full", t0)

@@ -106,7 +106,6 @@ def _build_user_prompt(
 
 
 def run(state: PipelineState) -> dict:
-    """LangGraph node: intent decomposition."""
     t0 = time.perf_counter()
 
     # --fast mode: intent_route already resolved by keyword routing in main.py
@@ -123,7 +122,7 @@ def run(state: PipelineState) -> dict:
     route: IntentRoute | None = None
     last_error: str = ""
 
-    for attempt in range(3):  # LangGraph retry logic (up to 2 retries)
+    for attempt in range(3):  # up to 2 retries on schema validation failure
         messages = [
             {"role": "system", "content": _SYSTEM_PROMPT},
             {

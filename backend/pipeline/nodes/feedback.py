@@ -1,5 +1,8 @@
-# Feedback node — MLflow logging, bucket prior update, history append.
-from __future__ import annotations
+# Feedback node — JSONL turn logging, bucket prior update, history append.
+import json
+import time
+import uuid
+from pathlib import Path
 
 from backend.config.settings import settings
 from backend.pipeline.state import PipelineState
@@ -7,64 +10,52 @@ from backend.retrieval.bucket_priors import update_priors
 
 
 def run(state: PipelineState) -> dict:
+    run_id = uuid.uuid4().hex
     try:
-        mlflow_run_id = _log_to_mlflow(state)
-    except Exception:
-        mlflow_run_id = None
+        _log_to_jsonl(state, run_id)
+    except Exception as exc:
+        # logging never blocks the response path, but make the failure visible
+        print(f"[feedback] JSONL log failed: {exc!r}")
     updated_priors = _update_bucket_priors(state)
     updated_history = _append_turn_to_history(state)
 
     return {
         "bucket_priors": updated_priors,
         "session_history": updated_history,
-        "mlflow_run_id": mlflow_run_id,
+        "run_id": run_id,
     }
 
 
-# ── MLflow logging ─────────────────────────────────────────────────────────────
-
-
-def _log_to_mlflow(state: PipelineState) -> str:
-    import mlflow
-
-    mlflow.set_tracking_uri(settings.mlflow_tracking_uri)
-    mlflow.set_experiment(settings.mlflow_experiment)
+def _log_to_jsonl(state: PipelineState, run_id: str) -> None:
+    logs_dir = Path(settings.logs_dir)
+    logs_dir.mkdir(parents=True, exist_ok=True)
+    log_path = logs_dir / "turns.jsonl"
 
     latency = state.get("latency_log") or {}
     affect = (state.get("affect") or {}).get("emotion", "UNKNOWN")
 
-    with mlflow.start_run(run_name=f"turn-{state['turn_id']}") as run:
-        mlflow.log_params(
-            {
-                "user_id": state["user_id"],
-                "turn_id": state["turn_id"],
-                "llm_tier": state.get("llm_tier_used", "unknown"),
-                "retrieval_mode": state.get("retrieval_mode_used", "unknown"),
-                "affect": affect,
-                "guardrail_passed": state.get("guardrail_passed", True),
-            }
-        )
-        mlflow.log_metrics(
-            {
-                "t_sensing": latency.get("t_sensing", 0.0),
-                "t_intent": latency.get("t_intent", 0.0),
-                "t_retrieval": latency.get("t_retrieval", 0.0),
-                "t_generation": latency.get("t_generation", 0.0),
-                "t_total": latency.get("t_total", 0.0),
-                "num_chunks": float(len(state.get("retrieved_chunks") or [])),
-            }
-        )
+    entry = {
+        "run_id": run_id,
+        "ts": time.time(),
+        "user_id": state["user_id"],
+        "turn_id": state["turn_id"],
+        "llm_tier": state.get("llm_tier_used", "unknown"),
+        "retrieval_mode": state.get("retrieval_mode_used", "unknown"),
+        "affect": affect,
+        "guardrail_passed": state.get("guardrail_passed", True),
+        "num_chunks": len(state.get("retrieved_chunks") or []),
+        "latency": {
+            "t_sensing": latency.get("t_sensing", 0.0),
+            "t_intent": latency.get("t_intent", 0.0),
+            "t_retrieval": latency.get("t_retrieval", 0.0),
+            "t_generation": latency.get("t_generation", 0.0),
+            "t_total": latency.get("t_total", 0.0),
+        },
+        "response": state.get("selected_response") or "",
+    }
 
-        # Log the selected response as artifact text for qualitative review
-        mlflow.log_text(
-            state.get("selected_response") or "",
-            f"responses/turn_{state['turn_id']}.txt",
-        )
-
-        return run.info.run_id
-
-
-# ── Bayesian bucket prior update ───────────────────────────────────────────────
+    with open(log_path, "a", encoding="utf-8") as f:
+        f.write(json.dumps(entry, ensure_ascii=False) + "\n")
 
 
 def _update_bucket_priors(state: PipelineState) -> dict[str, float]:
@@ -83,11 +74,10 @@ def _update_bucket_priors(state: PipelineState) -> dict[str, float]:
     )
 
 
-# ── Session history append ─────────────────────────────────────────────────────
-
-
 def _append_turn_to_history(state: PipelineState) -> list[dict]:
-    return [
-        {"role": "partner", "content": state["raw_query"]},
-        {"role": "aac_user", "content": state.get("selected_response") or ""},
-    ]
+    history = list(state.get("session_history") or [])
+    history.append({"role": "partner", "content": state["raw_query"]})
+    history.append(
+        {"role": "aac_user", "content": state.get("selected_response") or ""}
+    )
+    return history
