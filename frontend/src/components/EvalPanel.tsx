@@ -77,7 +77,7 @@ export function EvalPanel({ evalScores }: Props) {
                 <ScoreBar value={evalScores.groundedness} />
                 <div className="metric-row">
                   <span>Hallucination Rate</span>
-                  <span className={`metric-value ${evalScores.hallucination_rate > 0.2 ? "fail" : "pass"}`}>
+                  <span className="metric-value">
                     {(evalScores.hallucination_rate * 100).toFixed(0)}%
                   </span>
                 </div>

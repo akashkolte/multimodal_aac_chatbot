@@ -5,9 +5,9 @@
 }
 
 body {
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  background: #0f1117;
-  color: #e0e0e0;
+  font-family: var(--sans);
+  background: var(--bg);
+  color: var(--text);
 }
 
 .app-layout {
@@ -15,29 +15,29 @@ body {
   height: 100vh;
 }
 
-/* ── Sidebar ──────────────────────────────────────────────────────────── */
-
 .sidebar {
   width: 320px;
-  background: #1a1d27;
-  padding: 20px;
+  background: var(--sidebar-bg);
+  padding: 24px 20px;
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 20px;
   overflow-y: auto;
-  border-right: 1px solid #2a2d37;
+  border-right: 1px solid var(--border);
 }
 
 .app-title {
-  font-size: 20px;
-  font-weight: 600;
-  color: #fff;
+  font-family: var(--heading);
+  font-size: 24px;
+  font-weight: 500;
+  letter-spacing: -0.3px;
+  color: var(--text);
 }
 
 .sidebar-section {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 10px;
 }
 
 .toggle-label {
@@ -46,67 +46,88 @@ body {
   gap: 8px;
   cursor: pointer;
   font-size: 14px;
+  color: var(--text);
+  text-transform: none;
+  letter-spacing: normal;
 }
 
-/* ── Forms ─────────────────────────────────────────────────────────── */
+.toggle-label input[type="checkbox"] {
+  accent-color: var(--accent);
+  width: 15px;
+  height: 15px;
+  cursor: pointer;
+}
 
 .persona-selector {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 6px;
 }
 
 label {
   font-size: 12px;
-  color: #888;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
+  color: var(--text-muted);
+  font-weight: 500;
+  letter-spacing: normal;
+  text-transform: none;
 }
 
-select, input[type="text"] {
-  background: #252830;
-  color: #e0e0e0;
-  border: 1px solid #3a3d47;
-  border-radius: 6px;
-  padding: 8px 10px;
+select,
+input[type="text"] {
+  background: var(--surface);
+  color: var(--text);
+  border: 1px solid var(--border-strong);
+  border-radius: 10px;
+  padding: 9px 12px;
   font-size: 14px;
+  font-family: var(--sans);
   outline: none;
+  transition: border-color 0.15s, box-shadow 0.15s;
 }
 
-select:focus, input[type="text"]:focus {
-  border-color: #5b8def;
+select:focus,
+input[type="text"]:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-soft);
 }
 
-/* ── Webcam ────────────────────────────────────────────────────────── */
+select:hover,
+input[type="text"]:hover {
+  border-color: var(--text-faint);
+}
 
 .webcam-container {
-  border-radius: 8px;
+  border-radius: 12px;
   overflow: hidden;
-  background: #252830;
+  background: var(--surface);
+  border: 1px solid var(--border);
 }
 
-.webcam-placeholder, .webcam-error {
+.webcam-placeholder,
+.webcam-error {
   padding: 24px;
   text-align: center;
-  color: #666;
+  color: var(--text-faint);
   font-size: 13px;
 }
 
 .webcam-error {
-  color: #e55;
+  color: var(--fail);
 }
 
-/* ── Sensing status ───────────────────────────────────────────────── */
-
 .sensing-off {
-  color: #666;
+  color: var(--text-faint);
   font-size: 13px;
 }
 
 .sensing-status {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 6px;
+  padding: 10px 12px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
 }
 
 .sensing-row {
@@ -116,21 +137,19 @@ select:focus, input[type="text"]:focus {
 }
 
 .sensing-label {
-  color: #888;
+  color: var(--text-muted);
 }
 
 .sensing-value {
-  color: #ccc;
+  color: var(--text);
   font-weight: 500;
 }
 
-/* ── Shared metric primitives (latency, eval) ─────────────────────── */
-
 .section-title {
-  font-size: 12px;
-  color: #888;
+  font-size: 11px;
+  color: var(--text-muted);
   text-transform: uppercase;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.6px;
   margin-bottom: 6px;
   font-weight: 600;
 }
@@ -140,46 +159,45 @@ select:focus, input[type="text"]:focus {
   justify-content: space-between;
   font-size: 13px;
   padding: 2px 0;
-  color: #aaa;
+  color: var(--text);
 }
 
 .metric-row.sub {
   padding-left: 12px;
   font-size: 11px;
-  color: #777;
+  color: var(--text-muted);
 }
 
 .metric-label {
-  color: #888;
+  color: var(--text-muted);
 }
 
 .metric-value {
-  color: #ccc;
-  font-family: monospace;
+  color: var(--text);
+  font-family: var(--mono);
+  font-size: 12px;
 }
 
 .metric-value.pass {
-  color: #4caf50;
+  color: var(--pass);
 }
 
 .metric-value.fail {
-  color: #f44336;
+  color: var(--fail);
 }
 
 .no-metrics {
-  color: #555;
+  color: var(--text-faint);
   font-size: 13px;
+  font-style: italic;
 }
-
-/* ── Main content ─────────────────────────────────────────────────── */
 
 .main-content {
   flex: 1;
   display: flex;
   flex-direction: column;
+  background: var(--bg);
 }
-
-/* ── Chat panel ───────────────────────────────────────────────────── */
 
 .chat-panel {
   display: flex;
@@ -188,53 +206,96 @@ select:focus, input[type="text"]:focus {
 }
 
 .chat-header {
-  padding: 16px 24px;
-  font-size: 16px;
-  font-weight: 600;
-  border-bottom: 1px solid #2a2d37;
-  background: #1a1d27;
+  padding: 18px 28px;
+  font-family: var(--heading);
+  font-size: 18px;
+  font-weight: 500;
+  letter-spacing: -0.2px;
+  color: var(--text);
+  border-bottom: 1px solid var(--border);
+  background: var(--bg);
 }
 
 .chat-messages {
   flex: 1;
   overflow-y: auto;
-  padding: 20px 24px;
+  padding: 28px 32px;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 16px;
 }
 
 .chat-bubble {
-  max-width: 75%;
-  padding: 10px 14px;
-  border-radius: 12px;
-  font-size: 14px;
-  line-height: 1.5;
+  max-width: 72%;
+  padding: 12px 16px;
+  border-radius: 16px;
+  font-size: 15px;
+  line-height: 1.55;
 }
 
 .chat-bubble.partner {
   align-self: flex-end;
-  background: #2a4a8a;
-  border-bottom-right-radius: 4px;
+  background: var(--accent);
+  color: #ffffff;
+  border-bottom-right-radius: 6px;
+}
+
+.chat-bubble.partner .chat-role {
+  color: rgba(255, 255, 255, 0.85);
 }
 
 .chat-bubble.aac_user {
   align-self: flex-start;
-  background: #252830;
-  border-bottom-left-radius: 4px;
+  background: var(--surface);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-bottom-left-radius: 6px;
 }
 
 .chat-bubble.loading {
-  opacity: 0.6;
+  background: var(--surface);
+  border: 1px solid var(--border);
+}
+
+.chat-bubble.loading p {
+  display: inline-block;
+  background: linear-gradient(
+    90deg,
+    var(--text-muted) 0%,
+    var(--accent) 45%,
+    var(--accent) 55%,
+    var(--text-muted) 100%
+  );
+  background-size: 200% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: shimmer 1.8s ease-in-out infinite;
+  font-weight: 500;
+}
+
+@keyframes shimmer {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .chat-bubble.loading p {
+    animation: none;
+    background: none;
+    -webkit-text-fill-color: var(--text-muted);
+    color: var(--text-muted);
+  }
 }
 
 .chat-role {
   display: block;
   font-size: 11px;
-  color: #888;
+  color: var(--text-muted);
   margin-bottom: 4px;
   text-transform: uppercase;
   letter-spacing: 0.5px;
+  font-weight: 600;
 }
 
 .chat-bubble p {
@@ -243,53 +304,57 @@ select:focus, input[type="text"]:focus {
 
 .chat-input-row {
   display: flex;
-  gap: 8px;
-  padding: 16px 24px;
-  border-top: 1px solid #2a2d37;
-  background: #1a1d27;
+  gap: 10px;
+  padding: 18px 28px;
+  border-top: 1px solid var(--border);
+  background: var(--bg);
 }
 
 .chat-input-row input {
   flex: 1;
+  padding: 11px 14px;
+  font-size: 15px;
 }
 
 .chat-input-row button {
-  background: #5b8def;
-  color: #fff;
+  background: var(--accent);
+  color: #ffffff;
   border: none;
-  border-radius: 6px;
-  padding: 8px 20px;
+  border-radius: 10px;
+  padding: 10px 22px;
   font-size: 14px;
+  font-weight: 500;
+  font-family: var(--sans);
   cursor: pointer;
+  transition: background 0.15s;
 }
 
 .chat-input-row button:disabled {
-  opacity: 0.4;
+  opacity: 0.45;
   cursor: not-allowed;
 }
 
 .chat-input-row button:hover:not(:disabled) {
-  background: #4a7cde;
+  background: var(--accent-hover);
 }
 
 .error {
-  color: #e55;
+  color: var(--fail);
   font-size: 13px;
 }
 
-/* ── Eval panel ──────────────────────────────────────────────────── */
-
 .eval-panel {
-  margin-top: 8px;
-  border-top: 1px solid #3a3d47;
-  padding-top: 6px;
+  margin-top: 10px;
+  border-top: 1px solid var(--border);
+  padding-top: 8px;
 }
 
 .eval-toggle {
   background: none;
   border: none;
-  color: #888;
+  color: var(--text-muted);
   font-size: 12px;
+  font-family: var(--sans);
   cursor: pointer;
   padding: 2px 0;
   display: flex;
@@ -298,31 +363,32 @@ select:focus, input[type="text"]:focus {
 }
 
 .eval-toggle:hover {
-  color: #bbb;
+  color: var(--text);
 }
 
 .slo-badge {
   font-size: 10px;
-  padding: 1px 6px;
-  border-radius: 3px;
+  padding: 2px 7px;
+  border-radius: 999px;
   font-weight: 600;
+  letter-spacing: 0.3px;
 }
 
 .slo-badge.pass {
-  background: #1b3a1b;
-  color: #4caf50;
+  background: var(--pass-bg);
+  color: var(--pass);
 }
 
 .slo-badge.fail {
-  background: #3a1b1b;
-  color: #f44336;
+  background: var(--fail-bg);
+  color: var(--fail);
 }
 
 .eval-details {
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  margin-top: 8px;
+  gap: 12px;
+  margin-top: 10px;
 }
 
 .eval-section {
@@ -333,24 +399,22 @@ select:focus, input[type="text"]:focus {
 
 .eval-na {
   font-size: 11px;
-  color: #666;
+  color: var(--text-faint);
   font-style: italic;
 }
 
 .score-bar {
   height: 4px;
-  background: #2a2d37;
-  border-radius: 2px;
+  background: var(--border);
+  border-radius: 999px;
   overflow: hidden;
 }
 
 .score-bar-fill {
   height: 100%;
-  border-radius: 2px;
+  border-radius: 999px;
   transition: width 0.3s ease;
 }
-
-/* ── Star rating ─────────────────────────────────────────────────── */
 
 .star-rating {
   display: flex;
@@ -363,22 +427,40 @@ select:focus, input[type="text"]:focus {
   border: none;
   font-size: 18px;
   cursor: pointer;
-  color: #3a3d47;
+  color: var(--border-strong);
   padding: 0;
   line-height: 1;
   transition: color 0.15s;
 }
 
 .star-rating .star.active {
-  color: #ff9800;
+  color: var(--accent);
 }
 
 .star-rating .star:hover {
-  color: #ffb74d;
+  color: var(--accent-hover);
 }
 
 .star-label {
   font-size: 11px;
-  color: #888;
+  color: var(--text-muted);
   margin-left: 6px;
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border-strong);
+  border-radius: 999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--text-faint);
 }

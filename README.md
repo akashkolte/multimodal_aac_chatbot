@@ -187,106 +187,7 @@ To add a new persona, edit `data/generate_users.py` and re-run `python -m backen
 
 ## TODO
 
-<<<<<<< Updated upstream
 From the spec (pages 10–11). Tags: **[Core]** = must do, **[Bonus]** = nice to have, **[Eval]** = for the grade.
-=======
-Roadmap derived from the project spec (pages 10–11). Items are grouped by spec
-area and marked with priority. Bracketed tags map back to the spec:
-**[Core]** = required deliverable, **[Bonus]** = stretch goal, **[Eval]** = validation.
-
-> **Note on sensing:** all camera capture and signal classification happens in
-> the **frontend** (MediaPipe JS). The backend only consumes pre-classified
-> labels (`affect`, `gesture_tag`, `gaze_bucket`).
-
-### Dataset
-
-- [ ] **[Core]** Add **heterogeneous** memory types per persona — currently only
-      autobiographical narratives exist.
-  - [ ] Add a set of synthetic social-media posts per persona (voice-matched)
-  - [ ] Add a set of synthetic past communication logs per persona
-  - [ ] Regenerate the synthesis script to produce both, then rebuild embeddings
-  - [ ] Make ingestion type-aware so the retriever knows which chunk-type a hit came from
-- [ ] **[Core]** Document the dataset schema so it is reusable by the evaluation harness.
-
-### Multimodal Sensing (frontend)
-
-- [ ] **[Core]** Detect **head-nod / sharp tilt as dissatisfaction**, distinct
-      from a generic frustrated affect read.
-  - [ ] Send a `dissatisfaction_signal` to the backend alongside the existing labels
-  - [ ] When the signal fires, branch the planner to a **"Turnaround Option"** —
-        a clarification candidate ("Did you mean X or Y?") instead of a plain answer
-- [ ] **[Bonus]** Add **vocalisation capture** (Web Speech API) and a
-      **conflict-resolution** step that compares the spoken intent against the
-      air-written intent, sending a single `resolved_intent` to the backend.
-- [ ] **[Polish]** Tighten the **thumbs-up boost** — today it only annotates the
-      prompt. The retriever should also bias affirmative-leaning candidates when
-      a thumbs-up is present.
-
-### Agentic Intent Decomposition
-
-> **Current state:** intent routing is **keyword-based**, not LLM-based.
-> The original LLM-driven router (Pydantic-validated JSON output) was
-> dropped because `gemma4:31b-cloud` consistently emitted the wrong JSON
-> shape and got truncated by `max_tokens`, triggering 3 retries + a
-> hard-fallback on every turn — adding ~30s of dead latency before the
-> generation call. The keyword router (~5 buckets matched against
-> hardcoded word lists in `intent.py`) handles the demo personas
-> reliably and adds ~0ms per turn.
->
-> **Trade-off:** the router is limited to the 5 hardcoded buckets
-> (`family`, `medical`, `hobbies`, `daily_routine`, `social`) and can't
-> distinguish `OPEN_DOMAIN` from `PERSONAL` queries. Acceptable today
-> because all current personas only have personal memories.
-
-- [ ] **[Core]** Make Personal / Contextual / Open-domain routing actually hit
-      **different retrieval pools** — today all sub-queries fall back to the same
-      vector index. Requires re-introducing some form of intent classification
-      (likely a constrained-output LLM call once `response_format=json_schema`
-      is supported on Ollama Cloud, or a tiny local classifier).
-- [ ] **[Perf]** When/if we re-add LLM intent: cache the schema prompt,
-      use a smaller routing model, and parallelise sub-query retrieval.
-
-### Retrieval
-
-- [ ] **[Bonus]** Persist **bucket priors** per user across conversations
-      (currently per-session only).
-- [ ] **[Bonus]** Extend the **latency-optimised fallback** beyond a single
-      LLM-tier switch:
-  - [ ] Return a cached canned response when end-to-end latency blows the budget
-  - [ ] Use the spec's **< 6s end-to-end** target instead of the current 3.5s threshold
-- [ ] **[Scale]** When per-user memory grows past ~100k chunks, swap the
-      torch-tensor matmul search for `hnswlib` (a ~2 MB approximate-NN library);
-      reintroduce a cross-encoder reranker once `top_k > ~30`.
-
-### Training-Free Response Generation
-
-- [ ] **[Core]** Return **multiple candidate responses** from the API so the
-      user can pick one (today the endpoint returns a single string).
-- [ ] **[Bonus]** On user selection, upsert the `(query, selected_response)` pair
-      into a small "accepted-pairs" index and consult it as a high-prior shortcut
-      on the next turn — the spec's lightweight retrieval-index update.
-
-### Evaluation & Validation
-
-- [ ] **[Eval]** **Factual Faithfulness** — NLI-based groundedness metric over
-      (retrieved evidence, generated response) pairs, reported as a hallucination
-      rate on a held-out set of partner-style queries per persona.
-- [ ] **[Eval]** **Communication Efficiency** — p50 / p95 end-to-end latency
-      across all three LLM tiers, with a pass/fail gate at the spec target of
-      **< 6s p95**.
-- [ ] **[Eval]** **Perceived Authenticity** — generate paired (persona, query,
-      response) samples and a 5-point Likert rating sheet for the live in-class eval.
-- [ ] **[Eval]** **Multimodal Alignment** — synthetic (gesture, query) scenarios
-      checked against expected response traits (e.g. thumbs-up ⇒ affirmative
-      lexicon present), reported as alignment accuracy.
-
-### Polish
-
-- [ ] **[Polish]** Move the hard-coded affect→tone and persona-override dicts
-      into a single YAML so tone-shaping can be tuned without touching code.
-- [x] **[Polish]** Delete the unused `backend/sensing/` Python modules now that
-      sensing lives entirely in the frontend. *(Done — only `labels.py` remains.)*
->>>>>>> Stashed changes
 
 Heads up: all camera/sensing stuff is in the frontend (MediaPipe JS). Backend just gets the labels (`affect`, `gesture_tag`, `gaze_bucket`). The `backend/sensing/` python modules are dead code.
 
@@ -311,6 +212,8 @@ Heads up: all camera/sensing stuff is in the frontend (MediaPipe JS). Backend ju
 
 ### Intent decomposition
 
+> Current state: routing is keyword-based, not LLM-based. The original LLM router (Pydantic-validated JSON) kept emitting the wrong shape with `gemma4:31b-cloud` and hitting the `max_tokens` truncation — 3 retries + hard fallback on every turn, ~30s of dead latency before generation. The keyword router (5 buckets matched against word lists in `intent.py`) handles the demo personas and adds ~0ms. Trade-off: stuck with the 5 hardcoded buckets (`family`, `medical`, `hobbies`, `daily_routine`, `social`) and can't tell `OPEN_DOMAIN` from `PERSONAL`. Fine for now since all personas only have personal memories. Revisit when Ollama Cloud ships `response_format=json_schema` or we add a tiny local classifier.
+
 - [ ] **[Core]** Personal / Contextual / Open-domain all hit the same FAISS index right now. Make them actually go different places — open-domain → web search (or stub), contextual → session memory
 - [ ] intent node is slow. Cache the prompt, use a tiny model for routing, parallelise the sub-queries
 
@@ -321,6 +224,7 @@ Heads up: all camera/sensing stuff is in the frontend (MediaPipe JS). Backend ju
   - drop reranker if retrieval is slow
   - return a canned response if we blow the budget entirely
   - threshold is 3.5s, spec says 6s — pick one
+- [ ] **[Scale]** past ~100k chunks per user, swap torch matmul for `hnswlib`; add a reranker if top_k grows past ~30
 
 ### Generation
 
@@ -349,7 +253,7 @@ Live per-turn scores show up in the `EvalPanel`. State:
 ### Cleanup
 
 - [ ] move the affect→tone / persona override dicts out of code into a yaml
-- [ ] delete `backend/sensing/` (dead code, sensing is in frontend)
+- [x] delete `backend/sensing/` (dead code, sensing is in frontend) — done, only `labels.py` remains
 
 ---
 
