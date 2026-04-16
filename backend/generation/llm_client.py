@@ -97,11 +97,19 @@ def chat_complete(
         **kwargs,
     )
     raw = (resp.choices[0].message.content if resp.choices else "") or ""
+    print(
+        f"[llm_client] tier={resolved_tier} model={model} raw_len={len(raw)} raw={raw[:200]!r}"
+    )
 
     if settings.thinking_mode in ("off", "strip"):
         raw = _strip_think_tags(raw)
 
-    return raw.strip()
+    stripped = raw.strip()
+    if not stripped:
+        print(
+            f"[llm_client] WARNING: empty response after strip. finish_reason={resp.choices[0].finish_reason if resp.choices else 'none'}"
+        )
+    return stripped
 
 
 def warmup(tier: str | None = None) -> None:

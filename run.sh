@@ -3,6 +3,16 @@ set -euo pipefail
 
 export PYTHONWARNINGS="ignore::UserWarning:multiprocessing.resource_tracker"
 
+CONDA_ENV="aac-chatbot"
+
+# Activate conda env
+if ! command -v conda >/dev/null 2>&1; then
+  echo "ERROR: conda not found. Run setup.sh first." >&2
+  exit 1
+fi
+eval "$(conda shell.bash hook)"
+conda activate "$CONDA_ENV"
+
 PIDS=()
 
 cleanup() {
@@ -22,7 +32,7 @@ trap cleanup INT TERM
 
 # Use Node 22 if available (Vite 8 requires Node 20.19+ or 22.12+)
 if [ -x /opt/homebrew/opt/node@22/bin/node ]; then
-  export PATH="/opt/homebrew/opt/node@22/bin:$PATH"
+  export PATH="/opt/homebrew/opt/node@22/bin:/opt/homebrew/bin:$PATH"
 fi
 
 # Start Ollama if not already running

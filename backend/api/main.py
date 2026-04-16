@@ -8,7 +8,11 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
 from backend.config.settings import settings
-from backend.generation.llm_client import get_client
+from backend.evals import compute_evals
+from backend.generation.llm_client import (  # active_model used by /debug/config
+    active_model,
+    get_client,
+)
 from backend.guardrails.checks import check_input
 from backend.pipeline.graph import aac_graph
 from backend.pipeline.state import PipelineState
@@ -63,15 +67,31 @@ class ChatRequest(BaseModel):
     air_written_text: str | None = None
 
 
+class EvalScoresResponse(BaseModel):
+    groundedness: float
+    hallucination_rate: float
+    no_evidence: bool
+    t_total_s: float
+    slo_target_s: float
+    slo_passed: bool
+    slo_margin_s: float
+    multimodal_alignment: float
+    affect_alignment: float
+    gesture_alignment: float
+    gaze_alignment: float
+
+
 class ChatResponse(BaseModel):
     user_id: str
     query: str
     response: str
     affect: str
     llm_tier: str
+    llm_model: str
     retrieval_mode: str
     latency: dict
     guardrail_passed: bool
+    eval_scores: EvalScoresResponse | None = None
 
 
 # ── Helpers ────────────────────────────────────────────────────────────────────
@@ -123,6 +143,7 @@ def _build_initial_state(req: ChatRequest, session: dict) -> PipelineState:
         candidates=[],
         selected_response=None,
         llm_tier_used="",
+        llm_model_used="",
         latency_log={
             "t_sensing": 0.0,
             "t_intent": 0.0,
@@ -141,6 +162,23 @@ def _build_initial_state(req: ChatRequest, session: dict) -> PipelineState:
 @app.get("/health")
 def health():
     return {"status": "ok", "models_ready": _models_ready}
+
+
+@app.get("/debug/config")
+def debug_config():
+    """Return active model + key settings for the debug panel."""
+    return {
+        "active_llm_tier": settings.active_llm_tier,
+        "active_model": active_model(),
+        "thinking_mode": settings.thinking_mode,
+        "embed_model": settings.embed_model,
+        "rerank_model": settings.rerank_model,
+        "retrieval_top_k": settings.retrieval_top_k,
+        "retrieval_rerank_k": settings.retrieval_rerank_k,
+        "fallback_latency_threshold": settings.fallback_latency_threshold,
+        "slo_target_s": settings.slo_target_s,
+        "num_candidates": settings.num_candidates,
+    }
 
 
 @app.get("/users")
@@ -170,6 +208,7 @@ def chat(req: ChatRequest):
             response=guard["fallback"],
             affect="NEUTRAL",
             llm_tier="none",
+            llm_model="none",
             retrieval_mode="none",
             latency={},
             guardrail_passed=False,
@@ -184,13 +223,27 @@ def chat(req: ChatRequest):
     session["session_history"] = result["session_history"]
     session["bucket_priors"] = result["bucket_priors"]
 
+    # Compute evaluation metrics
+    affect_emotion = (result.get("affect") or {}).get("emotion", "NEUTRAL")
+    eval_scores = compute_evals(
+        response=result["selected_response"] or "",
+        chunks=result.get("retrieved_chunks") or [],
+        latency_log=result.get("latency_log") or {},
+        affect=affect_emotion,
+        gesture_tag=req.gesture_tag,
+        gaze_bucket=req.gaze_bucket,
+        slo_target=settings.slo_target_s,
+    )
+
     return ChatResponse(
         user_id=req.user_id,
         query=req.query,
         response=result["selected_response"] or "",
-        affect=(result.get("affect") or {}).get("emotion", "NEUTRAL"),
+        affect=affect_emotion,
         llm_tier=result.get("llm_tier_used", "unknown"),
+        llm_model=result.get("llm_model_used", "unknown"),
         retrieval_mode=result.get("retrieval_mode_used", "unknown"),
         latency=result.get("latency_log") or {},
         guardrail_passed=result.get("guardrail_passed", True),
+        eval_scores=eval_scores,
     )

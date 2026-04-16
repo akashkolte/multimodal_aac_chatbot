@@ -90,6 +90,7 @@ class PipelineState(TypedDict):
     candidates: list[str]  # 2-3 candidate responses
     selected_response: str | None
     llm_tier_used: str  # "primary" | "fallback" | "local"
+    llm_model_used: str  # actual model name (e.g. "gemma4:31b-cloud")
 
     # ── L5: Feedback / tracking ───────────────────────────────────────────────
     latency_log: LatencyLog | None
