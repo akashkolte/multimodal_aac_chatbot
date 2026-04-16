@@ -9,10 +9,10 @@ import time
 
 from backend.config.settings import settings
 from backend.guardrails.checks import check_input
-from backend.pipeline.graph import aac_graph
+from backend.pipeline.graph import run_pipeline
 from backend.pipeline.state import GenerationConfig, PipelineState
 from backend.retrieval.bucket_priors import uniform_priors
-from backend.retrieval.vector_store import _get_embedder, _get_reranker
+from backend.retrieval.vector_store import _get_embedder
 
 
 def parse_args() -> argparse.Namespace:
@@ -28,7 +28,7 @@ def parse_args() -> argparse.Namespace:
         "--tier",
         type=str,
         default=None,
-        choices=["primary", "fallback", "local"],
+        choices=["primary", "fallback"],
         help="Override LLM tier (default: settings.active_llm_tier)",
     )
     return p.parse_args()
@@ -134,7 +134,6 @@ def main() -> None:
     # Warm up models
     print(f"\nLoading models for {profile['name']} …", end=" ", flush=True)
     _get_embedder()
-    _get_reranker()
     print("ready.\n")
 
     session_history: list[dict] = []
@@ -197,11 +196,11 @@ def main() -> None:
                 "t_generation": 0.0,
                 "t_total": 0.0,
             },
-            mlflow_run_id=None,
+            run_id=None,
             guardrail_passed=True,
         )
 
-        result: PipelineState = aac_graph.invoke(state)
+        result: PipelineState = run_pipeline(state)
 
         print(f"AAC Bot: {result['selected_response']}\n")
 

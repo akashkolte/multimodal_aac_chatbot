@@ -14,10 +14,10 @@ from backend.generation.llm_client import (  # active_model used by /debug/confi
     get_client,
 )
 from backend.guardrails.checks import check_input
-from backend.pipeline.graph import aac_graph
+from backend.pipeline.graph import run_pipeline
 from backend.pipeline.state import PipelineState
 from backend.retrieval.bucket_priors import uniform_priors
-from backend.retrieval.vector_store import _get_embedder, _get_reranker
+from backend.retrieval.vector_store import _get_embedder
 
 app = FastAPI(
     title="Multimodal AAC Chatbot API",
@@ -45,7 +45,6 @@ def _warmup():
     logging.getLogger("sentence_transformers").setLevel(logging.WARNING)
     print("Loading models...", end=" ", flush=True)
     _get_embedder()
-    _get_reranker()
     get_client()
     _models_ready = True
     print("ready.")
@@ -151,7 +150,7 @@ def _build_initial_state(req: ChatRequest, session: dict) -> PipelineState:
             "t_generation": 0.0,
             "t_total": 0.0,
         },
-        mlflow_run_id=None,
+        run_id=None,
         guardrail_passed=True,
     )
 
@@ -172,7 +171,6 @@ def debug_config():
         "active_model": active_model(),
         "thinking_mode": settings.thinking_mode,
         "embed_model": settings.embed_model,
-        "rerank_model": settings.rerank_model,
         "retrieval_top_k": settings.retrieval_top_k,
         "retrieval_rerank_k": settings.retrieval_rerank_k,
         "fallback_latency_threshold": settings.fallback_latency_threshold,
@@ -217,7 +215,7 @@ def chat(req: ChatRequest):
     session = _get_or_init_session(req.user_id)
     initial_state = _build_initial_state(req, session)
 
-    result: PipelineState = aac_graph.invoke(initial_state)
+    result: PipelineState = run_pipeline(initial_state)
 
     # Persist updated session state
     session["session_history"] = result["session_history"]

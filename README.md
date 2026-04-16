@@ -4,7 +4,9 @@ An AI chatbot that **speaks as an AAC user**, not to them. Given a persona (Mia,
 it fuses real-time multimodal non-verbal signals — facial expressions, hand gestures, gaze, and
 air writing — with personal memory retrieval to generate responses in that person's authentic voice.
 
-Built as a training-free, agentic RAG pipeline orchestrated via **LangGraph**.
+Built as a training-free, agentic RAG pipeline — a plain-Python function chain
+with two conditional branches (no LangGraph / LangChain), torch-tensor
+retrieval (no FAISS), and JSONL turn logging (no MLflow).
 
 ---
 
@@ -36,7 +38,7 @@ a personalized digital twin that communicates on their behalf.
 ```
 React Frontend (browser)                    Backend (Python)
   MediaPipe JS sensing ──┐
-  Chat UI ───────────────┼── POST /chat ──► FastAPI ──► LangGraph Pipeline
+  Chat UI ───────────────┼── POST /chat ──► FastAPI ──► run_pipeline()
   Webcam feed ───────────┘                                │
                                             L2 Intent ──► L3 Retrieval ──► L4 Generation ──► L5 Feedback
 ```
@@ -44,13 +46,13 @@ React Frontend (browser)                    Backend (Python)
 | Layer | Module | What it does |
 |-------|--------|-------------|
 | L1 | `frontend/src/hooks/useSensing.ts` | MediaPipe JS — affect, gesture, gaze, air writing (browser-side) |
-| L2 | `backend/pipeline/nodes/intent.py` | LLM + Pydantic-validated intent routing |
-| L3 | `backend/pipeline/nodes/retrieval.py` | FAISS + BGE embeddings + cross-encoder reranking |
+| L2 | `backend/pipeline/nodes/intent.py` | Keyword-based intent routing (no LLM) |
+| L3 | `backend/pipeline/nodes/retrieval.py` | BGE-small embeddings + torch tensor cosine search (mps/cuda/cpu) |
 | L4 | `backend/pipeline/nodes/planner.py` | Expression-conditioned response generation (Qwen3) |
-| L5 | `backend/pipeline/nodes/feedback.py` | MLflow tracking + Bayesian bucket prior update |
+| L5 | `backend/pipeline/nodes/feedback.py` | JSONL turn logging + Bayesian bucket prior update |
 
-The pipeline runs as a **LangGraph stateful directed graph** with conditional edges:
-- FRUSTRATED affect → fast retrieval path (k=2, no reranker)
+The pipeline is a plain Python function chain with two conditional branches:
+- FRUSTRATED affect → fast retrieval path (k=2)
 - Latency > 3.5s → fallback to smaller Qwen3-8B model
 
 ---
@@ -59,7 +61,8 @@ The pipeline runs as a **LangGraph stateful directed graph** with conditional ed
 
 - Python **3.10+** (via conda)
 - Node.js **22+** and **pnpm**
-- [Ollama](https://ollama.com) installed locally for the `local` LLM tier
+- An [Ollama Cloud](https://ollama.com) account — both LLM tiers hit
+  cloud-hosted models; no local Ollama daemon required
 - A webcam (for live sensing; optional for CLI mode)
 
 ---
@@ -76,8 +79,8 @@ The setup script handles:
 - Conda environment creation (`aac-chatbot`, Python 3.12)
 - Python dependency installation
 - `.env` file creation from template
-- FAISS index building (downloads BGE models on first run)
-- Ollama model pull
+- Vector index building (downloads BGE-small embedder on first run, saves
+  per-user `vectors.pt` under `data/faiss_store/`)
 - Frontend dependency installation (pnpm)
 
 ---
@@ -88,13 +91,12 @@ All settings live in [backend/config/settings.py](backend/config/settings.py) an
 
 | Variable | Default | Description |
 |----------|---------|-------------|
-| `ACTIVE_LLM_TIER` | `local` | `local` (Ollama) \| `primary` (vLLM GCP) \| `fallback` (Qwen3-8B) |
-| `LOCAL_MODEL` | `qwen3:8b` | Ollama model name for local dev |
-| `LOCAL_BASE_URL` | `http://localhost:11434/v1` | Ollama OpenAI-compatible endpoint |
-| `PRIMARY_BASE_URL` | *(GCP IP)* | vLLM server URL on GCP |
-| `PRIMARY_MODEL` | `Qwen/Qwen3-30B-A3B` | Primary MoE model served via vLLM |
+| `ACTIVE_LLM_TIER` | `primary` | `primary` \| `fallback` |
+| `PRIMARY_MODEL` | `gemma4:31b-cloud` | Ollama Cloud model for primary tier |
+| `FALLBACK_MODEL` | `gemma4:31b-cloud` | Ollama Cloud model for fallback tier (smaller/faster) |
+| `PRIMARY_BASE_URL` | `http://localhost:11434/v1` | Ollama-compatible endpoint |
 | `FALLBACK_LATENCY_THRESHOLD` | `3.5` | Seconds before falling back to smaller model |
-| `MLFLOW_TRACKING_URI` | `mlruns` | Local MLflow storage path |
+| `LOGS_DIR` | `logs` | Where per-turn JSONL logs are written |
 
 ---
 
@@ -106,7 +108,7 @@ All settings live in [backend/config/settings.py](backend/config/settings.py) an
 bash run.sh
 ```
 
-This starts Ollama (if needed), FastAPI on `:8000`, and React on `:7550`.
+This starts FastAPI on `:8000` and React on `:7550`.
 Open [http://localhost:7550](http://localhost:7550) in your browser.
 
 ### CLI only
@@ -147,18 +149,19 @@ multimodal_aac_chatbot/
 │   ├── api/main.py                FastAPI REST API
 │   ├── config/settings.py         Pydantic BaseSettings
 │   ├── pipeline/
-│   │   ├── graph.py               LangGraph StateGraph
+│   │   ├── graph.py               run_pipeline() — plain function chain
 │   │   ├── state.py               PipelineState TypedDict
 │   │   └── nodes/                 intent, retrieval, planner, feedback
-│   ├── sensing/                   MediaPipe modules (Python, CLI use)
-│   ├── retrieval/                 FAISS, BGE, HDBSCAN, bucket priors
-│   ├── generation/llm_client.py   3-tier LLM client (vLLM / Ollama)
+│   ├── sensing/labels.py          GESTURE_TO_TAG (sensing runs in browser)
+│   ├── retrieval/                 BGE embeddings (torch tensor) + bucket priors
+│   ├── generation/llm_client.py   2-tier Ollama Cloud LLM client (primary/fallback)
 │   └── guardrails/checks.py      Input + output safety checks
 │
 ├── data/
 │   ├── users.json                 Persona index
 │   ├── memories/                  Per-persona memory JSONs
-│   └── faiss_store/               FAISS indexes (gitignored, rebuilt)
+│   └── faiss_store/               vectors.pt + meta.json (gitignored, rebuilt)
+├── logs/                          Per-turn JSONL logs (gitignored)
 │
 ├── setup.sh                       One-time setup script
 ├── run.sh                         Start backend + frontend
@@ -184,7 +187,106 @@ To add a new persona, edit `data/generate_users.py` and re-run `python -m backen
 
 ## TODO
 
+<<<<<<< Updated upstream
 From the spec (pages 10–11). Tags: **[Core]** = must do, **[Bonus]** = nice to have, **[Eval]** = for the grade.
+=======
+Roadmap derived from the project spec (pages 10–11). Items are grouped by spec
+area and marked with priority. Bracketed tags map back to the spec:
+**[Core]** = required deliverable, **[Bonus]** = stretch goal, **[Eval]** = validation.
+
+> **Note on sensing:** all camera capture and signal classification happens in
+> the **frontend** (MediaPipe JS). The backend only consumes pre-classified
+> labels (`affect`, `gesture_tag`, `gaze_bucket`).
+
+### Dataset
+
+- [ ] **[Core]** Add **heterogeneous** memory types per persona — currently only
+      autobiographical narratives exist.
+  - [ ] Add a set of synthetic social-media posts per persona (voice-matched)
+  - [ ] Add a set of synthetic past communication logs per persona
+  - [ ] Regenerate the synthesis script to produce both, then rebuild embeddings
+  - [ ] Make ingestion type-aware so the retriever knows which chunk-type a hit came from
+- [ ] **[Core]** Document the dataset schema so it is reusable by the evaluation harness.
+
+### Multimodal Sensing (frontend)
+
+- [ ] **[Core]** Detect **head-nod / sharp tilt as dissatisfaction**, distinct
+      from a generic frustrated affect read.
+  - [ ] Send a `dissatisfaction_signal` to the backend alongside the existing labels
+  - [ ] When the signal fires, branch the planner to a **"Turnaround Option"** —
+        a clarification candidate ("Did you mean X or Y?") instead of a plain answer
+- [ ] **[Bonus]** Add **vocalisation capture** (Web Speech API) and a
+      **conflict-resolution** step that compares the spoken intent against the
+      air-written intent, sending a single `resolved_intent` to the backend.
+- [ ] **[Polish]** Tighten the **thumbs-up boost** — today it only annotates the
+      prompt. The retriever should also bias affirmative-leaning candidates when
+      a thumbs-up is present.
+
+### Agentic Intent Decomposition
+
+> **Current state:** intent routing is **keyword-based**, not LLM-based.
+> The original LLM-driven router (Pydantic-validated JSON output) was
+> dropped because `gemma4:31b-cloud` consistently emitted the wrong JSON
+> shape and got truncated by `max_tokens`, triggering 3 retries + a
+> hard-fallback on every turn — adding ~30s of dead latency before the
+> generation call. The keyword router (~5 buckets matched against
+> hardcoded word lists in `intent.py`) handles the demo personas
+> reliably and adds ~0ms per turn.
+>
+> **Trade-off:** the router is limited to the 5 hardcoded buckets
+> (`family`, `medical`, `hobbies`, `daily_routine`, `social`) and can't
+> distinguish `OPEN_DOMAIN` from `PERSONAL` queries. Acceptable today
+> because all current personas only have personal memories.
+
+- [ ] **[Core]** Make Personal / Contextual / Open-domain routing actually hit
+      **different retrieval pools** — today all sub-queries fall back to the same
+      vector index. Requires re-introducing some form of intent classification
+      (likely a constrained-output LLM call once `response_format=json_schema`
+      is supported on Ollama Cloud, or a tiny local classifier).
+- [ ] **[Perf]** When/if we re-add LLM intent: cache the schema prompt,
+      use a smaller routing model, and parallelise sub-query retrieval.
+
+### Retrieval
+
+- [ ] **[Bonus]** Persist **bucket priors** per user across conversations
+      (currently per-session only).
+- [ ] **[Bonus]** Extend the **latency-optimised fallback** beyond a single
+      LLM-tier switch:
+  - [ ] Return a cached canned response when end-to-end latency blows the budget
+  - [ ] Use the spec's **< 6s end-to-end** target instead of the current 3.5s threshold
+- [ ] **[Scale]** When per-user memory grows past ~100k chunks, swap the
+      torch-tensor matmul search for `hnswlib` (a ~2 MB approximate-NN library);
+      reintroduce a cross-encoder reranker once `top_k > ~30`.
+
+### Training-Free Response Generation
+
+- [ ] **[Core]** Return **multiple candidate responses** from the API so the
+      user can pick one (today the endpoint returns a single string).
+- [ ] **[Bonus]** On user selection, upsert the `(query, selected_response)` pair
+      into a small "accepted-pairs" index and consult it as a high-prior shortcut
+      on the next turn — the spec's lightweight retrieval-index update.
+
+### Evaluation & Validation
+
+- [ ] **[Eval]** **Factual Faithfulness** — NLI-based groundedness metric over
+      (retrieved evidence, generated response) pairs, reported as a hallucination
+      rate on a held-out set of partner-style queries per persona.
+- [ ] **[Eval]** **Communication Efficiency** — p50 / p95 end-to-end latency
+      across all three LLM tiers, with a pass/fail gate at the spec target of
+      **< 6s p95**.
+- [ ] **[Eval]** **Perceived Authenticity** — generate paired (persona, query,
+      response) samples and a 5-point Likert rating sheet for the live in-class eval.
+- [ ] **[Eval]** **Multimodal Alignment** — synthetic (gesture, query) scenarios
+      checked against expected response traits (e.g. thumbs-up ⇒ affirmative
+      lexicon present), reported as alignment accuracy.
+
+### Polish
+
+- [ ] **[Polish]** Move the hard-coded affect→tone and persona-override dicts
+      into a single YAML so tone-shaping can be tuned without touching code.
+- [x] **[Polish]** Delete the unused `backend/sensing/` Python modules now that
+      sensing lives entirely in the frontend. *(Done — only `labels.py` remains.)*
+>>>>>>> Stashed changes
 
 Heads up: all camera/sensing stuff is in the frontend (MediaPipe JS). Backend just gets the labels (`affect`, `gesture_tag`, `gaze_bucket`). The `backend/sensing/` python modules are dead code.
 

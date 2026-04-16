@@ -10,35 +10,30 @@ class Settings(BaseSettings):
 
     # ── Paths ──────────────────────────────────────────────────────────────────
     data_dir: Path = Path("data")
-    faiss_store_dir: Path = Path("data/faiss_store")
+    faiss_store_dir: Path = Path("data/faiss_store")  # name kept for back-compat
     memories_dir: Path = Path("data/memories")
     users_json: Path = Path("data/users.json")
+    logs_dir: Path = Path("logs")
 
-    # ── Retrieval models ───────────────────────────────────────────────────────
+    # ── Retrieval ────────────────────────────────────────────────────────────
     embed_model: str = "BAAI/bge-small-en-v1.5"
-    rerank_model: str = "BAAI/bge-reranker-v2-m3"
     retrieval_top_k: int = 5
     retrieval_rerank_k: int = 3
     retrieval_fast_k: int = 2  # used when affect == FRUSTRATED
 
-    # ── LLM tiers ─────────────────────────────────────────────────────────────
-    # Tier 1 — primary (Qwen3-30B-A3B via vLLM on GCP)
-    primary_model: str = "Qwen/Qwen3-30B-A3B"
-    primary_base_url: str = "http://localhost:8000/v1"
-    primary_api_key: str = "token-abc"  # vLLM default
+    # LLM tiers — both hit Ollama Cloud via OpenAI-compatible endpoint.
+    # Same model on both tiers for now; swap one when a larger cloud model
+    # is provisioned and the latency-fallback should branch.
+    primary_model: str = "gemma4:31b-cloud"
+    primary_base_url: str = "http://localhost:11434/v1"
+    primary_api_key: str = "ollama"
 
-    # Tier 2 — fallback dense model (Qwen3-8B via vLLM, same server)
-    fallback_model: str = "Qwen/Qwen3-8B"
-    fallback_base_url: str = "http://localhost:8000/v1"
-    fallback_api_key: str = "token-abc"
+    fallback_model: str = "gemma4:31b-cloud"
+    fallback_base_url: str = "http://localhost:11434/v1"
+    fallback_api_key: str = "ollama"
 
-    # Tier 3 — local dev (Ollama on MacBook M2)
-    local_model: str = "qwen3:8b"
-    local_base_url: str = "http://localhost:11434/v1"
-    local_api_key: str = "ollama"
-
-    # Active tier: "primary" | "fallback" | "local"
-    active_llm_tier: str = "local"
+    # Active tier: "primary" | "fallback"
+    active_llm_tier: str = "primary"
 
     # off | strip | full | suppress
     thinking_mode: str = "off"
@@ -59,10 +54,6 @@ class Settings(BaseSettings):
     air_write_velocity_end: int = 5  # px/frame — stroke end threshold
     air_write_end_gap_ms: int = 200  # ms of stillness to end a stroke
     conflict_overlap_ms: int = 500  # audio + gesture co-occurrence window
-
-    # ── MLflow ────────────────────────────────────────────────────────────────
-    mlflow_tracking_uri: str = "sqlite:///mlflow.db"
-    mlflow_experiment: str = "aac-chatbot"
 
     # ── Candidate ranking weights ───────────────────────────────────────────────
     rank_alpha: float = 0.4  # faithfulness weight

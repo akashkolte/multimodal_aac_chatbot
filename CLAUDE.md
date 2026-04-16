@@ -5,7 +5,8 @@
 An AI chatbot that **speaks as an AAC user**, not to them. Given a user persona
 (Mia, Gerald, or Arjun), it fuses real-time multimodal non-verbal signals with
 personal memory retrieval to generate responses in that person's authentic voice.
-Orchestrated as a **LangGraph stateful directed graph** across five layers.
+Orchestrated as a **plain Python function chain** across five layers, with two
+conditional branches.
 
 ---
 
@@ -19,33 +20,45 @@ frontend/                         React + Vite + TypeScript
 backend/                          Python (conda env: aac-chatbot)
   main.py                         CLI entry point
   api/main.py                     FastAPI REST API
-  pipeline/graph.py               LangGraph StateGraph (5 nodes + conditional edges)
+  pipeline/graph.py               run_pipeline() — plain function chain with 2 conditional branches
     pipeline/nodes/intent.py        L2 — LLM + Pydantic intent routing
-    pipeline/nodes/retrieval.py     L3 — FAISS + BGE retrieval (fast / full)
+    pipeline/nodes/retrieval.py     L3 — BGE embeddings + torch tensor cosine search (fast / full)
     pipeline/nodes/planner.py       L4 — expression-conditioned generation
-    pipeline/nodes/feedback.py      L5 — MLflow logging + Bayesian priors
-  sensing/                        L1 — MediaPipe face mesh, gesture, gaze, air writing (Python, CLI use)
-  retrieval/                      FAISS ops, HDBSCAN clustering, Bayesian bucket priors
-  generation/                     Multi-tier LLM client (vLLM primary / fallback / Ollama local)
+    pipeline/nodes/feedback.py      L5 — JSONL turn logging + Bayesian bucket priors
+  sensing/labels.py               GESTURE_TO_TAG label map (sensing itself runs in browser)
+  retrieval/                      BGE embeddings (torch), Bayesian bucket priors
+  generation/                     Two-tier LLM client (primary / fallback, both Ollama Cloud)
   guardrails/                     Input + output safety checks
   config/                         Pydantic BaseSettings — all config in one place
 
-data/                             Shared data (personas, FAISS indexes)
+data/                             Shared data (personas, vector indexes)
+logs/                             Per-turn JSONL logs (gitignored)
 ```
 
 ## Key Design Decisions
 
-- **LangGraph** orchestrates the pipeline as a stateful directed graph with
-  conditional edges (affect → fast/full retrieval; latency → primary/fallback LLM)
+- **Plain function chain** orchestrates the pipeline (`run_pipeline` in
+  `backend/pipeline/graph.py`): intent → retrieval → planner → feedback,
+  with two conditional branches (affect picks fast/full retrieval; cumulative
+  latency picks primary/fallback LLM). No LangGraph / LangChain dependency.
 - **BGE-small-en-v1.5** for embeddings (beats MiniLM on MTEB at same speed)
-- **BGE-reranker-v2-m3** cross-encoder — multilingual, handles Arjun's Hindi
-- **FAISS IndexFlatIP** with L2-normalised vectors (inner product = cosine sim)
-- **Qwen3-30B-A3B** MoE via vLLM — 3B active params/token, sub-3s on T4
-- **Three-tier LLM fallback**: primary (vLLM GCP) → fallback (Qwen3-8B) → local (Ollama)
-- **Pydantic-validated** LLM routing output — LangGraph retries on schema failures
+- **Torch tensor matmul** for vector search on the embedder's device
+  (mps → cuda → cpu). No FAISS, no separate index format. Stored as
+  `vectors.pt` per user. Headroom is ~100k vectors before approximate
+  search (`hnswlib`) becomes worthwhile.
+- **No reranker** — cosine score from BGE-small carries the ranking signal
+  at current scales. Revisit when per-query `top_k` grows past ~30.
+- **Two-tier Ollama Cloud LLM**: `primary` → `fallback` (when cumulative
+  latency exceeds `FALLBACK_LATENCY_THRESHOLD`). Both tiers hit Ollama
+  Cloud over the OpenAI-compatible endpoint. Models default to
+  `gemma4:31b-cloud`; swap one when a larger cloud model is provisioned.
+- **Pydantic-validated** LLM routing output — `intent.py` retries on schema
+  failures (3 attempts) before falling back to a default route
 - **Expression-conditioned response shaping** — affect steers tone, retrieval depth,
   and candidate ranking (not just metadata annotation)
 - **Bayesian bucket priors** — session-level P(bucket) updated after each accepted turn
+- **Per-turn JSONL logging** — one line per turn appended to
+  `logs/turns.jsonl` (no MLflow). Query ad-hoc with DuckDB if needed.
 - **Browser-side sensing** — MediaPipe JS runs in React frontend, only classified
   labels (affect, gesture, gaze bucket) are sent to the backend API
 
@@ -69,7 +82,7 @@ data/                             Shared data (personas, FAISS indexes)
 # One-time setup
 bash setup.sh
 
-# CLI (local Ollama tier)
+# CLI
 python -m backend.main --debug
 
 # Full stack
@@ -84,9 +97,10 @@ pnpm --dir frontend dev                  # React on :7550
 All config lives in [backend/config/settings.py](backend/config/settings.py) as Pydantic `BaseSettings`.
 Copy `.env.example` → `.env` and set:
 
-- `ACTIVE_LLM_TIER` — `local` (dev) | `primary` (GCP A100) | `fallback` (Qwen3-8B)
-- `PRIMARY_BASE_URL` — vLLM server address on GCP
-- `MLFLOW_TRACKING_URI` — where MLflow stores runs (default: `mlruns/`)
+- `ACTIVE_LLM_TIER` — `primary` | `fallback`
+- `PRIMARY_MODEL` / `FALLBACK_MODEL` — Ollama Cloud model identifiers
+  (e.g. `gemma4:31b-cloud`)
+- `LOGS_DIR` — where per-turn JSONL logs are written (default: `logs/`)
 
 ---
 
@@ -96,23 +110,36 @@ Copy `.env.example` → `.env` and set:
 |------|---------|
 | `data/users.json` | Flat user index (id, name, condition, style) |
 | `data/memories/<uid>.json` | Full persona JSON with bucketed memories |
-| `data/faiss_store/<uid>/` | FAISS index + metadata — **rebuild after any persona edit** |
+| `data/faiss_store/<uid>/` | `vectors.pt` + `meta.json` — **rebuild after any persona edit** |
 | `data/generate_users.py` | Regenerates memories + users.json |
 
 ---
+
+## Code Style
+
+- **Keep comments to a minimum.** Only comment what isn't obvious from the
+  code. No file headers explaining what a module does (the name and code
+  show that). No section divider banners (`# ── Foo ──`). No restating
+  what the next line does. Prefer one-line comments when needed.
+- **Skip `from __future__ import annotations`.** The project is Python 3.10+
+  and uses native `X | None` / `list[dict]` syntax — the import adds nothing.
 
 ## Development Notes
 
 - **NEVER use local Ollama models** (e.g. `qwen3:8b`, `gemma3:1b`) — this machine
   is not powerful enough and will break. Always use cloud-backed models like
-  `qwen3.5:397b-cloud` or `gpt-oss:20b-cloud` via Ollama, or vLLM tiers.
+  `gemma4:31b-cloud` via Ollama Cloud.
 - **Adding a persona**: add to `PERSONAS` in `data/generate_users.py`, re-run it,
   then `python -m backend.retrieval.vector_store` to rebuild indexes
 - **Changing LLM**: set `ACTIVE_LLM_TIER` in `.env` — no code changes needed
-- **Extending sensing**: add module under `backend/sensing/`, wire output into
-  `PipelineState` fields in `backend/pipeline/state.py`
+- **Extending sensing**: sensing runs in the React frontend
+  (`frontend/src/hooks/useSensing.ts`); to add a new signal, classify it
+  there and add a label field to `PipelineState` in
+  `backend/pipeline/state.py`. Keep purely-data label maps in
+  `backend/sensing/labels.py`.
 - **Guardrail tuning**: edit signal lists in `backend/guardrails/checks.py`
 - **Affect → generation mapping**: `_AFFECT_CONFIG` in `backend/pipeline/nodes/intent.py`
   and `_PERSONA_TONE_OVERRIDES` in `backend/pipeline/nodes/planner.py`
-- FAISS indexes in `data/faiss_store/` are gitignored — rebuilt from source JSONs
+- Vector indexes in `data/faiss_store/` are gitignored — rebuilt from source JSONs
+  via `python -m backend.retrieval.vector_store`
 - Frontend uses pnpm, Node 22+

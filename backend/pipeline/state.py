@@ -1,8 +1,7 @@
-# Typed state flowing through every LangGraph node.
+# Typed state flowing through every pipeline node.
 from __future__ import annotations
 
-import operator
-from typing import Annotated, Any
+from typing import Any
 
 from typing_extensions import TypedDict
 
@@ -26,7 +25,7 @@ class RetrievedChunk(TypedDict):
     text: str
     bucket: str  # family | medical | hobbies | daily_routine | social
     user: str
-    score: float  # cross-encoder rerank score
+    score: float  # cosine similarity from the embedder
 
 
 class SubIntent(TypedDict):
@@ -66,7 +65,7 @@ class PipelineState(TypedDict):
     # ── Session context (set at turn start, stable across nodes) ──────────────
     user_id: str
     persona_profile: dict[str, Any]  # full profile from users.json
-    session_history: Annotated[list[dict], operator.add]  # auto-appended
+    session_history: list[dict]
     turn_id: int
 
     # ── L1: Sensing outputs ───────────────────────────────────────────────────
@@ -89,10 +88,10 @@ class PipelineState(TypedDict):
     augmented_prompt: str | None
     candidates: list[str]  # 2-3 candidate responses
     selected_response: str | None
-    llm_tier_used: str  # "primary" | "fallback" | "local"
+    llm_tier_used: str  # "primary" | "fallback"
     llm_model_used: str  # actual model name (e.g. "gemma4:31b-cloud")
 
     # ── L5: Feedback / tracking ───────────────────────────────────────────────
     latency_log: LatencyLog | None
-    mlflow_run_id: str | None
+    run_id: str | None  # UUID assigned per turn; logged to logs/turns.jsonl
     guardrail_passed: bool
