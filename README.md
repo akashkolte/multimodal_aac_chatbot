@@ -184,31 +184,70 @@ To add a new persona, edit `data/generate_users.py` and re-run `python -m backen
 
 ## TODO
 
-- [ ] Add more dataset
-- [ ] Reduce latency in intention
-- [ ] Add more detailed todos
+From the spec (pages 10–11). Tags: **[Core]** = must do, **[Bonus]** = nice to have, **[Eval]** = for the grade.
 
-### Evals (`backend/evals/`)
+Heads up: all camera/sensing stuff is in the frontend (MediaPipe JS). Backend just gets the labels (`affect`, `gesture_tag`, `gaze_bucket`). The `backend/sensing/` python modules are dead code.
 
-Per-turn metrics returned in `ChatResponse.eval_scores` and rendered in the React debug panel.
+### Dataset
 
-| Metric | File | Status |
-|--------|------|--------|
-| Communication Efficiency | `efficiency.py` | Done — SLO check on `t_total` |
-| Factual Faithfulness | `faithfulness.py` | Stub |
-| Multimodal Alignment | `multimodal_alignment.py` | Stub |
-| Perceived Authenticity | (frontend) | UI star rating; not persisted yet |
+- [ ] **[Core]** Memories are only autobiographical narratives right now. Need more variety:
+  - [ ] social media posts (voice-matched, synth with LLM)
+  - [ ] past chat logs (synth with LLM)
+  - [ ] update the generator script + rebuild faiss
+  - [ ] tag chunks by type so retriever knows what it pulled
+- [ ] **[Core]** Write down the data schema somewhere so evals can reuse it
 
-- [ ] **Faithfulness** — Load cross-encoder NLI model (e.g. `cross-encoder/nli-deberta-v3-small`),
-  split response into sentences, check entailment against evidence chunks. Groundedness =
-  fraction with max entailment > 0.5; hallucination rate = fraction with contradiction > 0.5
-  and entailment < 0.3. Empty `chunks` → `no_evidence=True`.
-- [ ] **Multimodal Alignment** — Rule-based (no model):
-  - Affect → sentiment-word overlap (reuse `affect_positive_map` from planner)
-  - Gesture → expected-word overlap (reuse `gesture_word_map` from planner)
-  - Gaze → check whether retrieved chunks came from `gaze_bucket` and response references them
-  - Overall = mean of non-None sub-scores
-- [ ] **Authenticity** — Persist Likert ratings (currently client-side only). Add `POST /chat/rate`.
+### Sensing (frontend)
+
+- [ ] **[Core]** Head-nod / sharp tilt = "I don't like that". Different from frustrated affect.
+  - [ ] send a `dissatisfaction_signal` flag with the chat request
+  - [ ] when set, planner returns a "did you mean X or Y?" instead of an answer (the spec's "Turnaround Option")
+- [ ] **[Core]** Smile / positive affect should actually change the wording (more positive lexicon), not just be metadata. Right now it's annotated in the prompt but we never checked if the LLM is doing anything with it — probably need a stronger constraint or example in the prompt
+- [ ] **[Core]** Air-writing is treated as raw text appended to the query. Spec wants it as a stylistic constraint too — should it bias tone, or stay query-only? Decide and document
+- [ ] **[Bonus]** Voice + air-writing conflict resolution. Capture short voice (Web Speech API), compare to air-written intent, send a `resolved_intent`
+- [ ] thumbs-up only changes the prompt today — should also boost affirmative candidates in the reranker
+
+### Intent decomposition
+
+- [ ] **[Core]** Personal / Contextual / Open-domain all hit the same FAISS index right now. Make them actually go different places — open-domain → web search (or stub), contextual → session memory
+- [ ] intent node is slow. Cache the prompt, use a tiny model for routing, parallelise the sub-queries
+
+### Retrieval
+
+- [ ] **[Bonus]** Bucket priors only live for the session. Persist them per user
+- [ ] **[Bonus]** Latency fallback only switches LLM tier. Add more steps:
+  - drop reranker if retrieval is slow
+  - return a canned response if we blow the budget entirely
+  - threshold is 3.5s, spec says 6s — pick one
+
+### Generation
+
+- [ ] **[Core]** API returns one response. Should return multiple candidates so the user can pick (and so the next item works)
+- [ ] **[Core]** Frontend needs a candidate picker — show all the options, let the user click one, send the selection back
+- [ ] **[Bonus]** When user picks a candidate, save the `(query, picked)` pair to a side faiss index and check it first next turn
+
+### Evals
+
+Live per-turn scores show up in the `EvalPanel`. State:
+
+| Metric | Status |
+|--------|--------|
+| Efficiency | works (SLO check on `t_total`) |
+| Faithfulness | stub, returns 0 |
+| Multimodal alignment | stub, returns 0 |
+| Authenticity | star rating in UI but not saved |
+
+- [ ] **[Eval]** Faithfulness — actually check if the response is grounded in what we retrieved. NLI model, sentence-level. If we didn't retrieve anything, flag `no_evidence` instead of pretending we scored it
+- [ ] **[Eval]** Efficiency — per-turn SLO check is done, but for the writeup we need aggregate latency: p50/p95 across a fixed query set, broken out by LLM tier. Spec target is < 6s
+- [ ] **[Eval]** Multimodal alignment — does the response actually reflect the gesture/affect/gaze? Don't need a model for this, just reuse the word maps the planner already has. Gaze one is trickier — check whether the chunks we ended up using came from the bucket the user was looking at
+- [ ] **[Eval]** Authenticity — the Likert stars are wired up in the UI but go nowhere. Save them, log them with the turn so we can actually look at them later
+- [ ] **[Eval]** For the live in-class eval: figure out the actual session — who rates (partners + experts per spec), how many turns each, what gets shown to them. The Likert form is the easy part; the protocol isn't written down anywhere
+- [ ] **[Eval]** Need an offline version of all three model-driven evals (faithfulness / alignment / efficiency). Aggregate numbers across a fixed query set per persona for the writeup
+
+### Cleanup
+
+- [ ] move the affect→tone / persona override dicts out of code into a yaml
+- [ ] delete `backend/sensing/` (dead code, sensing is in frontend)
 
 ---
 
