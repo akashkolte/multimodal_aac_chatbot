@@ -1,45 +1,73 @@
-# Intent decomposition node — LLM-based query classification and routing.
+# Intent decomposition node — regex-split fragments + BGE zero-shot classifier.
 from __future__ import annotations
 
 import re
 import time
-from typing import Literal
+from functools import lru_cache
 
-from pydantic import BaseModel
+import torch
 
 from backend.config.settings import settings
-from backend.generation.llm_client import chat_complete
-from backend.pipeline.state import GenerationConfig, IntentRoute, PipelineState
+from backend.pipeline.state import (
+    GenerationConfig,
+    IntentRoute,
+    PipelineState,
+    SubIntent,
+)
+from backend.retrieval.vector_store import get_device, get_embedder
+from backend.sensing.bucket_keywords import infer_bucket
 
-# ── Pydantic output schemas ────────────────────────────────────────────────────
+_CLASS_EXEMPLARS: dict[str, list[str]] = {
+    "PERSONAL": [
+        "how are you today",
+        "what is your favourite food",
+        "tell me about your family",
+        "what do you do in the mornings",
+        "did you enjoy the weekend",
+    ],
+    "CONTEXTUAL": [
+        "what did you just say",
+        "what did I ask earlier",
+        "you mentioned something before",
+        "can you repeat that",
+        "what were we talking about",
+    ],
+    "OPEN_DOMAIN": [
+        "what is the capital of france",
+        "how many planets are there",
+        "who wrote hamlet",
+        "when was world war two",
+        "what does photosynthesis mean",
+    ],
+}
 
-BucketType = Literal["family", "medical", "hobbies", "daily_routine", "social"]
-AffectEmotion = Literal["HAPPY", "FRUSTRATED", "NEUTRAL", "SURPRISED"]
+_CLASSIFIER_THRESHOLD = (
+    0.45  # below this → PERSONAL fallback (safe default for OOV / typos / short input)
+)
+_CONTEXTUAL_MARGIN_MIN = (
+    0.08  # CONTEXTUAL must beat runner-up by at least this — it over-matches without it
+)
+_MIN_FRAGMENT_WORDS = 3
+_MAX_FRAGMENTS = 4
 
+_CONTEXTUAL_MARKERS = (
+    "earlier",
+    "before",
+    "mentioned",
+    "said",
+    "asked",
+    "just",
+    "repeat",
+)
+_CONTEXTUAL_MARKER_PATTERN = re.compile(
+    r"\b(" + "|".join(_CONTEXTUAL_MARKERS) + r")\b",
+    flags=re.IGNORECASE,
+)
 
-class SubIntentSchema(BaseModel):
-    type: Literal["PERSONAL", "CONTEXTUAL", "OPEN_DOMAIN"]
-    query: str
-    bucket_hint: BucketType | None = None
-    priority: Literal["fast", "normal"] = "normal"
-
-
-class StyleConfig(BaseModel):
-    tone_tag: str  # e.g. "[TONE:WITTY_SARCASTIC]"
-    max_tokens: int
-    retrieval_mode: str  # "fast" | "full"
-    persona_mod: (
-        str  # "amplify_quirks" | "suppress_humor" | "baseline" | "add_confirmation"
-    )
-
-
-class IntentRouteSchema(BaseModel):
-    sub_intents: list[SubIntentSchema]
-    style_constraints: StyleConfig
-    affect: AffectEmotion
-
-
-# ── Affect → generation config mapping ────────────────────────────────────────
+_SPLIT_PATTERN = re.compile(
+    r"\s+(?:and|but|also|plus)\s+|[;.?!]+\s+|,\s+(?=\w)",
+    flags=re.IGNORECASE,
+)
 
 _AFFECT_CONFIG: dict[str, GenerationConfig] = {
     "HAPPY": {
@@ -68,41 +96,61 @@ _AFFECT_CONFIG: dict[str, GenerationConfig] = {
     },
 }
 
-# ── System prompt ──────────────────────────────────────────────────────────────
 
-_SYSTEM_PROMPT = """\
-You are the intent decomposition controller for an AAC (Augmentative and \
-Alternative Communication) chatbot. Given a partner's query and the AAC \
-user's current affect state, classify each intent and produce routing \
-instructions in the required JSON format.
-
-Intent types:
-- PERSONAL: requires autobiographical memory retrieval
-- CONTEXTUAL: answerable from session history
-- OPEN_DOMAIN: answerable from general knowledge (no retrieval needed)
-
-Bucket hints (only for PERSONAL): family | medical | hobbies | daily_routine | social
-Priority: set "fast" when affect is FRUSTRATED to reduce latency.
-
-Respond ONLY with valid JSON matching the IntentRoute schema. No extra text.
-"""
+@lru_cache(maxsize=1)
+def _exemplar_matrices() -> dict[str, torch.Tensor]:
+    embedder = get_embedder()
+    device = get_device()
+    return {
+        cls: embedder.encode(
+            exemplars,
+            convert_to_tensor=True,
+            normalize_embeddings=True,
+            device=device,
+        )
+        for cls, exemplars in _CLASS_EXEMPLARS.items()
+    }
 
 
-def _build_user_prompt(
-    query: str, affect: str, persona_name: str, air_written_text: str | None = None
-) -> str:
-    air_note = (
-        f'\nAir-written supplement: "{air_written_text}"' if air_written_text else ""
-    )
-    return (
-        f"Persona: {persona_name}\n"
-        f"Affect: {affect}\n"
-        f"Partner query: {query}{air_note}\n\n"
-        "Produce the IntentRoute JSON:"
-    )
+def _split_query(query: str) -> list[str]:
+    raw = [p.strip() for p in _SPLIT_PATTERN.split(query) if p and p.strip()]
+    keep = [p for p in raw if len(p.split()) >= _MIN_FRAGMENT_WORDS]
+    if not keep:
+        keep = [query.strip()] if query.strip() else []
+    return keep[:_MAX_FRAGMENTS]
 
 
-# ── Node entry point ───────────────────────────────────────────────────────────
+def _classify(fragment: str) -> str:
+    embedder = get_embedder()
+    device = get_device()
+    vec = embedder.encode(
+        [fragment],
+        convert_to_tensor=True,
+        normalize_embeddings=True,
+        device=device,
+    )[0]
+
+    scores: dict[str, float] = {}
+    for cls, mat in _exemplar_matrices().items():
+        scores[cls] = float((mat @ vec).max())
+
+    ranked = sorted(scores.items(), key=lambda kv: kv[1], reverse=True)
+    best_cls, best_score = ranked[0]
+    runner_up_score = ranked[1][1]
+
+    if best_score < _CLASSIFIER_THRESHOLD:
+        return "PERSONAL"  # conservative default: treat as a question about the persona
+
+    # CONTEXTUAL is the riskiest class — if wrong, we lose all persona grounding.
+    # Require it to clearly beat the runner-up and for the fragment to mention
+    # prior discourse (matched at word boundaries, so "just" doesn't match "unjust").
+    if best_cls == "CONTEXTUAL":
+        margin = best_score - runner_up_score
+        has_discourse_marker = bool(_CONTEXTUAL_MARKER_PATTERN.search(fragment))
+        if margin < _CONTEXTUAL_MARGIN_MIN or not has_discourse_marker:
+            return "PERSONAL"
+
+    return best_cls
 
 
 def run(state: PipelineState) -> dict:
@@ -110,78 +158,58 @@ def run(state: PipelineState) -> dict:
 
     # --fast mode: intent_route already resolved by keyword routing in main.py
     if state.get("intent_route") and state.get("generation_config"):
-        return {}  # nothing to update — downstream nodes use the pre-filled values
+        return {}
 
     affect_state = state.get("affect") or {}
     emotion: str = affect_state.get("emotion", "NEUTRAL")
     query: str = state["raw_query"]
-    persona_name: str = state["persona_profile"].get("name", "unknown")
-
     gen_config = _AFFECT_CONFIG.get(emotion, _AFFECT_CONFIG["NEUTRAL"])
 
-    route: IntentRoute | None = None
-    last_error: str = ""
+    fragments = _split_query(query)
+    priority = "fast" if emotion == "FRUSTRATED" else "normal"
 
-    for attempt in range(3):  # up to 2 retries on schema validation failure
-        messages = [
-            {"role": "system", "content": _SYSTEM_PROMPT},
+    sub_intents: list[SubIntent] = []
+    for frag in fragments:
+        cls = _classify(frag)
+        bucket_hint = infer_bucket(frag) if cls == "PERSONAL" else None
+        sub_intents.append(
             {
-                "role": "user",
-                "content": _build_user_prompt(
-                    query,
-                    emotion,
-                    persona_name,
-                    air_written_text=state.get("air_written_text"),
-                ),
-            },
-        ]
-        if attempt > 0:
-            messages.append(
-                {
-                    "role": "user",
-                    "content": f"Validation error: {last_error}. Fix and retry.",
-                }
-            )
-
-        raw = chat_complete(
-            messages=messages,
-            max_tokens=512,
-            temperature=0.0,
+                "type": cls,
+                "query": frag,
+                "bucket_hint": bucket_hint,
+                "priority": priority,
+            }
         )
 
-        try:
-            # Strip markdown fences (```json ... ```) that many models add
-            cleaned = re.sub(r"^```(?:json)?\s*", "", raw.strip())
-            cleaned = re.sub(r"\s*```$", "", cleaned.strip())
-            parsed = IntentRouteSchema.model_validate_json(cleaned)
-            route = {
-                "sub_intents": [si.model_dump() for si in parsed.sub_intents],
-                "style_constraints": parsed.style_constraints.model_dump(),
-                "affect": parsed.affect,
+    if not sub_intents:
+        sub_intents = [
+            {
+                "type": "PERSONAL",
+                "query": query,
+                "bucket_hint": None,
+                "priority": priority,
             }
-            break
-        except Exception as exc:
-            last_error = str(exc)
+        ]
 
-    if route is None:
-        # Hard fallback: treat as a single PERSONAL intent, full retrieval
-        route = {
-            "sub_intents": [
-                {
-                    "type": "PERSONAL",
-                    "query": query,
-                    "bucket_hint": None,
-                    "priority": "normal",
-                }
-            ],
-            "style_constraints": gen_config,
-            "affect": emotion,
-        }
+    air_written = state.get("air_written_text")
+    if air_written:
+        sub_intents.append(
+            {
+                "type": "PERSONAL",
+                "query": air_written,
+                "bucket_hint": infer_bucket(air_written),
+                "priority": priority,
+            }
+        )
 
-    t_intent = time.perf_counter() - t0
+    route: IntentRoute = {
+        "sub_intents": sub_intents,
+        "style_constraints": dict(gen_config),
+        "affect": emotion,
+    }
 
     latency_log = dict(state.get("latency_log") or {})
-    latency_log["t_intent"] = round(t_intent, 4)
+    latency_log["t_intent"] = round(time.perf_counter() - t0, 4)
 
     return {
         "intent_route": route,

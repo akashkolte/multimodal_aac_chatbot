@@ -31,6 +31,10 @@ def _get_embedder():
     return SentenceTransformer(settings.embed_model, device=_DEVICE)
 
 
+def get_embedder():
+    return _get_embedder()
+
+
 # Index cache: one (vectors_tensor, meta) per user_id.
 _index_cache: dict[str, tuple[torch.Tensor, list[dict]]] = {}
 
@@ -88,6 +92,7 @@ def retrieve(
             type=c.get("type", "narrative"),
             user=c["user"],
             score=float(s),
+            source="personal",
         )
         for s, c in candidates[:rerank_k]
     ]

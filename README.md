@@ -1,12 +1,8 @@
 # Multimodal AAC Chatbot
 
-An AI chatbot that **speaks as an AAC user**, not to them. Given a persona (Mia, Gerald, or Arjun),
-it fuses real-time multimodal non-verbal signals — facial expressions, hand gestures, gaze, and
-air writing — with personal memory retrieval to generate responses in that person's authentic voice.
+A chatbot that **speaks as an AAC user, not to them.** You pick a persona (Mia, Gerald, or Arjun) and the partner talks to them — the bot replies in that person's voice, using their memories, and adjusts what it says based on what the webcam sees: facial expression, hand gestures, where they're looking, and letters they trace in the air.
 
-Built as a training-free, agentic RAG pipeline — a plain-Python function chain
-with two conditional branches (no LangGraph / LangChain), torch-tensor
-retrieval (no FAISS), and JSONL turn logging (no MLflow).
+It's a training-free agentic RAG pipeline — a plain Python function chain with two branching points, torch matmul for retrieval, JSONL for logging. The goal was to keep every piece simple enough to read top-to-bottom in an afternoon.
 
 ---
 
@@ -26,44 +22,181 @@ retrieval (no FAISS), and JSONL turn logging (no MLflow).
 
 ## What is AAC?
 
-**Augmentative and Alternative Communication (AAC)** refers to tools and technologies that help
-people who have difficulty with spoken or written communication — including individuals with
-Cerebral Palsy, ALS, Autism Spectrum Disorder, and other conditions. This project gives AAC users
-a personalized digital twin that communicates on their behalf.
+AAC (Augmentative and Alternative Communication) covers the tools people use when spoken or written communication is hard for them — cerebral palsy, ALS, autism, stroke recovery, and so on. Usually that's a tablet with a symbol grid, or an eye-tracker, or a switch. The slow part isn't the typing — it's that most devices don't know *you*. Every conversation starts from scratch.
+
+This project is a small attempt at the other direction: give each user a persona their device already knows, and let the device reply in their voice.
 
 ---
 
 ## System Architecture
 
+The browser does all the camera work. MediaPipe JS runs inside React, classifies what it sees into small labels (`affect`, `gesture_tag`, `gaze_bucket`, `air_written_text`), and sends those alongside the partner's text to `/chat`. The backend never touches pixels.
+
 ```
-React Frontend (browser)                    Backend (Python)
-  MediaPipe JS sensing ──┐
-  Chat UI ───────────────┼── POST /chat ──► FastAPI ──► run_pipeline()
-  Webcam feed ───────────┘                                │
-                                            L2 Intent ──► L3 Retrieval ──► L4 Generation ──► L5 Feedback
+React (browser)                            Backend (Python)
+  MediaPipe JS  ──┐
+  Chat UI ────────┼── POST /chat ──► FastAPI ──► run_pipeline()
+  Webcam ─────────┘                                │
+                                       Intent ──► Retrieval ──► Planner ──► Feedback
 ```
+
+Five layers, each a tiny file:
 
 | Layer | Module | What it does |
 |-------|--------|-------------|
-| L1 | `frontend/src/hooks/useSensing.ts` | MediaPipe JS — affect, gesture, gaze, air writing (browser-side) |
-| L2 | `backend/pipeline/nodes/intent.py` | Keyword-based intent routing (no LLM) |
-| L3 | `backend/pipeline/nodes/retrieval.py` | BGE-small embeddings + torch tensor cosine search (mps/cuda/cpu) |
-| L4 | `backend/pipeline/nodes/planner.py` | Expression-conditioned response generation (Qwen3) |
-| L5 | `backend/pipeline/nodes/feedback.py` | JSONL turn logging + Bayesian bucket prior update |
+| L1 | `frontend/src/hooks/useSensing.ts` | Watches the webcam. Turns faces/hands/gaze/air-writing into string labels. Purely frontend. |
+| L2 | `backend/pipeline/nodes/intent.py` | Splits the partner's question on conjunctions and punctuation, then classifies each fragment as PERSONAL, CONTEXTUAL, or OPEN_DOMAIN using cosine similarity against a handful of seed sentences. No LLM call. ~30ms per turn. |
+| L3 | `backend/pipeline/nodes/retrieval.py` | Each sub-intent goes to its own pool. Personal → the user's memory vector store. Contextual → persona memory + relevant in-session turns layered on top (so "what did I just ask" still sounds like *them*). Open-domain → a stub chunk telling the LLM to answer from its own knowledge (web search is deliberately out of scope). |
+| L4 | `backend/pipeline/nodes/planner.py` | Builds the prompt, calls the LLM, picks a response. Tone and max_tokens are shaped by the detected affect. |
+| L5 | `backend/pipeline/nodes/feedback.py` | Writes one JSONL row per turn and bumps the Bayesian priors over which memory bucket was useful. |
 
-The pipeline is a plain Python function chain with two conditional branches:
-- FRUSTRATED affect → fast retrieval path (k=2)
-- Latency > 3.5s → fallback to smaller Qwen3-8B model
+Two places the pipeline branches:
+- **Frustrated affect** → use the fast retrieval path (k=2, skip the reranker). The user wants an answer, not a thesis.
+- **Cumulative latency past 3.5s** → switch to the smaller fallback model for generation.
+
+### End-to-end: from partner speaking to response rendered
+
+One diagram, left to right, every step a turn goes through. Follow the arrows.
+
+```mermaid
+flowchart LR
+    subgraph S1["① Partner side (browser)"]
+        direction TB
+        IN1[Partner types or speaks a question]
+        IN2[Webcam frame]
+        IN1 --> UI[Chat UI]
+        IN2 --> MP[MediaPipe JS<br/>face + hands + gaze]
+        MP --> LAB[Classify into labels<br/>affect, gesture_tag,<br/>gaze_bucket, air_written_text]
+        UI --> REQ
+        LAB --> REQ[POST /chat<br/>query + labels]
+    end
+
+    REQ ==> S2
+
+    subgraph S2["② Backend pipeline (Python)"]
+        direction TB
+        HYD[Hydrate PipelineState<br/>session_history, priors, profile] --> INT
+        INT[Intent node<br/>split query + classify fragments] --> BR1{FRUSTRATED?}
+        BR1 -- yes --> RFAST[Fast retrieval<br/>k=2]
+        BR1 -- no --> RFULL[Full retrieval<br/>k=5 → rerank 3]
+        RFAST --> POOL
+        RFULL --> POOL[Dispatch per sub-intent]
+        POOL --> PP[PERSONAL<br/>BGE vector store]
+        POOL --> PC[CONTEXTUAL<br/>personal + BGE over history]
+        POOL --> PO[OPEN_DOMAIN<br/>stub chunk]
+        PP --> MERGE[Merge + dedupe chunks]
+        PC --> MERGE
+        PO --> MERGE
+        MERGE --> PLAN[Planner<br/>build prompt with<br/>3 retrieval blocks + tone tag]
+        PLAN --> BR2{Total latency<br/>&gt; 3.5s?}
+        BR2 -- yes --> LLMF[Fallback LLM<br/>Ollama Cloud, smaller]
+        BR2 -- no --> LLMP[Primary LLM<br/>Ollama Cloud]
+        LLMF --> GRD[Guardrail check<br/>persona breaks,<br/>unsupported claims]
+        LLMP --> GRD
+        GRD --> FB[Feedback node<br/>log turn to JSONL,<br/>bump bucket priors,<br/>append to session history]
+    end
+
+    FB ==> S3
+
+    subgraph S3["③ Back to partner"]
+        direction TB
+        RESP[Response in persona's voice<br/>+ latency breakdown<br/>+ eval scores]
+        RESP --> RENDER[Chat UI renders it]
+    end
+```
+
+**A concrete example.** Partner says *"how are you, and what's the capital of France?"* while the webcam reads a relaxed face:
+
+1. Browser sends `{query, affect: NEUTRAL, gesture_tag: null, …}`.
+2. Intent node splits on `,` and ` and ` → two fragments. Classifier tags them `PERSONAL` and `OPEN_DOMAIN`.
+3. Affect isn't FRUSTRATED, so full retrieval runs.
+4. Dispatcher hits the persona store for fragment one, emits the open-domain stub for fragment two, merges both.
+5. Planner drops the two chunks into separate prompt blocks and calls the primary LLM.
+6. Guardrail passes, feedback writes the row, the response — in Mia's voice — comes back through the same `/chat` response.
+
+Total wall time is normally under 6 seconds end-to-end; the slow part is the LLM call, not anything you wrote.
+
+### What a single turn actually looks like
+
+```mermaid
+flowchart TD
+    A[Partner types or speaks] --> B[React captures query<br/>+ webcam labels]
+    B --> C[POST /chat]
+    C --> D[Intent node<br/>split + classify]
+    D --> E{Any FRUSTRATED<br/>affect signal?}
+    E -- yes --> F[Fast retrieval<br/>k=2, no reranker]
+    E -- no --> G[Full retrieval<br/>k=5 → rerank to 3]
+    F --> H{Cumulative<br/>latency &gt; 3.5s?}
+    G --> H
+    H -- yes --> I[Fallback LLM<br/>smaller, faster]
+    H -- no --> J[Primary LLM]
+    I --> K[Guardrail check]
+    J --> K
+    K --> L[Feedback node<br/>JSONL log + priors]
+    L --> M[Response in persona's voice]
+```
+
+### How sub-intents fan out
+
+This is the part that took a few iterations to get right. Each partner query can be *multiple* questions stitched together with "and" / "but" / punctuation. Each fragment gets classified separately and sent to its own retrieval pool.
+
+```mermaid
+flowchart LR
+    Q["&quot;how are you,<br/>and what's the<br/>capital of France?&quot;"] --> S[Split on conjunctions<br/>and punctuation]
+    S --> F1[fragment:<br/>how are you]
+    S --> F2[fragment:<br/>capital of France]
+
+    F1 --> CL[BGE zero-shot<br/>cosine vs exemplars]
+    F2 --> CL
+
+    CL --> P[PERSONAL<br/>→ persona memory vectors]
+    CL --> CX[CONTEXTUAL<br/>→ persona memory +<br/>relevant session history]
+    CL --> OD[OPEN_DOMAIN<br/>→ stub, LLM answers<br/>from own knowledge]
+
+    P --> MERGE[Merge, dedupe,<br/>hand to planner]
+    CX --> MERGE
+    OD --> MERGE
+```
+
+The classifier is just cosine similarity against 5 seed sentences per class — no LLM, ~30ms per turn. The old version called an LLM and retried up to 3× on JSON errors; on a bad day that was 100+ seconds of dead time.
+
+### State that flows between nodes
+
+Every node takes a `PipelineState` dict and returns a partial update. Nothing is global.
+
+```mermaid
+flowchart LR
+    subgraph "set at turn start"
+        A[user_id, persona_profile,<br/>session_history, turn_id]
+        B[affect, gesture_tag,<br/>gaze_bucket, air_written_text]
+        C[raw_query]
+    end
+
+    subgraph "filled in by the pipeline"
+        D[intent_route,<br/>generation_config]
+        E[retrieved_chunks,<br/>retrieval_mode_used]
+        F[candidates,<br/>selected_response,<br/>llm_tier_used]
+        G[latency_log,<br/>run_id,<br/>guardrail_passed]
+    end
+
+    A --> D
+    B --> D
+    C --> D
+    D --> E
+    B --> E
+    D --> F
+    E --> F
+    F --> G
+```
 
 ---
 
 ## Prerequisites
 
-- Python **3.10+** (via conda)
-- Node.js **22+** and **pnpm**
-- An [Ollama Cloud](https://ollama.com) account — both LLM tiers hit
-  cloud-hosted models; no local Ollama daemon required
-- A webcam (for live sensing; optional for CLI mode)
+- Python 3.10+ (we use conda; 3.12 is what the env ships with)
+- Node.js 22+ and pnpm
+- An [Ollama Cloud](https://ollama.com) account. Generation hits cloud models — you don't need a local Ollama daemon running.
+- A webcam if you want to play with the full stack. The CLI works without one.
 
 ---
 
@@ -75,57 +208,60 @@ cd multimodal_aac_chatbot
 bash setup.sh
 ```
 
-The setup script handles:
-- Conda environment creation (`aac-chatbot`, Python 3.12)
-- Python dependency installation
-- `.env` file creation from template
-- Vector index building (downloads BGE-small embedder on first run, saves
-  per-user `vectors.pt` under `data/vector_store/`)
-- Frontend dependency installation (pnpm)
+`setup.sh` takes care of everything on the first run: creates the `aac-chatbot` conda env, installs Python and frontend deps, copies `.env.example` → `.env` for you to fill in, and builds the per-persona vector indexes under `data/vector_store/`. The first build downloads the BGE-small embedder (~130MB), so expect a short wait.
+
+If you edit a persona later, rebuild the indexes: `python -m backend.retrieval.vector_store`.
 
 ---
 
 ## Configuration
 
-All settings live in [backend/config/settings.py](backend/config/settings.py) and can be overridden via `.env`.
+Everything is a Pydantic setting in [backend/config/settings.py](backend/config/settings.py) with a `.env` override. The knobs you'll actually touch:
 
-| Variable | Default | Description |
+| Variable | Default | What it does |
 |----------|---------|-------------|
-| `ACTIVE_LLM_TIER` | `primary` | `primary` \| `fallback` |
-| `PRIMARY_MODEL` | `gemma4:31b-cloud` | Ollama Cloud model for primary tier |
-| `FALLBACK_MODEL` | `gemma4:31b-cloud` | Ollama Cloud model for fallback tier (smaller/faster) |
-| `PRIMARY_BASE_URL` | `http://localhost:11434/v1` | Ollama-compatible endpoint |
-| `FALLBACK_LATENCY_THRESHOLD` | `3.5` | Seconds before falling back to smaller model |
-| `LOGS_DIR` | `logs` | Where per-turn JSONL logs are written |
+| `ACTIVE_LLM_TIER` | `primary` | Which tier to start on — `primary` or `fallback`. The pipeline switches automatically if a turn is slow. |
+| `PRIMARY_MODEL` | `gemma4:31b-cloud` | Ollama Cloud model for the primary tier. |
+| `FALLBACK_MODEL` | `gemma4:31b-cloud` | Smaller/faster model for the fallback tier. Point this at whatever smaller cloud model you have access to. |
+| `PRIMARY_BASE_URL` | `http://localhost:11434/v1` | OpenAI-compatible endpoint. Defaults to the local Ollama proxy. |
+| `FALLBACK_LATENCY_THRESHOLD` | `3.5` | If intent+retrieval already took this many seconds, skip the primary tier. |
+| `LOGS_DIR` | `logs` | Where the per-turn JSONL goes. |
 
 ---
 
 ## Running the Project
 
-### Full stack (recommended)
+### Full stack
 
 ```bash
 bash run.sh
 ```
 
-This starts FastAPI on `:8000` and React on `:7550`.
-Open [http://localhost:7550](http://localhost:7550) in your browser.
+Starts FastAPI on `:8000` and the React dev server on `:7550`. Open [http://localhost:7550](http://localhost:7550). This is the mode you want for the webcam + sensing demo.
 
-### CLI only
+Pass any `backend.main` flag to `run.sh` and it drops the full stack and runs the CLI with those flags instead — handy for fast iteration:
+
+```bash
+bash run.sh --debug                    # CLI with per-turn state dumps
+bash run.sh --user mia_chen --debug    # jump straight to Mia
+```
+
+### CLI directly
 
 ```bash
 conda activate aac-chatbot
 python -m backend.main --debug
 ```
 
-### API only
+The CLI prints the full `PipelineState` after each turn — useful when you want to see what the classifier did or which chunks came back from which pool.
+
+### API directly
 
 ```bash
 conda activate aac-chatbot
 uvicorn backend.api.main:app --reload
 ```
 
-Example request:
 ```bash
 curl -X POST http://localhost:8000/chat \
   -H "Content-Type: application/json" \
@@ -173,38 +309,30 @@ multimodal_aac_chatbot/
 
 ## Personas
 
-14 personas anchored in real memoirs and canonical fictional characters, spanning ALS,
-Parkinson's, locked-in syndrome, aphasia, Alzheimer's, cerebral palsy, non-verbal autism,
-savant autism, intellectual disability, and spinal cord injury.
+Fourteen personas — nine anchored in real memoirs, five in canonical fiction. Together they span ALS, Parkinson's, locked-in syndrome, aphasia, Alzheimer's, cerebral palsy, non-verbal and savant autism, intellectual disability, and spinal cord injury. The point isn't to represent any one person — it's to give the model a wide enough range of voices that "sound like Mia" is a harder target than "sound helpful."
 
 | ID | Source | Condition |
 |----|--------|-----------|
 | `stephen_hawking` | Real — *My Brief History* + interviews | ALS (mid-stage) |
-| `michael_j_fox` | Real — 4 memoirs | Young-onset Parkinson's |
+| `michael_j_fox` | Real — four memoirs | Young-onset Parkinson's |
 | `wendy_mitchell` | Real — *Somebody I Used to Know* + blog | Early-onset Alzheimer's |
 | `christopher_reeve` | Real — *Still Me* | C4 spinal cord injury |
 | `christy_brown` | Real — *My Left Foot* | Cerebral palsy (adult) |
 | `gabby_giffords` | Real — *Gabby* memoir | Aphasia + TBI |
 | `jason_becker` | Real — *Not Dead Yet* doc | Late-stage ALS |
 | `jean_dominique_bauby` | Real — *The Diving Bell and the Butterfly* | Locked-in syndrome |
-| `tito_mukhopadhyay` | Real — 3+ books | Non-verbal autism |
+| `tito_mukhopadhyay` | Real — three+ books | Non-verbal autism |
 | `abed_nadir` | Fictional — *Community* | Autism (verbal) |
 | `allie_calhoun` | Fictional — *The Notebook* | Late-stage Alzheimer's |
 | `forrest_gump` | Fictional — *Forrest Gump* | Intellectual disability |
 | `walter_jr_white` | Fictional — *Breaking Bad* | Cerebral palsy (teen) |
 | `raymond_babbitt` | Fictional — *Rain Man* | Savant autism |
 
-Each persona has ~120-210 memory chunks (canon-driven, no filler) across 5 buckets
-(`family`, `medical`, `hobbies`, `daily_routine`, `social`) and 3 chunk types
-(`narrative`, `social_post`, `chat_log`). Total: ~2,300 chunks.
+Each persona has ~120–210 memory chunks (canon-driven, no filler) across five buckets — `family`, `medical`, `hobbies`, `daily_routine`, `social` — and three chunk types: `narrative`, `social_post`, `chat_log`. Somewhere around 2,300 chunks total across the set.
 
-**Data provenance is documented** — see [references.md](references.md) for the full
-bibliography of memoirs, films, interviews, and other canonical sources behind every
-persona, plus ethics notes on living-persons treatment.
+Data provenance is documented. See [references.md](references.md) for the bibliography — memoirs, films, interviews — and the ethics notes on living-persons treatment.
 
-To add a new persona, write a JSON file in `data/memories/` following the schema of any
-existing persona, then run `python data/generate_users.py` and
-`python -m backend.retrieval.vector_store`.
+Adding a new persona: drop a JSON file into `data/memories/` following the schema of any existing one, then run `python data/generate_users.py` and `python -m backend.retrieval.vector_store`.
 
 ---
 
@@ -235,10 +363,10 @@ Heads up: all camera/sensing stuff is in the frontend (MediaPipe JS). Backend ju
 
 ### Intent decomposition
 
-> Current state: routing is keyword-based, not LLM-based. The original LLM router (Pydantic-validated JSON) kept emitting the wrong shape with `gemma4:31b-cloud` and hitting the `max_tokens` truncation — 3 retries + hard fallback on every turn, ~30s of dead latency before generation. The keyword router (5 buckets matched against word lists in `intent.py`) handles the demo personas and adds ~0ms. Trade-off: stuck with the 5 hardcoded buckets (`family`, `medical`, `hobbies`, `daily_routine`, `social`) and can't tell `OPEN_DOMAIN` from `PERSONAL`. Fine for now since all personas only have personal memories. Revisit when Ollama Cloud ships `response_format=json_schema` or we add a tiny local classifier.
+> Current state: regex-splits the partner query on conjunctions/punctuation into fragments, then runs each fragment through a BGE zero-shot classifier (cosine vs. 5 seed exemplars per class). No LLM call, no retries. Runs in ~10–30ms per turn. Bucket hints for `PERSONAL` fragments come from a shared keyword helper in [backend/sensing/bucket_keywords.py](backend/sensing/bucket_keywords.py). Earlier versions used an LLM with Pydantic validation + 3 retries, which cost ~100s per turn on Ollama Cloud when the model emitted bad JSON.
 
-- [ ] **[Core]** Personal / Contextual / Open-domain all hit the same vector index right now. Make them actually go different places — open-domain → web search (or stub), contextual → session memory
-- [ ] intent node is slow. Cache the prompt, use a tiny model for routing, parallelise the sub-queries
+- [x] **[Core]** Personal / Contextual / Open-domain dispatch to distinct pools (personal → BGE vector store; contextual → persona memory + relevant in-session turns layered on top; open-domain → stub chunk, LLM answers from its own general knowledge — web search is intentionally out of scope).
+- [x] intent node latency — split + BGE zero-shot classifier replaces the LLM router. Parallelising sub-query retrieval is still open.
 
 ### Retrieval
 

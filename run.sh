@@ -13,6 +13,12 @@ fi
 eval "$(conda shell.bash hook)"
 conda activate "$CONDA_ENV"
 
+# If any args were passed (e.g. --debug, --user mia_chen), run the CLI
+# instead of the full stack and forward them verbatim.
+if [ "$#" -gt 0 ]; then
+  exec python -m backend.main "$@"
+fi
+
 PIDS=()
 
 cleanup() {

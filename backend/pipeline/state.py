@@ -23,10 +23,11 @@ class AffectState(TypedDict):
 
 class RetrievedChunk(TypedDict):
     text: str
-    bucket: str  # family | medical | hobbies | daily_routine | social
-    type: str  # narrative | social_post | chat_log
+    bucket: str  # family | medical | hobbies | daily_routine | social | contextual | open_domain
+    type: str  # narrative | social_post | chat_log  (personal chunks only)
     user: str
     score: float  # cosine similarity from the embedder
+    source: str  # "personal" | "contextual" | "open_domain"
 
 
 class SubIntent(TypedDict):

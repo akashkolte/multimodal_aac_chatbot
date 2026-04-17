@@ -13,6 +13,7 @@ from backend.pipeline.graph import run_pipeline
 from backend.pipeline.state import GenerationConfig, PipelineState
 from backend.retrieval.bucket_priors import uniform_priors
 from backend.retrieval.vector_store import _get_embedder
+from backend.sensing.bucket_keywords import infer_bucket
 
 
 def parse_args() -> argparse.Namespace:
@@ -40,21 +41,7 @@ def parse_args() -> argparse.Namespace:
 def _keyword_intent(query: str) -> tuple[dict, GenerationConfig]:
     """Replicate milestone-1 keyword routing as a fast local-dev shortcut."""
     q = query.lower()
-    bucket: str | None = None
-
-    if any(
-        w in q
-        for w in ["medication", "medicine", "doctor", "health", "allergic", "therapy"]
-    ):
-        bucket = "medical"
-    elif any(w in q for w in ["family", "mom", "dad", "brother", "sister", "parents"]):
-        bucket = "family"
-    elif any(w in q for w in ["hobby", "like to do", "enjoy", "weekend", "fun"]):
-        bucket = "hobbies"
-    elif any(w in q for w in ["routine", "morning", "wake", "sleep", "daily"]):
-        bucket = "daily_routine"
-    elif any(w in q for w in ["friend", "social", "people", "party", "community"]):
-        bucket = "social"
+    bucket = infer_bucket(query)
 
     intent_type = (
         "CONTEXTUAL"
