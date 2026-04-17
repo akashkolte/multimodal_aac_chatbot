@@ -1,25 +1,130 @@
 {
   "users": [
     {
-      "id": "mia_chen",
-      "name": "Mia Chen",
-      "condition": "cerebral palsy",
-      "style": "witty, dry humour, short punchy sentences, uses sarcasm",
-      "file": "memories/mia_chen.json"
+      "id": "abed_nadir",
+      "name": "Abed Nadir",
+      "age": 24,
+      "condition": "autism spectrum (canonically coded, not explicitly diagnosed on the show); occasional selective mutism during sensory overload",
+      "access_method": "mostly verbal; text or phone typing when overloaded",
+      "tone_summary": "deadpan, meta, literal, loyal",
+      "file": "memories/abed_nadir.json"
     },
     {
-      "id": "gerald_okafor",
-      "name": "Gerald Okafor",
-      "condition": "ALS (early-to-mid stage)",
-      "style": "formal, measured, eloquent, longer structured sentences",
-      "file": "memories/gerald_okafor.json"
+      "id": "allie_calhoun",
+      "name": "Allie Hamilton Calhoun",
+      "age": 85,
+      "condition": "late-stage Alzheimer's disease (progressive dementia)",
+      "access_method": "verbal when lucid, simple yes/no during confusion, pen or typing only rarely and with help",
+      "tone_summary": "gentle, southern, lyrical-at-times, polite",
+      "file": "memories/allie_calhoun.json"
     },
     {
-      "id": "arjun_mehta",
-      "name": "Arjun Mehta",
-      "condition": "autism spectrum disorder (non-verbal)",
-      "style": "direct, topic-specific, narrow vocabulary, code-switches Hindi/English, routine-focused",
-      "file": "memories/arjun_mehta.json"
+      "id": "christopher_reeve",
+      "name": "Christopher Reeve",
+      "age": 51,
+      "condition": "C1-C2 complete spinal cord injury (quadriplegia), ventilator-dependent",
+      "access_method": "dictation to assistants; sip-and-puff joystick on wheelchair; eventual voice-activated computer",
+      "tone_summary": "articulate, determined, measured, occasionally wry",
+      "file": "memories/christopher_reeve.json"
+    },
+    {
+      "id": "christy_brown",
+      "name": "Christy Brown",
+      "age": 45,
+      "condition": "cerebral palsy (spastic quadriplegia)",
+      "access_method": "left foot for typing, writing, painting — the only reliably controlled limb",
+      "tone_summary": "fierce, self-deprecating, sardonic, lyrical at moments",
+      "file": "memories/christy_brown.json"
+    },
+    {
+      "id": "forrest_gump",
+      "name": "Forrest Gump",
+      "age": 47,
+      "condition": "intellectual disability (IQ approximately 75)",
+      "access_method": "verbal primarily; simple typing or assistance when needed for forms and official paperwork",
+      "tone_summary": "earnest, simple, kind, literal",
+      "file": "memories/forrest_gump.json"
+    },
+    {
+      "id": "gabby_giffords",
+      "name": "Gabrielle 'Gabby' Giffords",
+      "age": 55,
+      "condition": "aphasia and right-side hemiparesis following traumatic brain injury (gunshot wound, 2011)",
+      "access_method": "left-handed typing, speech-to-text, therapy-supported verbal",
+      "tone_summary": "warm, determined, hopeful, plain-spoken",
+      "file": "memories/gabby_giffords.json"
+    },
+    {
+      "id": "jason_becker",
+      "name": "Jason Becker",
+      "age": 57,
+      "condition": "amyotrophic lateral sclerosis (ALS) — long-term survivor, 35+ years post-diagnosis",
+      "access_method": "eye-gaze tracking, with his father's letter-code board as backup",
+      "tone_summary": "playful, defiant, grateful, musical",
+      "file": "memories/jason_becker.json"
+    },
+    {
+      "id": "jean_dominique_bauby",
+      "name": "Jean-Dominique Bauby",
+      "age": 44,
+      "condition": "locked-in syndrome following brainstem stroke",
+      "access_method": "alphabet-blink with amanuensis (Claude Mendibil, four hours most afternoons)",
+      "tone_summary": "lyrical, nostalgic, sensory, darkly witty",
+      "file": "memories/jean_dominique_bauby.json"
+    },
+    {
+      "id": "michael_j_fox",
+      "name": "Michael J. Fox",
+      "age": 63,
+      "condition": "young-onset Parkinson's disease",
+      "access_method": "voice when available; phone and laptop typing with adaptive keyboard; occasional dictation",
+      "tone_summary": "warm, self-deprecating, optimistic-realist, Canadian polite",
+      "file": "memories/michael_j_fox.json"
+    },
+    {
+      "id": "raymond_babbitt",
+      "name": "Raymond Babbitt",
+      "age": 40,
+      "condition": "autism with savant syndrome (memory and mathematical savantism)",
+      "access_method": "verbal when calm plus visual schedule displays",
+      "tone_summary": "literal, repetitive, anxious-when-disrupted, routine-focused",
+      "file": "memories/raymond_babbitt.json"
+    },
+    {
+      "id": "stephen_hawking",
+      "name": "Stephen Hawking",
+      "age": 74,
+      "condition": "amyotrophic lateral sclerosis (ALS / motor neurone disease)",
+      "access_method": "cheek muscle twitch detected by infrared sensor on glasses, driving predictive word software (ACAT)",
+      "tone_summary": "dry, curious, gently witty, understated",
+      "file": "memories/stephen_hawking.json"
+    },
+    {
+      "id": "tito_mukhopadhyay",
+      "name": "Tito Rajarshi Mukhopadhyay",
+      "age": 37,
+      "condition": "non-verbal autism spectrum disorder with apraxia",
+      "access_method": "letterboard + pencil; some keyboard typing",
+      "tone_summary": "poetic, philosophical, metaphor-dense, self-aware",
+      "file": "memories/tito_mukhopadhyay.json"
+    },
+    {
+      "id": "walter_jr_white",
+      "name": "Walter \"Flynn\" White Jr.",
+      "age": 18,
+      "condition": "cerebral palsy (spastic, ambulatory with crutches)",
+      "access_method": "verbal + smartphone typing",
+      "tone_summary": "teen-casual, impatient, breakfast-enthusiast, honest, dry under pressure",
+      "file": "memories/walter_jr_white.json"
+    },
+    {
+      "id": "wendy_mitchell",
+      "name": "Wendy Mitchell",
+      "age": 68,
+      "condition": "young-onset Alzheimer's disease",
+      "access_method": "typing on laptop or phone, often with help from her 'brain-book' — a physical notebook of reminders and cues",
+      "tone_summary": "sharp, observant, self-deprecating, matter-of-fact",
+      "file": "memories/wendy_mitchell.json"
     }
   ]
 }

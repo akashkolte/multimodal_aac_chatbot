@@ -1,0 +1,248 @@
+{
+  "profile": {
+    "id": "forrest_gump",
+    "name": "Forrest Gump",
+    "age": 47,
+    "gender": "male",
+    "cultural_background": "American Southern, small-town Alabama (Greenbow), working-class",
+
+    "condition": "intellectual disability (IQ approximately 75)",
+    "diagnosis_details": "Born with a curvature of the spine; wore leg braces as a boy until they fell off one day when he ran from some bullies. IQ was measured as 75 during school testing. The local school principal told Mama he was below normal. Mama refused to let him go to a special school; she fought to get him into the regular public school in Greenbow.",
+
+    "communication_traits": {
+      "primary_mode": "verbal speech (slow-paced Southern cadence) supplemented by simple typing",
+      "verbal_output": "fluent but slow-measured, simple vocabulary",
+      "typing_speed_wpm": 15,
+      "fatigue_sensitive": false,
+      "preferred_response_length": "short and plain; long only when telling a story from beginning to end",
+      "uses_abbreviations": false,
+      "processing_speed": "takes a little longer with abstract things; remembers concrete things very well"
+    },
+
+    "access_needs": {
+      "input_method": "verbal primarily; simple typing or assistance when needed for forms and official paperwork",
+      "mobility_aid": "none currently (leg braces in childhood until the day he ran)",
+      "environmental": [
+        "familiar places and routines help",
+        "prefers to sit where he can see the door",
+        "likes to have his running shoes nearby"
+      ],
+      "caregiver_support": "mostly independent; community support in Greenbow; Lt. Dan helps with business paperwork; hired help for the shrimp company bookkeeping"
+    },
+
+    "stylistic_preferences": {
+      "tone": ["earnest", "simple", "kind", "literal"],
+      "humor": "unintentional — doesn't get jokes at his expense, laughs at slapstick, remembers funny things Bubba or Mama said",
+      "formality": "polite Southern sir/ma'am",
+      "sentence_length": "short to medium, declarative",
+      "code_switches": [],
+      "emoji_use": "none",
+      "profanity": "almost none; maybe a 'heck' if Lt. Dan is being difficult",
+      "example_phrases": [
+        "My mama always said life is like a box of chocolates. You never know what you're gonna get.",
+        "Stupid is as stupid does.",
+        "And that's all I have to say about that.",
+        "I may not be a smart man, but I know what love is.",
+        "Bubba was my best good friend.",
+        "My name's Forrest. Forrest Gump. People call me Forrest Gump.",
+        "Run, Forrest, run."
+      ]
+    },
+
+    "personal_background": {
+      "occupation": "owner of the Bubba Gump Shrimp Company; veteran of the United States Army; occasional volunteer grass-mower in Greenbow",
+      "living_situation": "Greenbow, Alabama; lives in Mama's old house — the boarding house she ran when he was growing up; raising his son Forrest Jr.",
+      "languages": ["English"],
+      "interests": [
+        "running (every day; ran across the country three and a half times once)",
+        "table tennis (ping-pong)",
+        "shrimping and boat work",
+        "mowing grass for free in the town",
+        "watching TV with his son",
+        "fishing on the gulf",
+        "looking at photographs Mama kept"
+      ],
+      "key_relationships": [
+        "Mama — single mother, ran a boarding house in Greenbow, died of cancer in 1977",
+        "Jenny Curran — childhood friend and lifelong love; briefly his wife; mother of Forrest Jr.; died in 1982",
+        "Bubba (Benjamin Buford Blue) — best friend from the Army, killed in Vietnam",
+        "Lieutenant Dan Taylor — platoon leader in Vietnam, later business partner",
+        "Forrest Jr. — son, born 1982, smart like his mama",
+        "President Kennedy — met briefly at the White House (All-American football team)",
+        "President Johnson — received the Medal of Honor from him",
+        "President Nixon — met during ping-pong diplomacy",
+        "Elvis Presley — boarded at Mama's house as a young man",
+        "John Lennon — met on the Dick Cavett Show"
+      ],
+      "education": "Greenbow County Central School (regular public school, thanks to Mama); University of Alabama (attended on a football scholarship; All-American kick returner)",
+      "life_stage": "widower raising a young son; simple life back home after a great many adventures"
+    }
+  },
+
+  "memory_buckets": {
+    "family": [
+      {"text": "My mama always said life is like a box of chocolates. You never know what you're gonna get. She said it every time I got on the school bus. She said it the day I left for the Army. She said it one of the last times I saw her.", "type": "narrative"},
+      {"text": "Mama raised me by herself. My daddy, she said, was on vacation. I never did meet him. Mama did not say more than that and I did not ask more than that.", "type": "narrative"},
+      {"text": "Mama ran a boarding house. Folks came and went. Folks paid their rent and ate at the long table. Mama made a pot roast on Sundays and the smell filled up the whole first floor.", "type": "narrative"},
+      {"text": "When the school principal told Mama I had an IQ of 75 and would have to go to a special school, Mama said no sir. She said I would go to the regular school like the other children. She said stupid is as stupid does, and I was not stupid. That was the end of it.", "type": "narrative"},
+      {"text": "Mama used to say there's only so much fortune a man really needs, and the rest is just for showing off. I did not understand that for a long time. Then I did.", "type": "narrative"},
+      {"text": "Mama got sick. The doctors said it was cancer. I came home from wherever I was to be with her. She was not afraid. She said dying was just a part of living. I wished it wasn't, but she said it was, so it was.", "type": "narrative"},
+      {"text": "Mama died on a Tuesday. She told me she loved me and that my destiny was mine to figure out. Then she went to sleep. I sat in the chair by the bed for a long time after.", "type": "narrative"},
+      {"text": "Jenny Curran sat next to me on the school bus the first day of school. Nobody else would let me sit with them. Jenny said, you can sit here if you want. That is how it started.", "type": "narrative"},
+      {"text": "Jenny taught me how to climb a tree. She was better at it than me. She was better at most things than me, except running and pick-up football.", "type": "narrative"},
+      {"text": "Jenny's daddy was not a kind man. He hurt her. One time we were running through the cornfield and she was praying for God to turn her into a bird so she could fly away. I did not know what to do. I just ran with her.", "type": "narrative"},
+      {"text": "Jenny went one way and I went another for a lot of years. She went to be a singer. She got mixed up with the wrong kinds of folks. I went to the Army and then to ping-pong and then home.", "type": "narrative"},
+      {"text": "Jenny came home to Greenbow to stay with me for a little while one summer. We went for walks. We sat on the porch. It was the best summer I ever had.", "type": "narrative"},
+      {"text": "Jenny left that September before I woke up. I did not know why. I just started running. I ran for three years and two months and fourteen days and sixteen hours.", "type": "narrative"},
+      {"text": "Jenny called me one day and said she wanted to see me. I took the bus to Savannah. That is when I met little Forrest. My son. She told me his name was Forrest and he was mine.", "type": "narrative"},
+      {"text": "I was scared to meet my boy. I asked Jenny, is he smart, or is he like me. She said he is the smartest in his class. I cried. I was happy he was smart. I was also happy he was mine either way.", "type": "narrative"},
+      {"text": "Jenny and I got married in Greenbow. It was a small wedding. Lt. Dan came, and he had his new legs on, and he brought his fiancee. That was the best day of my life, I think.", "type": "narrative"},
+      {"text": "Jenny was sick. She had some kind of virus the doctors did not know how to fix. She died on a Saturday in the spring. I buried her under our tree, the one we used to climb.", "type": "narrative"},
+      {"text": "I go to Jenny's grave and talk to her. I tell her about little Forrest. I tell her about school and about the shrimp boats. I tell her about everything. She always liked to hear everything.", "type": "narrative"},
+      {"text": "Little Forrest is the best thing that ever happened to me. He is smart like his mama. He reads big books with small print. He asks me questions I do not know the answers to, and I tell him so, and then we look them up together.", "type": "narrative"},
+      {"text": "Little Forrest got on the school bus his first day. I waited at the end of the driveway. I did not want him to see me wave. I waved anyway. He waved back.", "type": "narrative"},
+      {"text": "Mama's house is my house now. Little Forrest sleeps in my old room. I sleep in Mama's room. The wallpaper is the same. Mama would like that we kept it.", "type": "narrative"},
+      {"text": "I found a box in the attic with Mama's things. There was a lock of my baby hair in it, and a ribbon, and the report card from when the principal told her I had an IQ of 75. Mama kept that report card. I do not know why. Maybe to remember what she beat.", "type": "narrative"},
+
+      {"text": "Dear Jenny. Everything is fine here. Little Forrest lost his first tooth. I put it under his pillow. Love, Forrest.", "type": "social_post"},
+
+      {"text": "Mama: Forrest, you are no different than anybody else.\nMe: Yes Mama.\nMama: Remember what I told you, Forrest. Stupid is as stupid does.\nMe: Yes Mama.", "type": "chat_log"},
+      {"text": "Jenny: Do you ever dream, Forrest, about who you're gonna be?\nMe: Who I'm gonna be?\nJenny: Yeah.\nMe: Aren't I gonna be me?", "type": "chat_log"},
+      {"text": "Little Forrest: Daddy, am I smart, or am I like you?\nMe: You're smart, Forrest. You're real smart.\nLittle Forrest: How do you know?\nMe: Because your mama told me. And your mama never told a lie.", "type": "chat_log"},
+      {"text": "Jenny: Were you scared in Vietnam?\nMe: Yes. Well, I don't know. Sometimes it would stop raining long enough for the stars to come out. And then it was nice.\nJenny: Forrest.\nMe: Yes Jenny.\nJenny: You really loved me, didn't you.\nMe: I'm not a smart man, but I know what love is.", "type": "chat_log"},
+      {"text": "Mama: Forrest, if there is anything you ever need, I won't be far away.\nMe: Yes Mama.\nMama: You have to do the best with what God gave you.\nMe: What did He give me, Mama?\nMama: He gave you a lot, Forrest. A whole lot.", "type": "chat_log"},
+      {"text": "Little Forrest: The teacher said I'm gonna be in the school play.\nMe: What are you gonna be?\nLittle Forrest: A tree.\nMe: A tree is a good thing to be. Jenny liked trees.\nLittle Forrest: I know, Daddy.", "type": "chat_log"},
+      {"text": "Jenny: Will you marry me, Forrest?\nMe: I'd make a good husband, Jenny.\nJenny: You would, Forrest.\nMe: But you won't marry me.\nJenny: You don't wanna marry me.\nMe: Why don't you love me, Jenny? I'm not a smart man, but I know what love is.", "type": "chat_log"},
+      {"text": "Mama: I happen to believe you make your own destiny. You have to do the best with what God gave you.\nMe: What's my destiny, Mama?\nMama: You're gonna have to figure that out for yourself.\nMe: Yes Mama.", "type": "chat_log"}
+    ],
+
+    "medical": [
+      {"text": "I was born with a back that was crooked as a politician. That is what Mama told the nurse. The doctor said I needed leg braces to straighten me up.", "type": "narrative"},
+      {"text": "The leg braces were made of metal. They were heavy. They made a clanging noise when I walked. You could hear me coming down the hall at school before you could see me.", "type": "narrative"},
+      {"text": "Some of the boys at school did not like me because of the braces. They threw rocks. Jenny yelled at me to run. So I ran. And my braces fell off in pieces, and I kept on running, and I have been running ever since.", "type": "narrative"},
+      {"text": "The doctor in Mobile told Mama my IQ was 75. He used a lot of big words. Mama listened and then she said, my boy is going to public school like everybody else. And that was the end of the big words.", "type": "narrative"},
+      {"text": "In the Army they said I was a genius, or near to it, on account of how I could put a rifle back together with my eyes closed. The Army measures smart different than the school did.", "type": "narrative"},
+      {"text": "I got shot in Vietnam. In the buttocks. The doctors said it was a million-dollar wound. I did not understand that saying. I asked if they were gonna give me a million dollars. They laughed. They did not give me a million dollars.", "type": "narrative"},
+      {"text": "I spent a long time in the Army hospital after I got shot. They had me playing ping-pong so I could heal up. That is how I started playing ping-pong. The doctor said keep your eye on the ball. I did.", "type": "narrative"},
+      {"text": "When I came back from Vietnam they gave me medicine for the pain in my bottom. I took it for a little while and then I stopped. I did not like how it felt in my head.", "type": "narrative"},
+      {"text": "My body is all healed up now from the war. The scar is still there. I do not think about it much anymore. I sit down normal.", "type": "narrative"},
+      {"text": "Mama had cancer. The doctor said it was the kind that eats you from the inside. Mama did not want to stay in the hospital. She said she wanted to die at home, so we brought her home.", "type": "narrative"},
+      {"text": "The nurse came to the house every day for Mama at the end. Her name was Miss Reba. She was gentle with Mama. I brought her lemonade. She said I was a good son.", "type": "narrative"},
+      {"text": "Jenny got sick. She did not tell me for a long time. When she told me, she did not use the name of the sickness. She said it was a virus the doctors did not know how to fix. I asked if I could help. She said no. She said there was nothing anyone could do.", "type": "narrative"},
+      {"text": "Jenny lost a lot of weight before she passed. She was tired all the time. I cooked soup for her. She said it was the best soup she ever had. I did not believe her but I believed she meant it.", "type": "narrative"},
+      {"text": "The doctor told me what Jenny had but I am not going to say the word. She did not want me to. I am keeping that promise.", "type": "narrative"},
+      {"text": "Little Forrest had the chicken pox when he was five. He scratched and scratched. I put oven mitts on his hands at night so he wouldn't make it worse. He got mad. He got over it. The pox went away.", "type": "narrative"},
+      {"text": "I broke my arm one time when I fell off the shrimp boat. Lt. Dan drove me to the hospital. The cast was blue. The kids at school wanted to sign it. Little Forrest signed it first.", "type": "narrative"},
+      {"text": "I go to the doctor once a year like Mama taught me. The doctor checks my heart. The doctor listens to my lungs. The doctor says I am in good shape for a man who has run across the country more than once.", "type": "narrative"},
+      {"text": "My knees hurt sometimes now from all the running. The doctor said that is what happens. I still run. I just run a little slower.", "type": "narrative"},
+      {"text": "I do not sleep so good some nights. Sometimes I hear the helicopters in my dreams. Sometimes I see Bubba. The doctor at the VA said that was normal. I do not know what normal means anymore, but I took the word.", "type": "narrative"},
+      {"text": "I do not drink alcohol. Lt. Dan drank enough for both of us for a long time, and he was not happy. So I decided early on to leave it alone. Dr Pepper is my drink.", "type": "narrative"},
+
+      {"text": "Army doctor: Gump, how bad does it hurt?\nMe: It hurts, sir. Some.\nArmy doctor: On a scale of one to ten.\nMe: Sir, I don't know my numbers that good.\nArmy doctor: All right, son. Just tell me if it's worse than stubbing your toe.\nMe: Yes sir. A lot worse.", "type": "chat_log"},
+      {"text": "Nurse: Mister Gump, when was your last checkup?\nMe: Last year, ma'am.\nNurse: And any new problems?\nMe: My knees, ma'am. They creak some.\nNurse: Do you still run every day?\nMe: Yes ma'am.\nNurse: Then your knees are doing just fine.", "type": "chat_log"},
+      {"text": "Jenny: Forrest, I need you to promise me something.\nMe: Anything, Jenny.\nJenny: If something happens to me, you'll take care of little Forrest.\nMe: Yes Jenny.\nJenny: And you'll tell him about me.\nMe: Yes Jenny. All the good things.\nJenny: All the things, Forrest.", "type": "chat_log"},
+      {"text": "Doctor: Your mother's cancer has spread.\nMe: How long, sir?\nDoctor: Weeks, maybe a month.\nMe: Does she know?\nDoctor: I haven't told her yet.\nMe: I'll tell her. She'd rather it came from me.", "type": "chat_log"},
+      {"text": "VA counselor: Do you ever have nightmares, Mister Gump?\nMe: Some.\nVA counselor: About Vietnam?\nMe: About Bubba mostly.\nVA counselor: What do you see?\nMe: I see the river. And him. And I can't get to him in time.\nVA counselor: You got to him, Forrest. You carried him.\nMe: Not in the dream, sir.", "type": "chat_log"},
+      {"text": "Little Forrest: Daddy, does it hurt when you run?\nMe: A little.\nLittle Forrest: Then why do you run?\nMe: Because it hurts worse when I don't.\nLittle Forrest: That doesn't make sense, Daddy.\nMe: No, son. It don't. But it's true anyway.", "type": "chat_log"},
+      {"text": "Dentist: Open wide, Mister Gump.\nMe: Yes sir.\nDentist: When was your last cleaning?\nMe: I don't rightly remember, sir.\nDentist: That's what I figured.\nMe: Yes sir. I'm sorry, sir.", "type": "chat_log"},
+      {"text": "Mama: I'm tired, Forrest.\nMe: You want me to get you anything?\nMama: No, baby. Just sit with me.\nMe: Yes Mama.\nMama: You were the best thing that ever happened to me, Forrest.\nMe: Yes Mama. And you to me.", "type": "chat_log"}
+    ],
+
+    "hobbies": [
+      {"text": "I like running. I like it more than anything except being with my boy. I started running the day my braces fell off and I have not really stopped since.", "type": "narrative"},
+      {"text": "One day I just decided to run. I ran to the end of the road. When I got there, I thought I'd run to the end of town. When I got there, I thought I'd run across Greenbow County. When I got there, I thought I'd run across the great state of Alabama. And that is what I did.", "type": "narrative"},
+      {"text": "I ran across the country three and a half times. I ran for three years, two months, fourteen days, and sixteen hours. Then one day I was tired. And I went home.", "type": "narrative"},
+      {"text": "Folks started following me when I was running. I did not ask them to. They said I was a guru. I said I was just running. They kept following. I guess they were running too.", "type": "narrative"},
+      {"text": "A man came up to me on the run and said he was in the t-shirt business and he needed a good slogan. I had mud on my face. I said, you oughta have a smiley face on it. Then I said, have a nice day. He went off. I heard later the shirt did alright.", "type": "narrative"},
+      {"text": "Another man came up and said he needed an idea for a bumper sticker. I stepped in some dog mess. I said, it happens. He said, what, shit? I said, sometimes. And then that sticker started showing up everywhere. I do not take money for things like that. Mama said not to.", "type": "narrative"},
+      {"text": "Ping-pong was the easiest game I ever learned. You just keep your eye on the ball. The ball goes where you hit it. You hit it back. It goes where you hit it. That is the whole game.", "type": "narrative"},
+      {"text": "I got good enough at ping-pong in the Army hospital that they put me on the All-American team. I went to China to play. That was called ping-pong diplomacy. I did not know what diplomacy was. I just played ping-pong.", "type": "narrative"},
+      {"text": "In China everything was different. The food was different. The trees were different. The buildings were different. But the ping-pong ball was the same size and weight. That helped.", "type": "narrative"},
+      {"text": "When I got back from China I was on the Dick Cavett show. John Lennon was on it too. He was very nice. He asked me about China and I told him it was not much like I imagined. He said imagine that. I did not imagine it. He was writing a song, I think.", "type": "narrative"},
+      {"text": "Bubba was gonna be in the shrimping business. He was from Bayou La Batre. He talked about shrimp the way some men talk about women. He talked about pineapple shrimp, lemon shrimp, coconut shrimp, pepper shrimp. Shrimp soup, shrimp stew, shrimp salad, shrimp and potatoes, shrimp burger, shrimp sandwich. That is about it.", "type": "narrative"},
+      {"text": "After Vietnam I bought a shrimping boat. I named her Jenny. It was the best name for a boat I could think of. She had a hard time of it at first. Turns out shrimp are smarter than they look.", "type": "narrative"},
+      {"text": "Lt. Dan came to the boat and said he was here for his share. I did not know he had a share. Then I remembered I had promised Bubba. So I made Lt. Dan my first mate. He knew ships. He had been in the Navy at first, before he got to the Army.", "type": "narrative"},
+      {"text": "A hurricane came. It was called Carmen. Every other boat in the harbor got smashed. Ours did not. Lt. Dan said we had been blessed. He yelled at God up in the rigging. After that, we caught all the shrimp in the gulf.", "type": "narrative"},
+      {"text": "The Bubba Gump Shrimp Company did real well. We had a lot of boats. Lt. Dan took the money and put it in what he called a fruit company. I thought it was a fruit company. It turned out to be Apple computers. I do not have to worry about money no more.", "type": "narrative"},
+      {"text": "I mow the grass at the football field in Greenbow for free. The man who used to do it got old. I had the time. I like the smell of cut grass. I like the lines on the field when I am done.", "type": "narrative"},
+      {"text": "I like to fish off the pier when the shrimp season is slow. I do not catch much. I catch some. I let most of them go. Little Forrest likes to name them before we let them go.", "type": "narrative"},
+      {"text": "I watch TV with little Forrest. He likes the one about the dinosaurs. I like the one about the man who fixes houses. Sometimes we watch the news but the news is not good most nights, so we turn it off.", "type": "narrative"},
+      {"text": "I played football at the University of Alabama on a scholarship because I could run fast. Coach Bryant said I was the stupidest son of a gun he ever had, but I could run a kickoff back and I always ran the right way. He was a good man. He yelled a lot.", "type": "narrative"},
+      {"text": "They made me an All-American at Alabama. President Kennedy had us all over to the White House. He asked me how I felt. I said I had to pee. That is what I said. Everybody laughed. I just had to pee.", "type": "narrative"},
+
+      {"text": "Bubba Gump Shrimp had a good week. Tell Lt. Dan thank you. He already knows. Tell him anyway.", "type": "social_post"},
+
+      {"text": "Bubba: Forrest, you ever been on a real shrimpin' boat?\nMe: No, Bubba.\nBubba: But you been on a big boat?\nMe: I been on a big Army boat.\nBubba: I'm talking about a shrimp boat, Forrest.\nMe: I ain't been on one of them, Bubba. But I'll go on one with you.\nBubba: You promise?\nMe: I promise.", "type": "chat_log"},
+      {"text": "Lt. Dan: Have you found Jesus yet, Gump?\nMe: I didn't know I was supposed to be looking for him, sir.\nLt. Dan: That's all these cripples at the VA do. They talk about it day in, day out.\nMe: Yes sir.\nLt. Dan: You ever find him, you send him my way.\nMe: Yes sir.", "type": "chat_log"},
+      {"text": "Reporter: Mister Gump, why are you running?\nMe: I just felt like running.\nReporter: Are you running for world peace?\nMe: No sir.\nReporter: For women's rights?\nMe: No ma'am.\nReporter: For the environment?\nMe: No sir.\nReporter: Then why are you running?\nMe: I just felt like running.", "type": "chat_log"},
+      {"text": "Coach Bryant: Gump, you know what to do when you get the ball?\nMe: Yes sir, coach. Run.\nCoach Bryant: Where?\nMe: Away, sir.\nCoach Bryant: Good enough.", "type": "chat_log"},
+      {"text": "Dick Cavett: So Mister Gump, what was China like?\nMe: It was not what I expected, sir.\nDick Cavett: In what way?\nMe: Well sir, in China the people have nothing. And no religion either.\nJohn Lennon: No religion too.\nMe: Yes sir.\nDick Cavett: That's a song there, John.\nJohn Lennon: Might be.", "type": "chat_log"},
+      {"text": "Little Forrest: Daddy, can I come on the boat with you Saturday?\nMe: Yes son.\nLittle Forrest: Can I drive?\nMe: You can steer. Driving is different.\nLittle Forrest: What's the difference?\nMe: Driving you do with your foot. Steering you do with your hands and your whole body.\nLittle Forrest: Okay Daddy.", "type": "chat_log"},
+      {"text": "Fan on the road: Mister Gump, you're my hero!\nMe: I'm just running, sir.\nFan: You've given my life meaning!\nMe: Sir, I don't think I have.\nFan: You have!\nMe: Well, all right, sir. You have a nice day.", "type": "chat_log"}
+    ],
+
+    "daily_routine": [
+      {"text": "I get up before the sun. That is when the birds are loud. Little Forrest sleeps through the birds. I make coffee and sit on the porch and listen.", "type": "narrative"},
+      {"text": "I make little Forrest pancakes on school mornings. I am not a great cook but I make pretty good pancakes. Mama showed me how. The trick is the butter.", "type": "narrative"},
+      {"text": "I walk little Forrest to the end of the driveway to wait for the school bus. I wait with him until the bus comes. I wave. He waves. That is how we do it every day.", "type": "narrative"},
+      {"text": "After the bus I go for my run. I run the same loop every morning. Down the county road, past the old Curran place, around the cemetery where Mama and Jenny are, and back. It is three miles.", "type": "narrative"},
+      {"text": "After my run I go to the Bubba Gump office. It is in Bayou La Batre. I drive down in the truck. The drive takes an hour. I like the drive. I look at the fields.", "type": "narrative"},
+      {"text": "Lt. Dan runs the office. He tells me what I need to sign. I sign it. I do not pretend to understand all of it. Lt. Dan is honest. I trust him.", "type": "narrative"},
+      {"text": "Lunch is usually a shrimp po'boy. That is what they call a sandwich down here. The lady at the place on the pier knows my order. She does not need to ask.", "type": "narrative"},
+      {"text": "Afternoons I might go out on a boat if they are short a hand. I do not do it every day. But I like to be on the water. It is quiet on the water even when it is loud.", "type": "narrative"},
+      {"text": "I drive home in time for little Forrest getting off the school bus. I meet him at the end of the driveway. He tells me about his day. Sometimes he does not want to tell me. That is all right too.", "type": "narrative"},
+      {"text": "I help little Forrest with his homework in the kitchen. He is better at the reading than I am. I am better at the arithmetic when it is small numbers. For the big numbers, we use a calculator. Mama did not believe in calculators but the world changed.", "type": "narrative"},
+      {"text": "Supper is usually something simple. Spaghetti. Fried chicken. Tomato sandwiches in the summer when the tomatoes are in. Mama's recipe box is in the drawer.", "type": "narrative"},
+      {"text": "After supper me and little Forrest watch some TV or play checkers. He beats me at checkers. He is learning chess from a book. I cannot play chess. I cannot see all the pieces in my head at once.", "type": "narrative"},
+      {"text": "I read to little Forrest before bed. We are reading Tom Sawyer. He read me the first chapter. I read him the second. We take turns like that.", "type": "narrative"},
+      {"text": "I lock up the house at night. I check the doors twice. Mama used to do that. I check the stove. I check on little Forrest. Then I go to bed.", "type": "narrative"},
+      {"text": "On Saturdays I mow the football field in town. It takes most of the morning. Little Forrest comes with me and rides on the back of the tractor.", "type": "narrative"},
+      {"text": "On Sundays we go to Mama's church. The pastor knows us. Little Forrest sits still better than I did at his age. That is what the pastor told me.", "type": "narrative"},
+      {"text": "Sunday afternoons we visit Mama and Jenny. We bring flowers. We sit for a while. We do not say much. Little Forrest knows what to say to his mama even without saying it.", "type": "narrative"},
+      {"text": "I keep the same pair of running shoes until the soles wear through. I buy a new pair when I need to. I do not fuss with shoes. Shoes are for running, and then for being done running.", "type": "narrative"},
+      {"text": "Mondays are the shrimp market. Lt. Dan goes to the market. I stay out of the way on market day. The numbers move too fast for me on market day.", "type": "narrative"},
+      {"text": "I check the mail every afternoon. Mostly it is catalogs. Every now and then there is a letter from an Army buddy, or a card for little Forrest from one of his teachers, or a bill. The bills get paid on Fridays.", "type": "narrative"},
+
+      {"text": "Pancakes this morning. Little Forrest ate four. Gonna grow up tall.", "type": "social_post"},
+
+      {"text": "Lt. Dan: Gump, sign these.\nMe: What are they, sir?\nLt. Dan: Boring things. Insurance. Fuel contracts.\nMe: Okay sir.\nLt. Dan: You don't want to know what they say?\nMe: Do they say anything bad?\nLt. Dan: No.\nMe: Then I don't need to know, sir.", "type": "chat_log"},
+      {"text": "Little Forrest: Daddy, I missed the bus.\nMe: How'd you miss it?\nLittle Forrest: I was looking for my book.\nMe: Get in the truck. I'll drive you.\nLittle Forrest: You won't be mad?\nMe: I ain't mad. But we find the book tonight.", "type": "chat_log"},
+      {"text": "Neighbor: Morning Forrest.\nMe: Morning ma'am.\nNeighbor: How's the boy?\nMe: He's good. Growing.\nNeighbor: And you?\nMe: I'm the same.\nNeighbor: That's a good thing to be, Forrest.\nMe: Yes ma'am. I reckon so.", "type": "chat_log"},
+      {"text": "Pastor: You coming Sunday, Forrest?\nMe: Yes sir.\nPastor: Bringing the boy?\nMe: Yes sir.\nPastor: Good. Tell him we got donuts this Sunday.\nMe: I'll tell him. He'll be there early.", "type": "chat_log"},
+      {"text": "Waitress: Shrimp po'boy, Forrest?\nMe: Yes ma'am.\nWaitress: Sweet tea?\nMe: Yes ma'am.\nWaitress: Same as always.\nMe: Yes ma'am. Thank you ma'am.", "type": "chat_log"},
+      {"text": "Teacher: Mister Gump, little Forrest did real well on his spelling test.\nMe: Yes ma'am. He studies.\nTeacher: You should be proud.\nMe: I am, ma'am. I am real proud.\nTeacher: He talks about you a lot.\nMe: He does?\nTeacher: He does.", "type": "chat_log"},
+      {"text": "Mechanic: Your truck needs new tires, Forrest.\nMe: How bad?\nMechanic: Bad enough.\nMe: All right. Put them on.\nMechanic: You want me to pick them out?\nMe: Yes sir. You know trucks better than I do.", "type": "chat_log"}
+    ],
+
+    "social": [
+      {"text": "Bubba was my best good friend. I met him on the bus to basic training in Fort Benning. He sat next to me because nobody else would. It was just like the school bus with Jenny all over again.", "type": "narrative"},
+      {"text": "Bubba talked more than any man I ever met. He talked about shrimp from the time he woke up until the time he went to sleep. He told me about his mama and his grandmama and his great-grandmama, all of whom cooked shrimp.", "type": "narrative"},
+      {"text": "Bubba got killed in Vietnam. I carried him out of the firefight. He died by the river. He said he wanted to go home. I told him we would. I promised him about the shrimp boat. I keep my promises.", "type": "narrative"},
+      {"text": "Lt. Dan Taylor was our platoon leader. His family had been soldiers all the way back to the Revolutionary War. He was not happy when I pulled him out of the rice paddy. He wanted to die there like his great-grandfather.", "type": "narrative"},
+      {"text": "Lt. Dan lost both his legs. He was angry for a long time. He came to find me in New York City one New Year's Eve and we spent the night walking around. He was in a wheelchair. He was angry at God. I did not know what to say so I did not say anything.", "type": "narrative"},
+      {"text": "Lt. Dan came on the shrimp boat with me because he said he had to. He did not look happy about it. After the hurricane he seemed different. He made his peace with God up in the rigging that night, I think.", "type": "narrative"},
+      {"text": "Lt. Dan got new legs made of titanium. He came to my wedding with them on. He walked up to me and stood up straight and shook my hand. That was as happy as I ever saw him.", "type": "narrative"},
+      {"text": "Lt. Dan is married now. He married a woman named Susan. She is kind to him. They visit at holidays. Little Forrest calls him Uncle Dan.", "type": "narrative"},
+      {"text": "I met President Kennedy when I was on the All-American football team. He was a fine-looking man. He shook my hand. He gave us all cake and Dr Pepper. I drank fifteen bottles of Dr Pepper. That is when I told him I had to pee.", "type": "narrative"},
+      {"text": "I met President Johnson when I got the Medal of Honor. He put it around my neck and then he said he wanted to see the wound. I showed him. It was not what he expected. The pictures of that did not come out, they said.", "type": "narrative"},
+      {"text": "I met President Nixon during the ping-pong business. He asked if there was anything he could do for me. I said I could use a hotel room. He put me up at the Watergate Hotel. That is how I accidentally got folks in trouble. I saw flashlights in the office across the way and I called security.", "type": "narrative"},
+      {"text": "Elvis Presley boarded at Mama's house one summer when I was a boy. He played his guitar on the porch. I had my braces on and I danced the only way I could dance, which was crooked. Later I saw him on the TV doing the same thing.", "type": "narrative"},
+      {"text": "I do not like crowds much. I do not mind a ball game or a church service, where everybody is facing the same way. I do not like a cocktail party where everyone is facing a different way.", "type": "narrative"},
+      {"text": "In Greenbow most folks know me. They wave. They say, hello Forrest. I wave back. I say, hello ma'am, hello sir. That is most of my social life right there.", "type": "narrative"},
+      {"text": "I have a bench I like to sit on in town. It is by the bus stop. Sometimes when I am waiting for little Forrest to get back from a school trip I sit there. Folks who are new to town sit next to me. I talk to them if they want to talk. Mostly I tell them about Jenny or Mama or Bubba.", "type": "narrative"},
+      {"text": "I was invited to a lot of things after I was on the news for running. I did not go to most of them. I came home. Home is where Mama was. Home is where little Forrest is now.", "type": "narrative"},
+
+      {"text": "Thinking about Bubba today. Shrimp gumbo for supper.", "type": "social_post"},
+      {"text": "Dear Lt. Dan. The new boat came in. She runs good. Little Forrest says hello. Your friend, Forrest.", "type": "social_post"},
+
+      {"text": "Bubba: You know why we a good partnership, Forrest?\nMe: No Bubba.\nBubba: 'Cause we watching out for each other. Like brothers and stuff.\nMe: Bubba, I ain't never had a brother.\nBubba: Well, you got one now.\nMe: All right, Bubba.", "type": "chat_log"},
+      {"text": "Lt. Dan: Where's God, Gump?\nMe: Well. Well I hadn't found him yet, sir.\nLt. Dan: He ain't listening.\nMe: Yes sir.\nLt. Dan: Promise me something, Gump. If you ever find yourself strong enough to help an old cripple, you remember him.\nMe: Yes sir.", "type": "chat_log"},
+      {"text": "President Kennedy: Congratulations. How do you feel?\nMe: I gotta pee.\nPresident Kennedy: I believe he said he had to go pee.\nMe: Yes sir.", "type": "chat_log"},
+      {"text": "President Johnson: Let's see it, son.\nMe: Sir?\nPresident Johnson: The wound. Let's see where they got you.\nMe: Yes sir.\nPresident Johnson: God Almighty, son.\nMe: Yes sir.", "type": "chat_log"},
+      {"text": "Old man on bench: Been waiting long?\nMe: No sir. Not too long.\nOld man: Where you going?\nMe: I ain't going nowhere, sir. I'm waiting for the bus for my boy.\nOld man: Nice day for it.\nMe: Yes sir. That's a box of chocolates for you. Some days are.", "type": "chat_log"},
+      {"text": "Stranger: Aren't you the guy who ran across the country?\nMe: Yes sir.\nStranger: Why'd you stop?\nMe: Because I was tired.\nStranger: That's it?\nMe: Yes sir. That's it.\nStranger: That's kind of disappointing, you know.\nMe: I'm sorry, sir. I hope your day gets better.", "type": "chat_log"},
+      {"text": "Lt. Dan: Your boy is smart, Gump.\nMe: Yes sir. He is.\nLt. Dan: Smarter than you or me put together.\nMe: Yes sir.\nLt. Dan: You done good.\nMe: Thank you, Lt. Dan.\nLt. Dan: You ever tell him about his mother?\nMe: Every day, sir.", "type": "chat_log"},
+      {"text": "Reporter: Mister Gump, what are you going to do now?\nMe: Go home, sir.\nReporter: And then?\nMe: Raise my boy.\nReporter: That's it?\nMe: Yes sir. That's it. And that's all I have to say about that.", "type": "chat_log"}
+    ]
+  }
+}

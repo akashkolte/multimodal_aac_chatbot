@@ -93,6 +93,11 @@ def load_users() -> dict[str, dict]:
         return {u["id"]: u for u in json.load(f)["users"]}
 
 
+def load_persona_profile(user_id: str) -> dict:
+    with open(settings.memories_dir / f"{user_id}.json") as f:
+        return json.load(f)["profile"]
+
+
 def select_user(users: dict[str, dict], user_arg: str | None) -> str:
     if user_arg:
         if user_arg not in users:
@@ -129,7 +134,7 @@ def main() -> None:
 
     users = load_users()
     user_id = select_user(users, args.user)
-    profile = users[user_id]
+    profile = load_persona_profile(user_id)
 
     # Warm up models
     print(f"\nLoading models for {profile['name']} …", end=" ", flush=True)

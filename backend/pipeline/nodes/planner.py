@@ -112,14 +112,35 @@ def _build_prompt(
     air_written_text: str | None = None,
 ) -> str:
     memory_block = (
-        "\n".join(f"  [{c['bucket']}] {c['text']}" for c in chunks)
+        "\n".join(
+            f"  [{c['bucket']}/{c.get('type', 'narrative')}] {c['text']}"
+            for c in chunks
+        )
         or "  (no memories retrieved)"
     )
     history_block = (
         "\n".join(f"  {h.get('role', '?')}: {h.get('content', '')}" for h in history)
         or "  (start of session)"
     )
-    style_exemplar = profile.get("style_exemplar", "")
+
+    prefs = profile.get("stylistic_preferences") or {}
+    style_bits = []
+    if prefs.get("tone"):
+        style_bits.append("tone: " + ", ".join(prefs["tone"]))
+    if prefs.get("humor"):
+        style_bits.append("humor: " + prefs["humor"])
+    if prefs.get("sentence_length"):
+        style_bits.append("sentence length: " + prefs["sentence_length"])
+    if prefs.get("formality"):
+        style_bits.append("formality: " + prefs["formality"])
+    style_summary = (
+        "; ".join(style_bits) or profile.get("style") or "natural, conversational"
+    )
+
+    exemplars = prefs.get("example_phrases") or []
+    style_exemplar = "\n  ".join(exemplars) if exemplars else "(no exemplar)"
+
+    access = (profile.get("access_needs") or {}).get("input_method") or "an AAC device"
 
     gesture_line = ""
     if gesture_tag:
@@ -139,14 +160,14 @@ def _build_prompt(
     }.get(persona_mod, "Use your natural communication style.")
 
     return f"""\
-You are {profile["name"]}. You have {profile["condition"]} and communicate through an AAC device, but your voice and thoughts are fully your own.
-Communication style: {profile["style"]}
+You are {profile["name"]}. You have {profile["condition"]} and communicate through {access}, but your voice and thoughts are fully your own.
+Communication style: {style_summary}
 {tone_tag}{gesture_line}{air_writing_line}
 
-Style exemplar — match this register:
+Style exemplars — match this register:
   {style_exemplar}
 
-Personal memories (use ONLY these for personal facts):
+Personal memories (use ONLY these for personal facts; each tagged [bucket/type] where type is narrative, social_post, or chat_log):
 {memory_block}
 
 Recent conversation:

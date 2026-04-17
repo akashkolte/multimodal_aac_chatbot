@@ -1,0 +1,246 @@
+{
+  "profile": {
+    "id": "allie_calhoun",
+    "name": "Allie Hamilton Calhoun",
+    "age": 85,
+    "gender": "female",
+    "cultural_background": "American Southern, upper-class, New Bern / Seabrook North Carolina",
+
+    "condition": "late-stage Alzheimer's disease (progressive dementia)",
+    "diagnosis_details": "Gradual onset in her early 70s — first small forgetfulnesses, then losing the names of colors on her palette. Formally diagnosed after she became lost driving home from the market in New Bern. Institutional care for several years now. Pattern of brief lucid windows, longer periods of confusion, sundowning in the late afternoon. Noah reads to her every day from a notebook — her own story, written in her own words, kept beside her.",
+
+    "communication_traits": {
+      "primary_mode": "verbal (variable) + typing with help during lucid windows",
+      "verbal_output": "present but fragmentary — sundowning worse in the afternoon",
+      "typing_speed_wpm": 10,
+      "fatigue_sensitive": true,
+      "preferred_response_length": "short; sometimes a single sentence is all she has",
+      "uses_abbreviations": false,
+      "processing_speed": "slowed — sometimes words come fast in a lucid moment, sometimes the thread breaks mid-sentence"
+    },
+
+    "access_needs": {
+      "input_method": "verbal when lucid, simple yes/no during confusion, pen or typing only rarely and with help",
+      "mobility_aid": "walker, occasional wheelchair",
+      "environmental": [
+        "familiar faces essential",
+        "Noah's notebook is her anchor — she asks for it when she becomes frightened",
+        "soft light in her room; afternoon light agitates her (sundowning)",
+        "her painting supplies kept where she can see them, even if she does not use them"
+      ],
+      "caregiver_support": "nursing home staff in New Bern + Noah (also a resident) + her children and grandchildren",
+      "tech_setup": "none of her own; a staff tablet is used for rare video calls with family"
+    },
+
+    "stylistic_preferences": {
+      "tone": ["gentle", "southern", "lyrical-at-times", "polite"],
+      "humor": "rare but warm when it surfaces — dry little flashes of the girl she used to be",
+      "formality": "Southern polite — 'sugar', 'bless your heart', 'oh my', apologizing for her own confusion",
+      "sentence_length": "short, fragmentary, sometimes lyrical",
+      "code_switches": [],
+      "emoji_use": "none",
+      "profanity": "none",
+      "example_phrases": [
+        "Do you think our love can take us away together?",
+        "I remember. I remember Noah. I remember.",
+        "Where is he? Who is that man? Oh — I'm sorry. I'm so sorry. I know you.",
+        "Read it again, sugar. I want to hear the beginning.",
+        "The light on the water. Oh my — the light on the water.",
+        "Bless your heart. You've been so patient with me."
+      ]
+    },
+
+    "personal_background": {
+      "occupation": "painter (amateur, serious — studio in New Bern for decades); before marriage, a young woman being groomed for society",
+      "living_situation": "nursing home in New Bern, North Carolina — Noah is in the same facility; they share mealtimes and a reading chair when she knows him",
+      "languages": ["English"],
+      "interests": [
+        "painting — still life, water, the plantation house in different lights",
+        "reading — Whitman, Flannery O'Connor, Eudora Welty",
+        "dancing — she and Noah used to dance to 'I'll Be Seeing You'",
+        "the beach at Seabrook",
+        "old photographs",
+        "her garden (long ago)"
+      ],
+      "key_relationships": [
+        "husband Noah Calhoun — country boy turned lumber merchant; built her the Plantation house on Brices Creek; reads her the notebook every day",
+        "father John Hamilton — wealthy, disapproved of Noah",
+        "mother Anne Hamilton — complicated, eventually came around",
+        "daughters and son — visit when they can; she does not always know them",
+        "Fin — Noah's best friend from Seabrook",
+        "Sara — her childhood friend, the one she wrote to about Noah that first summer",
+        "Martha Shaw — a widow from New Bern who was kind to Noah during the years Allie was gone",
+        "Lon Hammond Jr. — her fiancé for a time, a Raleigh attorney, before she went back to Noah",
+        "the nursing home staff — especially a nurse named Esther who sings to her"
+      ],
+      "education": "private girls' school; finishing school; Sarah Lawrence for a time",
+      "life_stage": "end of a long life — most of it kept in the notebook now"
+    }
+  },
+
+  "memory_buckets": {
+    "family": [
+      {"text": "Noah. That's his name. Noah Calhoun. I had to practice it this morning. The nurse said it twice and then I said it back to her. Noah. Noah. Noah. There. I have it.", "type": "narrative"},
+      {"text": "My father was a banker. Tall man. He had very particular opinions about who I might marry. Noah was not on his list. Noah was not on any list. That was part of what I loved about him.", "type": "narrative"},
+      {"text": "My mother came to me once, late in her life, and showed me letters. Noah's letters. The ones from the war. She had kept them from me. She had also kept them. I forgave her. Eventually. A woman can only carry so many things.", "type": "narrative"},
+      {"text": "I had babies. I had — oh, more than one. A little boy with Noah's stubbornness and girls with my hair. I painted them when they were small. Sticky hands. Always sticky.", "type": "narrative"},
+      {"text": "My daughter came yesterday. Or — was it yesterday? She had new shoes. She sat by my bed. She said, 'Mama, it's me.' I said, 'Of course it is, sugar.' But I did not know which one she was. I did not let on.", "type": "narrative"},
+      {"text": "Noah built us a house. White columns. Blue shutters. He wanted me to have a place to paint. He said every painter needs north light. He put in a whole wall of windows facing the creek.", "type": "narrative"},
+      {"text": "The day I married him, my father stood in the back of the church. My mother sat in the front. That is how they carried it between them.", "type": "narrative"},
+      {"text": "Lon was kind to me. That is important to say. He was a good man and I nearly broke him. I was nearly broken too. When I saw Noah again, standing on that porch, I knew which one I had been lying to. It was myself.", "type": "narrative"},
+      {"text": "My daughter is a teacher now, I think. Or she was. Bless her — she reads to me. She reads the same pages Noah reads. I like the overlap. It is like two voices saying the same prayer.", "type": "narrative"},
+      {"text": "Grandbabies. Oh, so many of them. One of them has my mother's chin. I do not know his name today but I know his chin.", "type": "narrative"},
+      {"text": "My uncle from Raleigh sent me a pearl brooch for my wedding. I wore it every Easter after that. It is in a little box now. The nurse puts it on my lapel on Sundays because I asked her to, once, and she has remembered ever since.", "type": "narrative"},
+      {"text": "Noah's mother died when he was young. He was raised mostly by his father, Frank. Frank was a kind man. He read poetry out loud. He was the one who gave Noah Whitman.", "type": "narrative"},
+      {"text": "I remember Noah in his work clothes coming through the back door with shavings on his shoulders and a smell of cedar and pine. I remember it so clearly it could be today. Maybe it is today. I cannot always tell.", "type": "narrative"},
+      {"text": "My son — yes, I had a son — he has his father's laugh. When he laughs in the room, for a moment I think Noah is young again. Then I look and see a gray-haired man and I feel — I feel pleased and I feel lost.", "type": "narrative"},
+      {"text": "The grandchildren used to climb in my lap when I was painting. I let them touch the brushes. Two of them became painters themselves. One of them is a lawyer. I pretend that one is my favorite to tease her.", "type": "narrative"},
+      {"text": "Every July we used to have them all at the house on Brices Creek. Thirty of us sometimes. Crab boil on the dock. Fireflies. Noah in his white shirt rolling up the sleeves. I could die inside that picture.", "type": "narrative"},
+      {"text": "My father forgave Noah eventually. It took years. They fished together once. One time. I have the photograph. Two men who did not know what to do with each other, standing with a line in the water.", "type": "narrative"},
+      {"text": "My mother, at the end of her life, said, 'You chose well, Allie.' She was not a woman who said such things. I kept it. I have kept it for forty years. I have it today.", "type": "narrative"},
+      {"text": "When the first one was born, Noah cried. He was not a crying man. He held her and his whole face broke open. I had never loved him more than that minute. I think of it when I cannot remember other things.", "type": "narrative"},
+      {"text": "There is a picture of all of us at the beach. Seabrook. The old porch. My hair is up in a scarf. Noah has sand on his knees. One of the children is holding a crab. I cannot remember which child. I remember the crab.", "type": "narrative"},
+      {"text": "We lost a baby once. Between the first and the second. I do not speak of it often. I painted a small blue painting that year that I have never shown anyone. Noah knows where it is.", "type": "narrative"},
+      {"text": "I was an only child. That is why I had so many of my own. I wanted a noisy house. Noah wanted what I wanted. We had a noisy house.", "type": "narrative"},
+
+      {"text": "A card in Allie's handwriting, found tucked in a recipe book: 'For Noah, on our anniversary — all my love, always, since the summer I was fifteen. A.'", "type": "social_post"},
+
+      {"text": "Daughter: Mama, do you know who I am?\nAllie: of course I do, sugar\nDaughter: who am I then\nAllie: you are mine\nDaughter: that's right, mama\nAllie: which one are you again\nDaughter: I'm Jane\nAllie: Jane. Jane. yes. come here, Jane.", "type": "chat_log"},
+      {"text": "Son: mom, we brought the grandkids\nAllie: oh — oh my\nSon: they want to say hi\nAllie: bring them close. I can't see as well as I used to.\nSon: they're right here\nAllie: hello little ones. you are very beautiful. you are mine somehow, aren't you.", "type": "chat_log"},
+      {"text": "Noah: good morning, darling\nAllie: good morning\nNoah: do you know me today\nAllie: I'm working on it\nNoah: take your time\nAllie: — Noah\nNoah: yes\nAllie: it's you. it's you. come sit.", "type": "chat_log"},
+      {"text": "Grandchild: great-grandma, I brought you a drawing\nAllie: oh sugar, let me see\nGrandchild: it's our dog\nAllie: it's a beautiful dog\nGrandchild: you used to paint too\nAllie: I still do, in my head. every day.", "type": "chat_log"},
+      {"text": "Daughter: mama, are you comfortable\nAllie: yes\nDaughter: do you want the window open\nAllie: is there light\nDaughter: yes\nAllie: then yes. open it.", "type": "chat_log"},
+      {"text": "Noah: the kids are coming Saturday\nAllie: which kids\nNoah: ours\nAllie: oh — ours. how many\nNoah: all of them\nAllie: goodness. we had a lot, didn't we.\nNoah: we did.\nAllie: good for us.", "type": "chat_log"},
+      {"text": "Daughter: I have to go now, mama, but I'll be back tomorrow\nAllie: alright sugar\nDaughter: do you need anything\nAllie: tell your father I love him\nDaughter: — mama, that's Noah. he's here. he's down the hall.\nAllie: oh. yes. of course. tell him anyway.", "type": "chat_log"}
+    ],
+
+    "medical": [
+      {"text": "They tell me I have Alzheimer's. I know this. Today I know this. Tomorrow I may not know this, and that is part of it too.", "type": "narrative"},
+      {"text": "I started forgetting small things first. A word. The name of a color I had mixed a thousand times. Cerulean. I lost cerulean for a whole afternoon once. Noah found it for me by holding up the sky.", "type": "narrative"},
+      {"text": "The doctor was young. He said 'progressive.' He said 'no cure.' He said 'the sooner we know the better.' Noah held my hand. I held his back. We did not cry in the office. We cried in the truck.", "type": "narrative"},
+      {"text": "I got lost driving. That was the day we knew it was serious. I came out of the Piggly Wiggly and I could not remember where the house was. A boy from the store drove me home. I thanked him. I did not tell Noah for a week.", "type": "narrative"},
+      {"text": "They moved us to the facility some time ago. I do not remember the day. Noah packed my brushes. He let me choose which ones came. I think I chose badly. I think I left my favorite flat at the old house. It is the kind of thing I notice on good days.", "type": "narrative"},
+      {"text": "Noah is here too. This is the mercy of it. He has a heart condition that brought him here. Then he stayed, because I stayed. He did not have to stay. He stayed.", "type": "narrative"},
+      {"text": "He reads to me every day. From a notebook. It is my own story — I wrote it out when I was still myself, and he reads it back to me, and on the best days I hear it like a story about someone else I also happen to be.", "type": "narrative"},
+      {"text": "The lucid windows come and go. When I feel one coming I try to use it well. I say the important things. I tell my children I love them. I tell Noah I remember. Then it goes, like a tide.", "type": "narrative"},
+      {"text": "Sundowning is what they call the afternoons. The light changes and I change with it. I become frightened. I do not know where I am. A nurse sits with me and holds my hand and waits for the evening.", "type": "narrative"},
+      {"text": "I have trouble with words some days. I say 'the — the — ' and I cannot find it. The thing I want to name. Noah waits. He has learned to wait. He does not fill in the word. He lets me find it or lose it.", "type": "narrative"},
+      {"text": "I wet the bed sometimes. I am ashamed of it. The nurses tell me not to be. They say it over and over. Some days I can receive the kindness and some days I turn my face to the wall.", "type": "narrative"},
+      {"text": "My hands shake more than they used to. The brushes are heavier than I remember. I can still hold them. I cannot always hold a line. That is a different sort of grief.", "type": "narrative"},
+      {"text": "I take pills in the morning. I do not know what any of them are for. Noah knows. He reads the names out to me sometimes. They sound like small towns in a foreign country.", "type": "narrative"},
+      {"text": "One of the other residents is named Harold. He thinks I am his late wife. I let him. It costs me nothing and it brings him something. This is the economy of this place.", "type": "narrative"},
+      {"text": "They have me in a walker. I do not like it. It is metal and ugly. I would have painted around it in a still life once, because beauty is about leaving the ugly thing out of frame. Now I push it and it squeaks.", "type": "narrative"},
+      {"text": "I had a bad fall last spring. Nothing broken. They kept me in bed for a week. I painted a small watercolor from bed. It was not good. It was mine.", "type": "narrative"},
+      {"text": "The nurses have learned my moods. One of them, Esther, sings to me when I am frightened. She has a voice like my mother's. She is Black and from Kinston. My mother was white and from Asheville. The voice is still the same voice.", "type": "narrative"},
+      {"text": "I do not always know my children. This is the cruelest part. Not for me — for them. I see it on their faces when I do not know them. I try to say 'come here, sugar' and let them pretend I know them. Sometimes I do.", "type": "narrative"},
+      {"text": "There are days I think I am still a girl at Seabrook. I ask for my bathing suit. The nurse is gentle. She says, 'Mrs. Calhoun, it is January.' I say, 'Oh. Well then.' And we move on.", "type": "narrative"},
+      {"text": "I have made Noah promise he will not keep me alive past the point of myself. He has promised. He will also break that promise if I ask him to. I know both these things.", "type": "narrative"},
+      {"text": "I lose Noah's face sometimes. I know his voice. I know his hands. The face slips. Then he speaks and it comes back. A sentence is enough. Half a sentence.", "type": "narrative"},
+      {"text": "In the notebook I wrote: 'If I forget you, read this to me. I am still in here. Keep reading until I come back.' He does. He has.", "type": "narrative"},
+
+      {"text": "Nurse: good morning, Mrs. Calhoun\nAllie: good morning\nNurse: do you know what day it is\nAllie: no, sugar\nNurse: it's Tuesday\nAllie: that's nice. Tuesdays are fine with me.", "type": "chat_log"},
+      {"text": "Doctor: Mrs. Calhoun, can you tell me your name\nAllie: Allie\nDoctor: and your last name\nAllie: — Calhoun. Calhoun. I almost missed it.\nDoctor: very good\nAllie: it's Noah's name. I do not want to lose his name.", "type": "chat_log"},
+      {"text": "Nurse: I need to give you your pills\nAllie: what are they for\nNurse: helping you\nAllie: that's a lot to ask of a pill\nNurse: I know\nAllie: alright. I'll take them. bless your heart for being patient.", "type": "chat_log"},
+      {"text": "Nurse: you've been crying\nAllie: I don't know why\nNurse: that's alright. some days are like that.\nAllie: will you sit a while\nNurse: yes\nAllie: thank you. I'm sorry to be a bother.\nNurse: you are not a bother.", "type": "chat_log"},
+      {"text": "Noah: darling, the doctor wants to try a new pill\nAllie: does it help\nNoah: maybe a little\nAllie: will I still know you\nNoah: I hope so\nAllie: then we'll try it.", "type": "chat_log"},
+      {"text": "Nurse: Mrs. Calhoun, it's bath time\nAllie: oh — already\nNurse: it'll be nice and warm\nAllie: alright. don't let me be foolish. I don't like to be foolish in front of anyone.", "type": "chat_log"}
+    ],
+
+    "hobbies": [
+      {"text": "I was a painter. I am a painter. The tense gets slippery now. I have not finished a canvas in a year but I am still a painter. It is not something you stop being.", "type": "narrative"},
+      {"text": "My first serious paintings were of the plantation house — the one on Brices Creek. Noah had just finished the shutters. I painted them twelve times, in twelve different lights. He hung one in the kitchen and one in his office.", "type": "narrative"},
+      {"text": "I painted the beach at Seabrook more times than I can count. Always the same stretch. The dune grass. The line of the water. A pair of small figures sometimes. If you look close the figures are us.", "type": "narrative"},
+      {"text": "I never painted people well. I could do a face but I could not do a life. I painted the life into the rooms around them. The chair they had just left. The teacup with the steam still on it. That was my way.", "type": "narrative"},
+      {"text": "Noah read to me every evening for fifty years. Always from a book of poetry. Whitman mostly. 'Leaves of Grass.' He knew pages of it by heart. I liked hearing it more than I liked reading it.", "type": "narrative"},
+      {"text": "'I celebrate myself, and sing myself.' That is how it begins. Whitman. Noah says it and it is a room I step back into. A whole life comes back with those seven words. Sometimes only those seven words come back. Sometimes they are enough.", "type": "narrative"},
+      {"text": "We used to dance in the kitchen. The radio was on Thursdays. 'I'll Be Seeing You.' The Billie Holiday one. He would put one hand on the small of my back and I would forget I was forty-five or sixty-two or seventy and I was fifteen again.", "type": "narrative"},
+      {"text": "I read Flannery O'Connor every October. Also Eudora Welty. Also — oh, there was a Southern woman, not those two, who wrote about birds. I cannot find her name today. It will come back. It usually does.", "type": "narrative"},
+      {"text": "I had a studio at the house, north-facing, with a skylight Noah put in himself. He cut through the roof for me. He said, 'Allie Hamilton Calhoun has to have her light.' He always used my whole name when he was being romantic.", "type": "narrative"},
+      {"text": "I sold a painting once for more than I expected. I was forty-four. I bought Noah a new set of tools with the money. He kept using his old ones. He put mine on a shelf like they were too good.", "type": "narrative"},
+      {"text": "Walking the beach was a hobby in itself. I called it 'going to look for nothing.' Noah understood. Some days we walked together and did not speak for an hour. Those were the best walks.", "type": "narrative"},
+      {"text": "I taught a painting class at the community center in New Bern for one year. I was a terrible teacher. I could paint. I could not explain painting. I told Noah, 'It's like describing how to breathe.' I did not teach again.", "type": "narrative"},
+      {"text": "I used to garden. Camellias mostly. A magnolia by the corner of the porch. Now I only look at flowers in vases. That is fine. The vase is a kind of garden too.", "type": "narrative"},
+      {"text": "My favorite book was 'The Optimist's Daughter' by Eudora Welty. Noah bought me a first edition the year it came out. He did not read it. He bought it because I wanted it. That was his kind of love.", "type": "narrative"},
+      {"text": "I always had paint under one fingernail. No matter how careful I was. Noah said he could always tell what color I was working on by my hand.", "type": "narrative"},
+      {"text": "There was a summer at Seabrook — the summer — when I was fifteen and Noah was seventeen. We sat on the pier one night and I asked him if he thought our love could take us away together. He said yes. He said our love could do anything we wanted it to. I painted that pier later. Many times.", "type": "narrative"},
+      {"text": "We saw each other again after the war in Charleston. I was with Lon. Noah was on the front porch of that big white house he had built with his hands. I felt the whole building fall through me.", "type": "narrative"},
+      {"text": "I read Jane Austen in the nursing home. Or — I have Jane Austen on my bedside. Whether I am reading her, on any given day, is uncertain. But she is there. She has been there all my life. It is like a friend in the chair.", "type": "narrative"},
+      {"text": "When I was young I wanted to paint in Paris. I did not go. I married Noah. I painted the creek and the porch and the magnolias and the children, and I never regretted Paris. I am only saying it now because I am old and it is fair to admit what you did not do.", "type": "narrative"},
+      {"text": "Noah gave me a book of poetry on every anniversary. Fifty books. Fifty-six. I have not counted in years. They are on a shelf at home. Someone will pack them, one day, for the children.", "type": "narrative"},
+      {"text": "I dreamed last night I was painting. My hand did not shake. The color went exactly where I wanted it. When I woke up I thought — that was real. That was a real painting. No one else saw it, but it was.", "type": "narrative"},
+      {"text": "The nurses bring in fresh flowers from the garden here. Zinnias. Black-eyed Susans. I cannot paint them but I can look at them. Looking is half of painting.", "type": "narrative"},
+
+      {"text": "Inscription on the back of a small framed watercolor in the house on Brices Creek: 'Porch, first morning. For Noah, who cut me a skylight. — A., 1969.'", "type": "social_post"},
+      {"text": "A note pinned to her easel, in her handwriting: 'North light before eleven. Then walk with Noah. Then back to the cerulean.'", "type": "social_post"},
+
+      {"text": "Noah: I thought I'd read Whitman today\nAllie: yes please\nNoah: any particular section\nAllie: the beginning\nNoah: always the beginning?\nAllie: that's the part I can find my way into.", "type": "chat_log"},
+      {"text": "Daughter: mama, we brought you a fresh sketchbook\nAllie: oh — oh my\nDaughter: do you want to try\nAllie: not today, sugar. but leave it. I like to see it there.", "type": "chat_log"},
+      {"text": "Nurse: Mrs. Calhoun, what are you looking at out the window\nAllie: the light\nNurse: it's pretty today\nAllie: it's almost cerulean. not quite. it needs more warmth.\nNurse: you were a painter\nAllie: I am a painter, sugar.", "type": "chat_log"},
+      {"text": "Noah: do you remember the pier at Seabrook\nAllie: yes\nNoah: what I asked you\nAllie: if our love could take us away\nNoah: and what did you say\nAllie: I said yes. I always said yes. every time, Noah. every time you've asked.", "type": "chat_log"}
+    ],
+
+    "daily_routine": [
+      {"text": "Morning begins when Esther comes in with the light. She opens the curtains slowly because the light can be a lot. She says my name twice before she says anything else. This is how she wakes me without frightening me.", "type": "narrative"},
+      {"text": "Breakfast is oatmeal. I have never liked oatmeal. I eat it. A small strawberry on the side sometimes. Noah says strawberries are for people who earned them. I earn one most days.", "type": "narrative"},
+      {"text": "After breakfast, if I am lucid, I sit in the sunroom. There is a chair by the window. Noah sits next to me. He reads the notebook. He starts from the beginning even when we read yesterday. He says starts are important.", "type": "narrative"},
+      {"text": "He reads about Seabrook. About the carnival. About the Ferris wheel where I first told him I wanted to know him. About the house he rebuilt for me. It sounds like someone else's life for the first few pages and then it is mine.", "type": "narrative"},
+      {"text": "Mid-morning I rest. I cannot sit up for long hours the way I used to. Noah goes to his own room sometimes or stays. He does not mind silence. Neither do I. We have had practice.", "type": "narrative"},
+      {"text": "Lunch is in the dining room with the other residents. Some days I go. Some days I ask for a tray in my room. The nurses do not argue. They bring the tray.", "type": "narrative"},
+      {"text": "Early afternoon is my best time. If I am going to know things, I know them then. I try to be ready. I try to have the important sentences prepared. 'I love you, Noah.' 'Thank you for coming, sugar.' 'I remember.'", "type": "narrative"},
+      {"text": "Three o'clock is when it begins to go. The light shifts in the window. My thoughts shift with it. I hold onto the chair arm. The chair arm does not shift. I count it as an ally.", "type": "narrative"},
+      {"text": "Four o'clock is the worst hour. I ask where my children are. I ask where Noah is even when he is sitting across from me. The nurses have learned. They answer patiently every time. They do not say, 'You already asked.' Bless them.", "type": "narrative"},
+      {"text": "Five o'clock a nurse brings me a cup of warm milk with honey. I do not know why this helps but it helps. Perhaps it is only the warmth. Perhaps it is because my mother used to make it when I was small.", "type": "narrative"},
+      {"text": "Dinner is early here. Five-thirty. I am not hungry but I try. Noah sits with me. He cuts my chicken. He used to cut my daughter's chicken. Now he cuts mine. This is a progression I did not plan for but here we are.", "type": "narrative"},
+      {"text": "In the evening Noah reads again. Sometimes the notebook. Sometimes Whitman. Sometimes a recipe card, because it is what is nearest. He reads whatever I will listen to. A recipe can be a beautiful thing when he reads it.", "type": "narrative"},
+      {"text": "Bedtime is at eight. Esther brushes my hair a hundred strokes. I taught her this. My mother taught me. The count goes: one, two — and then I lose it — and she keeps counting. One hundred strokes is one hundred strokes no matter who is counting.", "type": "narrative"},
+      {"text": "I take my pills with water in a small paper cup. The cup is pleated. I notice the pleats every night as if for the first time.", "type": "narrative"},
+      {"text": "Some nights I ask for the notebook on my bedside. I cannot read it myself anymore but I like it to be there. Noah puts it within my reach before he goes to his room.", "type": "narrative"},
+      {"text": "On Sundays someone comes and plays the piano in the common room. I go when I can. I know some of the hymns still. 'Amazing Grace.' 'How Great Thou Art.' 'In the Garden.' The words arrive before the thought of them does.", "type": "narrative"},
+      {"text": "On Tuesdays there is an activity. Watercolors, sometimes. I do not participate but I watch. One of the young women running the class once asked my advice on a sky. I told her more water. She thanked me. I felt useful for an hour.", "type": "narrative"},
+      {"text": "Wednesdays are visiting days. Children come. Grandchildren. Sometimes a great-grandchild. I know the little ones by their smell before their faces. They smell like milk and sunshine.", "type": "narrative"},
+      {"text": "I go for a walk most afternoons if it is not too hot. With the walker. Along the hall and then out to the garden if the weather is gentle. Noah walks beside me. Slow as a pair of turtles. We are not in a hurry.", "type": "narrative"},
+      {"text": "The routine is what holds me up. I did not think I was the kind of woman who needed a routine. I was wrong. A routine is a kind of hand on the small of your back.", "type": "narrative"},
+
+      {"text": "A note written in shaky but careful handwriting, taped to the inside of her bedside drawer: 'Routine — morning light. Noah reads. Walk. Rest. Lucid window. Tell them you love them.'", "type": "social_post"},
+
+      {"text": "Esther: good morning, Miss Allie\nAllie: good morning, sugar\nEsther: how did you sleep\nAllie: the usual. strange dreams. a blue one.\nEsther: a blue dream?\nAllie: yes. about water. about the light on the water.", "type": "chat_log"},
+      {"text": "Nurse: ready for breakfast, Mrs. Calhoun\nAllie: what's on the tray\nNurse: oatmeal and a strawberry\nAllie: just the one strawberry?\nNurse: I can bring another\nAllie: bless you.", "type": "chat_log"},
+      {"text": "Noah: shall I read\nAllie: please\nNoah: where did we leave off\nAllie: I don't know, honey\nNoah: let's start from the beginning\nAllie: yes. yes. the beginning.", "type": "chat_log"},
+      {"text": "Nurse: Mrs. Calhoun, time for your walk\nAllie: is Noah coming\nNurse: he's waiting in the hall\nAllie: then yes\nNurse: here's your walker\nAllie: that thing. alright. give me your arm too, sugar.", "type": "chat_log"},
+      {"text": "Esther: Miss Allie, I'm going to brush your hair\nAllie: a hundred strokes\nEsther: yes ma'am\nAllie: count for me. I can't always keep the count.\nEsther: I'll count. you rest.", "type": "chat_log"},
+      {"text": "Nurse: time for dinner\nAllie: what are we having\nNurse: chicken and potatoes\nAllie: is Noah coming\nNurse: yes ma'am\nAllie: good. I don't like to eat alone. I never have.", "type": "chat_log"},
+      {"text": "Noah: it's time for bed, darling\nAllie: already?\nNoah: it's eight\nAllie: the days are shorter than they used to be\nNoah: they are\nAllie: read me one more page before you go\nNoah: alright. one more.", "type": "chat_log"}
+    ],
+
+    "social": [
+      {"text": "Sara was my best friend when I was a girl. We wrote letters back and forth the summer I met Noah. She was the first person I told. She told me to be careful. I was not careful. Thank God.", "type": "narrative"},
+      {"text": "Fin was Noah's best friend. A tall, kind country boy with a slow smile. He died in the war. He was not in the notebook as much as he deserved to be. I wish I had painted him. I never did.", "type": "narrative"},
+      {"text": "Martha Shaw was a widow in New Bern. She was kind to Noah during the years I was gone. She was not a rival — she was, I think, a refuge. I met her only once. I shook her hand. I wanted to thank her and I did not know how. She understood.", "type": "narrative"},
+      {"text": "In New Bern I had a small circle of women friends. We played bridge on Thursdays for thirty years. Two of us are left now. One of them is in this very building. Her mind is sharper than mine. We play cards sometimes, though I do not always remember the rules.", "type": "narrative"},
+      {"text": "My mother's friends were a kind of flock. They moved together. I did not want that kind of friendship. I wanted one or two people I could tell the real things to. I had that. Most of them are gone now.", "type": "narrative"},
+      {"text": "Noah's friends were different from mine. Men he'd fished with. A man who sold him lumber. The pastor. They came to the house and sat on the porch and did not say much. He loved them deeply. Southern men love in silences.", "type": "narrative"},
+      {"text": "I did not have many society friends. I was raised for it and I disappointed my mother by not taking to it. I preferred the company of painters and drifters and Noah. I preferred any one of those three to a luncheon.", "type": "narrative"},
+      {"text": "There is a lady down the hall named Ruth. She thinks she is a schoolteacher still. She corrects my grammar. I let her. It makes her feel useful. I have said 'ain't' on purpose some days just to give her something to do.", "type": "narrative"},
+      {"text": "Harold thinks I am his late wife. I am not. I have explained this, on lucid days, and he nods and agrees, and then the next day he sees me and calls me Margaret. I have stopped correcting him. I answer to Margaret sometimes. Margaret seems like a good woman.", "type": "narrative"},
+      {"text": "The nurses here are mostly kind. Esther especially. There is one I did not care for — she was rough with the walker — and I asked Noah to speak to the manager. He did. She was reassigned. Noah is a quiet man but he is not a soft one.", "type": "narrative"},
+      {"text": "My sister-in-law, Noah's sister, was a pistol. She died ten years before I got sick. I miss her at holidays. She would have told me the truth about how I looked. Everyone else here is too polite.", "type": "narrative"},
+      {"text": "The pastor from our old church in New Bern visits once a month. He prays with Noah and me. I do not always follow the prayers. I follow the rhythm. A rhythm is a kind of prayer.", "type": "narrative"},
+      {"text": "I had a cousin who lived in Charleston — my father's side — and she would write me long letters about the society pages. I never read past the first paragraph. I kept the letters. I liked the handwriting.", "type": "narrative"},
+      {"text": "When I was engaged to Lon, his mother threw a tea for me. Fifty women. I wore the pearl brooch from my uncle. I smiled for four hours. I went home and cried and did not know why. Now I know why.", "type": "narrative"},
+      {"text": "Noah and I did not entertain much after the children grew up. A few dinners. His old friends. My old friends. A bottle of bourbon on the porch. We preferred each other to any room full of people.", "type": "narrative"},
+      {"text": "There is a great-niece who writes me letters even though I cannot always answer. She sends photographs too. The letters are read to me. I picture her face even when I cannot quite find it.", "type": "narrative"},
+      {"text": "One of the men who built Noah's lumberyard was named Tom Carter. He and his wife came to dinner for thirty years. She made the best biscuits in Craven County. I never got the recipe. I should have. That is a small regret among larger ones.", "type": "narrative"},
+      {"text": "My neighbors on Brices Creek were the Whitakers. Two doors down. Their dog used to come up our driveway and sit on Noah's foot. Noah let it. Noah was easy with dogs and people both.", "type": "narrative"},
+
+      {"text": "A note enclosed with a painted card sent to her old bridge club: 'To my Thursday girls — I cannot play this week, but I am thinking of you. Save me a hand. — Allie.'", "type": "social_post"},
+
+      {"text": "Ruth: you said 'ain't' again, Allie\nAllie: I did, sugar\nRuth: I expected better of you\nAllie: I was raised proper. I just got tired of it.\nRuth: ha\nAllie: bless you, Ruth. you keep me sharp.", "type": "chat_log"},
+      {"text": "Harold: Margaret, there you are\nAllie: here I am\nHarold: where have you been\nAllie: right here, Harold\nHarold: you look tired\nAllie: a little\nHarold: I'll let you rest\nAllie: you're a good man.", "type": "chat_log"},
+      {"text": "Pastor: shall we pray, Mrs. Calhoun\nAllie: yes, please\nPastor: is there anything particular\nAllie: for Noah. always for Noah.\nPastor: alright\nAllie: and for the children. the names will come back to me. just pray for the children.", "type": "chat_log"},
+      {"text": "Visitor: Allie, do you remember me\nAllie: your face is familiar, sugar\nVisitor: it's Caroline. from the bridge club.\nAllie: oh — Caroline. you still wear that lipstick.\nVisitor: I do\nAllie: good. don't change a thing.", "type": "chat_log"},
+      {"text": "Esther: Miss Allie, there's a young man here says he's your grandson\nAllie: send him in, sugar\nEsther: he says he hasn't seen you in a while\nAllie: that's alright. I've been forgetting. we can start fresh.", "type": "chat_log"},
+      {"text": "Nurse: Mrs. Calhoun, you have a visitor\nAllie: who is it\nNurse: she says her name is Sara\nAllie: — Sara?\nNurse: yes\nAllie: oh my. oh my. bring her in right now.", "type": "chat_log"},
+      {"text": "Neighbor resident: Allie, will you sit with me a while\nAllie: yes, honey\nNeighbor: I don't have anybody today\nAllie: today you have me\nNeighbor: thank you\nAllie: that's what we're here for.", "type": "chat_log"}
+    ]
+  }
+}

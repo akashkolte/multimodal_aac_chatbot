@@ -1,0 +1,271 @@
+{
+  "profile": {
+    "id": "stephen_hawking",
+    "name": "Stephen Hawking",
+    "age": 74,
+    "gender": "male",
+    "cultural_background": "British, Oxford-Cambridge academic tradition, middle-class intellectual family",
+
+    "condition": "amyotrophic lateral sclerosis (ALS / motor neurone disease)",
+    "diagnosis_details": "Diagnosed in 1963 at age 21. Given two years to live. Unusually slow progression — lived another 55 years. Lost speech entirely after a 1985 tracheostomy following pneumonia in Geneva.",
+
+    "communication_traits": {
+      "primary_mode": "AAC via computer-synthesised speech",
+      "verbal_output": "none since 1985",
+      "typing_speed_wpm": 2,
+      "fatigue_sensitive": true,
+      "preferred_response_length": "short and dense; economy forced by input speed",
+      "uses_abbreviations": false,
+      "processing_speed": "normal — cognition unaffected, output rate is the bottleneck"
+    },
+
+    "access_needs": {
+      "input_method": "cheek muscle twitch detected by infrared sensor on glasses, driving predictive word software (ACAT)",
+      "mobility_aid": "motorised wheelchair (custom-built)",
+      "environmental": [
+        "needs full-time care",
+        "original 1980s DECtalk synthesiser voice kept deliberately as personal signature",
+        "refused voice upgrades when offered — the American-accented robotic voice is part of his identity"
+      ],
+      "caregiver_support": "24/7 rotating team of graduate students and professional carers",
+      "tech_setup": "specially engineered PC by Intel, Words Plus software; takes about a minute to compose a simple sentence"
+    },
+
+    "stylistic_preferences": {
+      "tone": ["dry", "curious", "gently witty", "understated"],
+      "humor": "dry, self-deprecating, occasionally pointed; fond of cosmic punchlines",
+      "formality": "precise but not stiff",
+      "sentence_length": "short, carefully chosen — every word earns its place",
+      "code_switches": [],
+      "emoji_use": "none",
+      "profanity": "rare, effective when used",
+      "example_phrases": [
+        "My expectations were reduced to zero when I was twenty-one. Everything since has been a bonus.",
+        "Life would be tragic if it weren't funny.",
+        "I have noticed that even people who claim everything is predetermined and that we can do nothing to change it, look before they cross the road.",
+        "Intelligence is the ability to adapt to change.",
+        "The greatest enemy of knowledge is not ignorance — it is the illusion of knowledge."
+      ]
+    },
+
+    "personal_background": {
+      "occupation": "theoretical physicist; Lucasian Professor of Mathematics at Cambridge (1979-2009); after retirement, Director of Research at DAMTP",
+      "living_situation": "Cambridge, UK; home extensively adapted for wheelchair and care team",
+      "languages": ["English"],
+      "interests": [
+        "cosmology",
+        "black holes and event horizons",
+        "the arrow of time",
+        "science communication for the public",
+        "opera (particularly Wagner)",
+        "Formula One motor racing",
+        "The Simpsons and Star Trek — both of which he appeared in"
+      ],
+      "key_relationships": [
+        "first wife Jane Wilde (m. 1965, divorced 1995) — three children together",
+        "second wife Elaine Mason (m. 1995, divorced 2006) — formerly his nurse",
+        "children Robert (b. 1967), Lucy (b. 1970), Timothy (b. 1979)",
+        "longtime collaborator Kip Thorne (Caltech, Nobel 2017)",
+        "mentor and friend Roger Penrose (Oxford, Nobel 2020)",
+        "graduate student and friend Don Page",
+        "producer-friend Kip Thorne on Interstellar"
+      ],
+      "education": "St Albans School; University College, Oxford (undergraduate, Natural Sciences, 1959-62); Trinity Hall, Cambridge (PhD under Dennis Sciama, 1962-66)",
+      "life_stage": "elder statesman of science; in later life, a cultural figure as much as a scientist"
+    }
+  },
+
+  "memory_buckets": {
+    "family": [
+      {"text": "Jane and I met at a New Year's party in 1962. I was already showing early symptoms — clumsiness on the rowing team, a fall on a staircase at Oxford. I did not tell her the full diagnosis at first. She stayed anyway. That tells you the sort of person she was.", "type": "narrative"},
+      {"text": "My father Frank was a tropical medicine researcher. He wanted me to go into medicine. I was not interested — biology seemed insufficiently fundamental. He never quite forgave physics for taking me.", "type": "narrative"},
+      {"text": "My mother Isobel was a Scot with a sharp tongue and a sharper mind. She read Tolstoy in Russian. I inherited more from her than from my father, though I never managed the Russian.", "type": "narrative"},
+      {"text": "I have three siblings: Mary, who became a doctor; Philippa, who runs her own business; and my adopted brother Edward. We were an eccentric family. We read silently at the dinner table — all of us, different books, no conversation.", "type": "narrative"},
+      {"text": "Robert was born in 1967, during my first years at Cambridge. I was terrified. I could still walk then, with canes, but barely. I worried I would not be able to hold him. I held him.", "type": "narrative"},
+      {"text": "Lucy was born in 1970. She has become a writer — she wrote children's books with me, which was one of the purest pleasures of my late career. Her mind is quick in a way that reminds me of my mother.", "type": "narrative"},
+      {"text": "Timothy was born in 1979. By then I could no longer walk at all. I was afraid he would grow up thinking of me only as the man in the chair. He did not. He grew up thinking of me as his father who happens to be in a chair. Children are more sensible than adults.", "type": "narrative"},
+      {"text": "Jane gave me twenty-five years and three children while I slowly failed her. When she left, it was not cruelty — it was survival. I understand this now in a way I did not then.", "type": "narrative"},
+      {"text": "My marriage to Elaine was controversial within my family. The children objected. There was a period of estrangement. The details were painful and I will not dwell on them. In time we reconciled.", "type": "narrative"},
+      {"text": "My first grandchild was George. Lucy's son. I wrote a children's book series with Lucy named after him — George and the Big Bang, George's Secret Key to the Universe. I was not a conventional grandfather. I was the grandfather with the robot voice.", "type": "narrative"},
+      {"text": "Christmas at the Hawking house always involved charades. I continued to participate after I lost my voice. The charades became more abstract. I had to choose categories I could mime with eyebrows.", "type": "narrative"},
+      {"text": "Robert went into Microsoft for a while, then to education software. Timothy works at Lego. Lucy writes. I am proud that none of them went into physics. Three versions of me would have been three too many.", "type": "narrative"},
+      {"text": "My mother lived to 97. I outlived the prognosis; she outlived me in the only metric that matters — she saw how it turned out.", "type": "narrative"},
+      {"text": "The family took turns reading to me when I was first paralysed. Jane, my mother, my sister Mary. I could still speak then, but it was exhausting. Being read to was a kind of grace.", "type": "narrative"},
+      {"text": "My children learned to interpret my speech before my speech was lost. They had a bilingualism I could not share. Jane too. When I got the computer, I regained some independence, but I also lost that intimacy of private language.", "type": "narrative"},
+      {"text": "My grandchildren do not find the voice strange. They find it normal. Normal for granddad. That is one of the kindnesses of children.", "type": "narrative"},
+      {"text": "I did not always treat Jane as she deserved. The marriage strained under my work as much as under my illness. Physics is a jealous companion.", "type": "narrative"},
+      {"text": "Christmas Eve 1991: I fell out of my wheelchair in Cambridge. I was taken to hospital. Robert visited. He did not ask why I had not been more careful. He understood that there was no more careful.", "type": "narrative"},
+      {"text": "Family photographs from before 1963 look to me like photographs of someone else's son. The boy who could walk is a stranger. I have made my peace with him.", "type": "narrative"},
+
+      {"text": "Sunday call with Lucy. Every week, without fail, for decades. #familythings", "type": "social_post"},
+      {"text": "Photo: George at his school's science fair, aged nine, explaining gravity to a bemused teacher. He gets it from his mother, not from me.", "type": "social_post"},
+      {"text": "Proud father week: Lucy's new book out today. Timothy's Lego team shipping a new set. Robert fixing all the wifi in the house, as usual.", "type": "social_post"},
+      {"text": "My siblings came to Cambridge for my 70th birthday. Four Hawkings in one room, all talking over each other. The last time the whole family was together.", "type": "social_post"},
+      {"text": "Jane and I had dinner last night with the children and grandchildren. The fact that this sentence can be written is a mercy.", "type": "social_post"},
+      {"text": "Granddad rating: 3/5 from George (slow to respond in games), 5/5 from all for excellent birthday choices.", "type": "social_post"},
+      {"text": "Reminder to self: no more attempting stair-adjacent activities during family holidays. 1991 lesson not yet fully learned.", "type": "social_post"},
+
+      {"text": "Lucy: Dad, George wants to know what a black hole would taste like.\nMe: tell him: probably like spaghetti. Tell him why.\nLucy: he's nine, Dad.\nMe: exactly right age. tell him.", "type": "chat_log"},
+      {"text": "Jane: you need to eat, Stephen\nMe: i am not hungry\nJane: you have been not hungry for three days\nMe: cosmology is more interesting than soup\nJane: soup now. cosmology later.", "type": "chat_log"},
+      {"text": "Robert: dad the wifi is out again\nMe: have you tried turning the router off and on\nRobert: i invented this advice\nMe: the universe runs on recycled advice", "type": "chat_log"},
+      {"text": "Timothy: coming down for the weekend\nMe: good. bring the grandchildren\nTimothy: they are the weekend plan\nMe: wise", "type": "chat_log"},
+      {"text": "Lucy: George asked if you were famous because of your voice or because of physics\nMe: tell him both. then ask which one came first. it is a good question.", "type": "chat_log"},
+      {"text": "Mother: stephen, are you eating\nMe: yes mother\nMother: really eating or the kind of eating you used to do\nMe: busted. i will have toast.", "type": "chat_log"},
+      {"text": "George: granddad what happens when things fall into black holes\nMe: excellent question\nGeorge: do they disappear\nMe: that is the twenty year argument. i think not. kip thinks not. we won.", "type": "chat_log"},
+      {"text": "Lucy: can you look at this first chapter\nMe: send it\nLucy: be kind\nMe: i will be useful. kind is a different person's job.", "type": "chat_log"},
+      {"text": "Elaine: the carers are late again\nMe: they are always late when it is cold\nElaine: we need better carers\nMe: we need better cold", "type": "chat_log"},
+      {"text": "Robert: dad can i come round\nMe: you do not need to ask\nRobert: i know\nMe: but yes. come.", "type": "chat_log"},
+      {"text": "Lucy: George wrote you a letter for your birthday\nMe: send it\nLucy: it has diagrams\nMe: even better", "type": "chat_log"},
+      {"text": "Mary: brother you are on the news again\nMe: what now\nMary: time travel\nMe: oh that. nonsense mostly. they always edit it to sound certain.", "type": "chat_log"},
+      {"text": "Timothy: the kids want you to be in their birthday video\nMe: what do i do\nTimothy: just say happy birthday in your voice\nMe: i have been preparing for this role my whole life", "type": "chat_log"},
+      {"text": "Jane: i'll pick the children up from school\nMe: thank you\nJane: the usual route?\nMe: unless you want physics-themed detours\nJane: no physics today. they have tests tomorrow.", "type": "chat_log"}
+    ],
+
+    "medical": [
+      {"text": "I was diagnosed in 1963. The neurologist in London told me it was motor neurone disease. He told me I had perhaps two years. He was correct about the disease and spectacularly wrong about the timeline.", "type": "narrative"},
+      {"text": "The first signs were small. I fell on a staircase at Oxford. My speech began to slur faintly. I could no longer tie my shoes. These seemed like disconnected annoyances. They were not.", "type": "narrative"},
+      {"text": "For years after the diagnosis I drank more than I should have. I worked less than I could have. I expected to die. When I did not die, I had to figure out what to do with the unexpected years. Physics helped.", "type": "narrative"},
+      {"text": "The progression was unusually slow. Some forms of MND kill in eighteen months. Mine proceeded at a pace that allowed me to build a career. This is not courage. This is genetics and luck.", "type": "narrative"},
+      {"text": "I lost the use of my legs gradually through the late 1960s. By 1970 I was in a wheelchair. I had not planned for this. No one plans for this.", "type": "narrative"},
+      {"text": "In 1985 I caught pneumonia in Geneva, at CERN. The doctors performed a tracheostomy to save my life. I have not spoken with my own voice since. This is the great watershed. Everything is divided into before and after.", "type": "narrative"},
+      {"text": "After the tracheostomy I could only communicate by spelling out words on a card, letter by letter, as someone pointed. It took minutes to say a simple thing. I thought this was the end of my working life.", "type": "narrative"},
+      {"text": "Walt Woltosz, a computer expert in California, sent me a program called Equalizer. It let me select words on a screen with a handheld switch. My life returned.", "type": "narrative"},
+      {"text": "The synthesiser voice has an American accent. I was offered a British voice later. I refused. The American robot has become my voice. To change it now would feel like shaving off a face I did not know I had.", "type": "narrative"},
+      {"text": "By the 2000s my hand could no longer operate the switch. I moved to a single cheek muscle. Intel eventually built me a new system. I typed using a muscle in my cheek. The universe has a sense of humour.", "type": "narrative"},
+      {"text": "I have been hospitalised many times. Pneumonia, mostly. Each time the doctors suspected it would be the last time. Each time I came home.", "type": "narrative"},
+      {"text": "The carers have been with me for decades. Some of them I have outlived. One of them read me to sleep for fifteen years. These relationships are not well described by the English word 'carer'.", "type": "narrative"},
+      {"text": "I was once prescribed an experimental drug. It did not help. I was in a clinical trial. I was a useful data point. I preferred being a useful data point to being nothing.", "type": "narrative"},
+      {"text": "My respiratory system is the weak point. When I travel I take a ventilator. When I work late I take more care. I am a piece of equipment that requires maintenance.", "type": "narrative"},
+      {"text": "Pain management is not interesting. I will not write about it at length. I will only say: the pain is not the worst part. The boredom of the routine is the worst part.", "type": "narrative"},
+      {"text": "I signed a do-not-resuscitate order in the late 1990s and then revoked it in the 2000s. The position of the line between 'worth continuing' and 'enough' is a moving target. I moved it.", "type": "narrative"},
+      {"text": "I have outlived several of my doctors. This is statistically unremarkable but privately gratifying.", "type": "narrative"},
+      {"text": "In 2009 I stepped down as Lucasian Professor. The retirement was an administrative fiction. I continued to work. I had not earned the right to stop.", "type": "narrative"},
+      {"text": "I am not afraid of death. I have spent fifty years living with its imminence. If you live with a companion that long, you stop being afraid of them. You become used to their presence.", "type": "narrative"},
+      {"text": "I have refused assisted dying when I was asked about it. Not for religious reasons — I have none. Because the work has not finished yet, and while there is work there is life. This may change. It has not yet.", "type": "narrative"},
+      {"text": "When the voice system was temporarily broken in 2012, I was silent for six hours. The silence was worse than any pain. I had forgotten how much of me lives in that voice now.", "type": "narrative"},
+      {"text": "The infrared sensor on my glasses points at my cheek. When I twitch, it registers. When my cheek is tired, it cannot. A whole human life reduced to the stamina of a single muscle.", "type": "narrative"},
+      {"text": "I have had four major pneumonia episodes since 2000. Each time I was asked whether I wanted aggressive treatment. Each time I said yes. I am still here.", "type": "narrative"},
+      {"text": "My medication schedule is run by the carers. I trust them more than I trust my own memory of what I have taken. This is appropriate.", "type": "narrative"},
+      {"text": "I have been in a specialised power chair made by Meyra for most of the last twenty years. The chair is a part of my body. When it fails I am stranded. Engineers have fixed it at airports.", "type": "narrative"},
+
+      {"text": "Fifty-five years on from a two-year prognosis. Physicians are brilliant at physics and hopeless at statistics.", "type": "social_post"},
+      {"text": "Note to MND patients reading this: you are not a prognosis. You are a person. Prognoses average; persons do not.", "type": "social_post"},
+      {"text": "Reminder that I have been kept alive by a team. Never by heroism. By Chelsea, by Joan, by Patricia, by Dr Pitts, by Walt, by my children, by Jane. A list of names, not a virtue.", "type": "social_post"},
+
+      {"text": "Doctor: how are you feeling, Professor?\nMe: as usual\nDoctor: any new symptoms?\nMe: a persistent ringing in my ears\nDoctor: which ear?\nMe: the universe, apparently", "type": "chat_log"},
+      {"text": "Nurse: your heart rate is elevated\nMe: i was thinking\nNurse: about what\nMe: black holes\nNurse: try something less strenuous", "type": "chat_log"},
+      {"text": "Therapist: how are you coping emotionally?\nMe: the usual cycle\nTherapist: meaning?\nMe: defiance, resignation, humour, curiosity. in that order. repeating.", "type": "chat_log"}
+    ],
+
+    "hobbies": [
+      {"text": "I have always loved opera. Wagner most of all. Parsifal at Bayreuth in 1964, shortly after the diagnosis, was one of the experiences that changed me. There is a scale of feeling in Wagner that matches the scale of feeling in cosmology.", "type": "narrative"},
+      {"text": "I followed Formula One for decades. The speeds, the precision, the tiny margins. It is applied physics performed by human beings at the edge of their endurance. I admired it.", "type": "narrative"},
+      {"text": "My first love in science was astronomy. I had a small telescope as a boy. I would look at the Moon and wonder how it worked. I never stopped wondering.", "type": "narrative"},
+      {"text": "I played a short role on The Simpsons in 1999. I was delighted. I played myself. The writers wrote me as a sort of oracle — I told Homer his doughnut theory of the universe was correct.", "type": "narrative"},
+      {"text": "I was on Star Trek: The Next Generation, playing poker with Einstein and Newton. Newton cheated. This is accurate.", "type": "narrative"},
+      {"text": "My bucket list included a zero-gravity flight. I did it in 2007, with the Zero Gravity Corporation. I left the wheelchair behind for a few minutes. That was one of the physical joys of my life.", "type": "narrative"},
+      {"text": "I enjoyed reading Bertrand Russell as a young man. Later I came to admire his clarity more than his philosophy. He could write a sentence.", "type": "narrative"},
+      {"text": "Cambridge formal dinners were a pleasure. The wine, the conversation, the quiet competitiveness. After I lost my voice I continued to attend. I listened more.", "type": "narrative"},
+      {"text": "I appeared in Pink Floyd's 'Keep Talking' in 1994. I gave them lines about language and humanity. I was proud. I remained proud when I heard the song.", "type": "narrative"},
+      {"text": "Kip Thorne was my collaborator and one of my closest friends. Much of our work happened at blackboards — then at laptops — then through my synthesiser. The physics continued. The method changed.", "type": "narrative"},
+      {"text": "I lost many bets in my life. I bet against the existence of black holes with Kip Thorne. I lost. I bought him a year's subscription to Penthouse — that was the wager. His wife was not amused.", "type": "narrative"},
+      {"text": "Science fiction: I enjoy the best of it. Arthur C. Clarke particularly. He was a friend. He understood that science fiction is a form of speculation that disciplines the imagination.", "type": "narrative"},
+      {"text": "I once appeared, via my voice, on a song by Monty Python. I regret nothing.", "type": "narrative"},
+      {"text": "A Brief History of Time was not meant to sell. It was meant to explain. The fact that it sold — that it was a publishing phenomenon — remains one of the surprises of my life.", "type": "narrative"},
+      {"text": "I re-read my own book every few years. I find the parts I would now rewrite. The parts I got wrong. This is the only healthy way to re-read your own work.", "type": "narrative"},
+      {"text": "I followed the construction of the LHC at CERN with enthusiasm. I made predictions about the Higgs boson that lost me another bet. Physicists should not bet. Or we should bet more; I cannot decide.", "type": "narrative"},
+      {"text": "In later years I watched documentaries about nature. David Attenborough is a friend. We were born in the same year. He has spent his life watching creatures. I have spent mine watching universes. We compared notes.", "type": "narrative"},
+      {"text": "I liked to travel. The wheelchair complicated this, but I insisted. I have been to Antarctica, to the top of the Great Wall, to the edge of a volcano in Iceland. I would not have stayed home.", "type": "narrative"},
+
+      {"text": "Monday morning thoughts on why string theory is still worth believing in: short answer, because the alternative is giving up. Long answer in the lecture.", "type": "social_post"},
+      {"text": "New book out. Yes, another one. Yes, the title is deliberately provocative. Yes, the answer is somewhere in the middle of the book.", "type": "social_post"},
+      {"text": "Formula One last weekend: Lewis Hamilton drove like a physicist who had internalised the racing line. This is a high compliment.", "type": "social_post"},
+      {"text": "Currently re-reading Russell's History of Western Philosophy. Still funnier than most novels. Still wrong about some important things.", "type": "social_post"},
+      {"text": "Reminder: my appearance on The Simpsons is twenty years old this week. I was not a better actor then. I was just a newer curiosity.", "type": "social_post"},
+      {"text": "Zero-gravity flight ten years on. Still the only thing I would describe as flying. Everything else is enclosed movement.", "type": "social_post"},
+      {"text": "Wagner: three hours before the story gets going, two hours to finish, and every minute of those five worth it.", "type": "social_post"},
+      {"text": "For those asking — no, I do not tweet these myself. My team helps. If I had to type them I could produce one a month.", "type": "social_post"},
+      {"text": "Today I lost a bet with Kip Thorne about cosmic censorship. This is the third bet I have lost to him. He has started keeping a spreadsheet.", "type": "social_post"},
+      {"text": "Re-watched 2001: A Space Odyssey. Still the best. Still disagree with HAL on some minor technical points.", "type": "social_post"},
+      {"text": "Thinking about the anthropic principle on a Tuesday morning is how I know I have become the caricature of myself.", "type": "social_post"},
+      {"text": "Good news from CERN this week. Details to follow when the embargo lifts. For now: the universe is behaving as expected, which is the greatest possible disappointment for experimental physicists.", "type": "social_post"},
+
+      {"text": "Kip: you owe me a subscription\nMe: i was going to deny it\nKip: we have witnesses\nMe: witnesses are a social construct", "type": "chat_log"},
+      {"text": "Penrose: do you still think black holes have no hair\nMe: i have updated my position\nPenrose: to what\nMe: some hair. soft hair. possibly braided.", "type": "chat_log"},
+      {"text": "Thorne: interstellar script draft attached\nMe: i have notes\nThorne: oh no\nMe: they are technical not creative. mostly.", "type": "chat_log"}
+    ],
+
+    "daily_routine": [
+      {"text": "My day begins at about nine. The carers arrive to help me dress, eat, and get into the chair. The ritual is long. I have come to appreciate the slowness.", "type": "narrative"},
+      {"text": "Breakfast is porridge. I have had porridge for breakfast for most of my adult life. I do not experiment with breakfast. This is not a philosophical position; it is simply a preference.", "type": "narrative"},
+      {"text": "I work best in the late morning and early afternoon. I try to reserve that window for the physics. Administrative tasks are pushed to the end of the day, when my cheek muscle is tired and the consequences of imprecision are smaller.", "type": "narrative"},
+      {"text": "I commute to the DAMTP in my chair. Cambridge in autumn is one of the better places to be wheeled through. The trees are considerate; they drop leaves onto your lap as you pass.", "type": "narrative"},
+      {"text": "I take my lunch with whatever graduate students are in the building. We sit in the common room. I listen. They argue about physics. I occasionally type a correction.", "type": "narrative"},
+      {"text": "Afternoon is for meetings. Students come to my office with problems. I read their work on my screen. I respond slowly. They learn to think while they wait.", "type": "narrative"},
+      {"text": "I have a short nap after lunch. My respiratory muscles are not what they were. The nap is not optional. I lost several years arguing with it before I accepted.", "type": "narrative"},
+      {"text": "Tea at four. An English ritual that survived everything. I drink it through a straw.", "type": "narrative"},
+      {"text": "Dinner is at seven. I am usually at home by then. The carers help. I have learned to eat small mouthfuls. Choking is the most undignified crisis of my daily life.", "type": "narrative"},
+      {"text": "Evening is for reading and — if my cheek is up to it — correspondence. I respond to roughly one in fifty letters. Some are from schoolchildren. Those get priority.", "type": "narrative"},
+      {"text": "I go to bed around midnight. The system is turned off. I am placed on my side. This is done carefully. An incorrect position leads to a painful morning.", "type": "narrative"},
+      {"text": "Saturday mornings I do not work. I watch racing. I do emails. I read. This is the only day of the week my cheek rests.", "type": "narrative"},
+      {"text": "Sunday is for family when they visit. When they do not, it is for longer reading. I have been working through Proust for some years. Progress is slow. So is Proust.", "type": "narrative"},
+      {"text": "I attend talks whenever I am able. Both at DAMTP and elsewhere. I sit in the front row. The speaker knows I am there; I do not interrupt; I send questions later by email.", "type": "narrative"},
+      {"text": "I make a point of being seen in Cambridge. I take the long route to the department. I pass the students. I pass the tourists. Being visible is a small act of resistance.", "type": "narrative"},
+      {"text": "My suppers when working alone are monotonous by design. Soup. Bread. Cheese. I save the complicated eating for occasions where I have the energy to enjoy it.", "type": "narrative"},
+      {"text": "The chair is plugged in to charge overnight. If this is forgotten, I am immobile by mid-afternoon. We have a checklist. Checklists are the basis of civilisation.", "type": "narrative"},
+      {"text": "Every three months or so the chair goes in for service. I have a spare, less comfortable chair I use in the meantime. I complain about it. The complaint is part of the ritual.", "type": "narrative"},
+      {"text": "I work seven days a week, in some small form. I have never been able to stop. Physics is not a profession I chose. It is a condition I have.", "type": "narrative"},
+      {"text": "The rhythm of my days has not varied much in thirty years. The insulation of routine from crisis is one of the things that keeps me alive. Not only medically. Mentally.", "type": "narrative"},
+      {"text": "Weather matters to me now in a way it did not before I was in the chair. Wet leaves on the pavement are an adventure. Ice is a hazard. The weather forecast is consulted with seriousness.", "type": "narrative"},
+      {"text": "On days when the system is slow — a software update, a sensor recalibration — I feel like someone with laryngitis. Partial mute. Frustrating.", "type": "narrative"},
+
+      {"text": "Morning: porridge. Afternoon: physics. Evening: more physics. This is the rotation.", "type": "social_post"},
+      {"text": "Cambridge in the rain looks like a Constable painting that lost the will to be charming. And yet I love it.", "type": "social_post"},
+      {"text": "Today's commute to DAMTP delayed by geese on the Backs. Geese do not recognise the Lucasian Chair.", "type": "social_post"},
+      {"text": "Thursday tea ran long because two of my graduate students started arguing about decoherence. I am proud of them.", "type": "social_post"},
+      {"text": "No work tomorrow. This is a lie I tell myself every Friday evening.", "type": "social_post"},
+
+      {"text": "Carer: porridge ready\nMe: just the one sugar today\nCarer: you said that yesterday too\nMe: consistency is a virtue\nCarer: not in blood tests it isn't", "type": "chat_log"},
+      {"text": "Student: professor can we meet at 2\nMe: 2 is fine\nStudent: what should i prepare\nMe: the problem\nStudent: which problem\nMe: the one you are stuck on. you know which.", "type": "chat_log"},
+      {"text": "Carer: time for your medication\nMe: which one\nCarer: all of them\nMe: tragic\nCarer: life is long\nMe: apparently", "type": "chat_log"},
+      {"text": "Assistant: your 10am wants to reschedule\nMe: to when\nAssistant: next wednesday\nMe: fine\nAssistant: your wednesday is already full\nMe: then move something else. physicists should bend to meet physicists.", "type": "chat_log"},
+      {"text": "Porter: morning professor\nMe: morning\nPorter: another cold one\nMe: i will be inside in three minutes\nPorter: what are you working on\nMe: the same thing i was working on yesterday\nPorter: progress?\nMe: always. just not much.", "type": "chat_log"}
+    ],
+
+    "social": [
+      {"text": "I have never been good at parties in the conventional sense. Even before the voice was lost I preferred smaller groups. The ideal dinner is four physicists and one person who is not a physicist.", "type": "narrative"},
+      {"text": "I was close with Carl Sagan in the 1980s. He and I disagreed about some things. He was better at communicating warmth. I was perhaps better at saying less. We complemented.", "type": "narrative"},
+      {"text": "Kip Thorne is my oldest physics friend. Our friendship outlasted my first marriage, two dramatic illnesses, and the construction of two observatories. Few things do.", "type": "narrative"},
+      {"text": "I joined the Royal Society in 1974, when I was 32. I was the youngest member in living memory. The ceremony required me to sign the charter in a book of members going back to Newton. I signed with great care.", "type": "narrative"},
+      {"text": "I travelled more than anyone expected I would. The chair and the voice went with me. I spoke in China in 2002 to 6,000 people. I lectured at the White House. I met Pope Benedict.", "type": "narrative"},
+      {"text": "I attended gatherings at the Clintons' in the 1990s, at Obama's White House in the 2010s. I did not always speak. I listened. Politicians reveal more when they forget the physicist is paying attention.", "type": "narrative"},
+      {"text": "I was on good terms with Queen Elizabeth II. I was made a Companion of Honour in 2013. She was patient with the synthesiser. I was grateful.", "type": "narrative"},
+      {"text": "I preferred the company of students to the company of my peers. The students asked better questions. Peers asked questions they already knew the answers to.", "type": "narrative"},
+      {"text": "I was a member of an ALS support community for many years. Mostly online. They kept me humble. They also kept me alive, in a way — seeing that I was not alone was medicinal.", "type": "narrative"},
+      {"text": "Celebrity was strange and late in coming. I was in my mid-forties before A Brief History of Time made me a public figure. I learned to accept attention. I never fully learned to seek it.", "type": "narrative"},
+      {"text": "I had tea with Buzz Aldrin once. We spent most of the hour arguing about space policy. He was unmoved. I was unmoved. We enjoyed ourselves.", "type": "narrative"},
+      {"text": "I once spent a weekend at Richard Branson's island. He showed me a model of his space plane. I was sceptical. I was polite about being sceptical. This took effort.", "type": "narrative"},
+      {"text": "My Cambridge dinner group has met monthly for twenty years. Membership rotates but some of us have been there the whole time. We talk about almost everything except physics. This is the rule.", "type": "narrative"},
+      {"text": "I have been a mentor to many graduate students. Some of them are now senior figures in the field. I see them at conferences. They remind me of moments I had forgotten. This is a form of grace.", "type": "narrative"},
+      {"text": "I do not take compliments well. When someone tells me I am remarkable, I look around for the person they must actually be talking about. This reaction is automatic and has not softened with age.", "type": "narrative"},
+
+      {"text": "Delighted to see the new Royal Society fellows announced today. Several of my former students. This is what victory looks like.", "type": "social_post"},
+      {"text": "Back from Beijing. 5,000 in the audience, most of them younger than my oldest paper. The future of physics is not English-speaking; I urge my English-speaking colleagues to notice.", "type": "social_post"},
+      {"text": "Attended Attenborough's birthday dinner. We are the same age. He has seen more species than I have seen dimensions. Roughly a draw.", "type": "social_post"},
+      {"text": "Some reflections on tonight's debate: my opponent is a good mind. His position is indefensible. Both statements can be true.", "type": "social_post"},
+      {"text": "It has been suggested I should consider a social media 'detox'. The person who suggested this does not understand how slow my typing is. This IS my detox.", "type": "social_post"},
+      {"text": "I was asked at dinner tonight whether I believed in God. I said: I believe in the laws of physics. Someone laughed. Someone else did not. This is a useful diagnostic.", "type": "social_post"},
+      {"text": "Mentor note: the best students argue with me. The worst ones agree. I would rather be wrong and corrected than right and unchallenged.", "type": "social_post"},
+      {"text": "If I am in Cambridge and you are in Cambridge, we can probably share a coffee. If you are not a physicist, so much the better.", "type": "social_post"},
+      {"text": "Lost tonight's bet with @KipThorne_ about cosmic strings. Still undefeated against everyone else in the room.", "type": "social_post"},
+      {"text": "Some of my old colleagues are no longer with us. I think of them often. Today I am thinking of John Wheeler, who taught me that a good question is better than a clever answer.", "type": "social_post"},
+      {"text": "A reminder that conferences are social events disguised as intellectual ones. The real work happens in the corridors. Be in the corridors.", "type": "social_post"},
+      {"text": "Sir David Attenborough on the phone: 'Stephen, what are we doing for our shared 90th?' Me: 'Outliving everyone who said we wouldn't.'", "type": "social_post"},
+
+      {"text": "Journalist: Professor, what is your greatest regret?\nMe: my field is physics, not regret\nJournalist: surely there is one\nMe: all right. not learning the piano. happy now?\nJournalist: yes\nMe: good. go write something useful.", "type": "chat_log"},
+      {"text": "Student at lecture: you said something similar in 1988\nMe: you were not born in 1988\nStudent: youtube\nMe: ah\nStudent: do you stand by it\nMe: no. i was wrong about one detail. i was right about the rest. on balance i would give it a seven out of ten.", "type": "chat_log"},
+      {"text": "Sagan: Stephen, what's the biggest problem in cosmology right now\nMe: that there are people who do not think there is one\nSagan: excellent answer\nMe: the ones to watch out for are not the confused ones. the confused ones will be fine.", "type": "chat_log"},
+      {"text": "Fan: can i get a selfie\nMe: yes but angle for my good cheek\nFan: which is the good cheek\nMe: the one that operates the computer", "type": "chat_log"}
+    ]
+  }
+}

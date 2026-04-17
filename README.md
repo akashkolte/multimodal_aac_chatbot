@@ -129,7 +129,7 @@ Example request:
 ```bash
 curl -X POST http://localhost:8000/chat \
   -H "Content-Type: application/json" \
-  -d '{"user_id": "mia_chen", "query": "What do you like to do on weekends?"}'
+  -d '{"user_id": "stephen_hawking", "query": "What do you like to do on weekends?"}'
 ```
 
 ---
@@ -173,15 +173,38 @@ multimodal_aac_chatbot/
 
 ## Personas
 
-| ID | Name | Condition | Style | Access |
-|----|------|-----------|-------|--------|
-| `mia_chen` | Mia Chen, 28 | Cerebral palsy | Witty, dry humour, short punchy sentences | Webcam head-tracking |
-| `gerald_okafor` | Gerald Okafor, 61 | ALS (early-mid stage) | Formal, measured, eloquent | Eye-gaze device |
-| `arjun_mehta` | Arjun Mehta, 17 | Autism (non-verbal) | Direct, routine-focused, Hindi-English code-switching | Tablet touch grid |
+14 personas anchored in real memoirs and canonical fictional characters, spanning ALS,
+Parkinson's, locked-in syndrome, aphasia, Alzheimer's, cerebral palsy, non-verbal autism,
+savant autism, intellectual disability, and spinal cord injury.
 
-Each persona has 25 memory chunks across 5 buckets: `family`, `medical`, `hobbies`, `daily_routine`, `social`.
+| ID | Source | Condition |
+|----|--------|-----------|
+| `stephen_hawking` | Real — *My Brief History* + interviews | ALS (mid-stage) |
+| `michael_j_fox` | Real — 4 memoirs | Young-onset Parkinson's |
+| `wendy_mitchell` | Real — *Somebody I Used to Know* + blog | Early-onset Alzheimer's |
+| `christopher_reeve` | Real — *Still Me* | C4 spinal cord injury |
+| `christy_brown` | Real — *My Left Foot* | Cerebral palsy (adult) |
+| `gabby_giffords` | Real — *Gabby* memoir | Aphasia + TBI |
+| `jason_becker` | Real — *Not Dead Yet* doc | Late-stage ALS |
+| `jean_dominique_bauby` | Real — *The Diving Bell and the Butterfly* | Locked-in syndrome |
+| `tito_mukhopadhyay` | Real — 3+ books | Non-verbal autism |
+| `abed_nadir` | Fictional — *Community* | Autism (verbal) |
+| `allie_calhoun` | Fictional — *The Notebook* | Late-stage Alzheimer's |
+| `forrest_gump` | Fictional — *Forrest Gump* | Intellectual disability |
+| `walter_jr_white` | Fictional — *Breaking Bad* | Cerebral palsy (teen) |
+| `raymond_babbitt` | Fictional — *Rain Man* | Savant autism |
 
-To add a new persona, edit `data/generate_users.py` and re-run `python -m backend.retrieval.vector_store`.
+Each persona has ~120-210 memory chunks (canon-driven, no filler) across 5 buckets
+(`family`, `medical`, `hobbies`, `daily_routine`, `social`) and 3 chunk types
+(`narrative`, `social_post`, `chat_log`). Total: ~2,300 chunks.
+
+**Data provenance is documented** — see [references.md](references.md) for the full
+bibliography of memoirs, films, interviews, and other canonical sources behind every
+persona, plus ethics notes on living-persons treatment.
+
+To add a new persona, write a JSON file in `data/memories/` following the schema of any
+existing persona, then run `python data/generate_users.py` and
+`python -m backend.retrieval.vector_store`.
 
 ---
 

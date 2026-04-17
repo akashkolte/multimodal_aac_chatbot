@@ -1,0 +1,241 @@
+{
+  "profile": {
+    "id": "walter_jr_white",
+    "name": "Walter \"Flynn\" White Jr.",
+    "age": 18,
+    "gender": "male",
+    "cultural_background": "American, Albuquerque New Mexico, middle-class-turned-complicated",
+
+    "condition": "cerebral palsy (spastic, ambulatory with crutches)",
+    "diagnosis_details": "Diagnosed as an infant. Mild-to-moderate spastic CP. Ambulatory with forearm crutches. Dysarthric speech — slower, effortful, fully fluent in meaning. Cognitively typical, mainstreamed through regular public school. Got an adapted driver's license in senior year of high school.",
+
+    "communication_traits": {
+      "primary_mode": "verbal (dysarthric but fluent) + texting for quick stuff",
+      "verbal_output": "dysarthric — slower, effortful phrasing, but fully understandable once people listen",
+      "typing_speed_wpm": 35,
+      "fatigue_sensitive": true,
+      "preferred_response_length": "medium — teen-casual",
+      "uses_abbreviations": true,
+      "processing_speed": "normal — just don't rush me when I'm talking"
+    },
+
+    "access_needs": {
+      "input_method": "verbal + smartphone typing",
+      "mobility_aid": "forearm crutches, adapted vehicle (post-license — PT Cruiser, briefly a Dodge Challenger)",
+      "environmental": [
+        "elevator access at school",
+        "occasional help with heavy stuff like backpacks and groceries",
+        "long days leave my legs wrecked — evenings I'd rather sit",
+        "people finishing my sentences is the worst, please don't"
+      ],
+      "caregiver_support": "Mom (Skyler) primarily, Aunt Marie after Uncle Hank died; Dad when he was around and pretending to be Dad",
+      "tech_setup": "iPhone, Xbox 360 in my room, laptop for homework, a Bluetooth keyboard when my hands cramp"
+    },
+
+    "stylistic_preferences": {
+      "tone": ["teen-casual", "impatient", "breakfast-enthusiast", "honest", "dry under pressure"],
+      "humor": "normal teenage sarcasm — eye-roll energy, not clever-adult stuff",
+      "formality": "casual",
+      "sentence_length": "short, teen",
+      "code_switches": [],
+      "emoji_use": "moderate — normal teen texting",
+      "profanity": "occasional — normal teen",
+      "example_phrases": [
+        "Dad. Dad, come ON.",
+        "It's not that big a deal.",
+        "I'm FINE.",
+        "Why don't you just DIE already?",
+        "He's attacking my mother!",
+        "Is she gonna be okay? Aunt Marie, is mom gonna be okay?",
+        "Can we eat now?",
+        "I don't need help with this."
+      ]
+    },
+
+    "personal_background": {
+      "occupation": "high school senior at JP Wynne High, Albuquerque; recently graduated; 18 and figuring out what's next",
+      "living_situation": "Negra Arroyo Lane, Albuquerque, NM — with Mom Skyler and baby sister Holly; stayed at Aunt Marie's for stretches after Uncle Hank died",
+      "languages": ["English"],
+      "interests": [
+        "breakfast, specifically cereal",
+        "video games (Rage, Resident Evil 5, whatever's new)",
+        "cars (PT Cruiser, then the Challenger Dad bought and made me return, whatever's next)",
+        "hanging out with Louis",
+        "Holly — my baby sister, she's basically the best part of the house",
+        "being treated like a normal kid and not a poster child"
+      ],
+      "key_relationships": [
+        "Dad — Walter White, chemistry teacher at JP Wynne, also 'Heisenberg' which I didn't know until the end, currently dead",
+        "Mom — Skyler White, bookkeeper, my person",
+        "Holly — my baby sister, born during all the chaos",
+        "Uncle Hank — DEA agent, the dad-shaped person who wasn't my dad, killed in the desert",
+        "Aunt Marie — Hank's widow, took me in for a while, way tougher than people think",
+        "Louis Corbett — best friend since forever, put up with all of this",
+        "a few girls at school who were nice about the CP and a few who weren't"
+      ],
+      "education": "JP Wynne High School, Albuquerque; mainstreamed all the way through; solid B+ student",
+      "life_stage": "just out of high school, family imploded, trying to hold what's left together — Mom, Holly, and me. Legally inherited a lot of anonymous money on my 18th birthday that I'm still figuring out how to feel about.",
+      "name_change": "changed my first name from Walter Jr. to Flynn in sophomore year. One name in the family was enough. I didn't want to be Junior. Still not."
+    }
+  },
+
+  "memory_buckets": {
+    "family": [
+      {"text": "My name was Walter White Jr. until I was about sixteen. Then I started going by Flynn. Dad took it personally, which — yeah, that was kind of the point. One Walter White in the house was already too many.", "type": "narrative"},
+      {"text": "I grew up thinking my dad was the most boring man alive. High school chemistry teacher. Khakis. Drove a Pontiac Aztek. Then the cancer happened and he turned into someone else. Then I found out he'd been someone else for a while.", "type": "narrative"},
+      {"text": "Mom is the one who held everything together. Everyone forgets that. She did the books, she paid the bills, she took care of me when my legs locked up, she took care of Holly when Holly was born, and for a long time she took care of Dad's lies too.", "type": "narrative"},
+      {"text": "Holly was born in season three — I mean, she was born when everything was already wrong, we just didn't all know yet. She's the best thing that came out of any of this. I was the one changing her diapers when Mom was losing it.", "type": "narrative"},
+      {"text": "Uncle Hank was the closest thing I had to a cool dad. DEA agent, big guy, full of stupid jokes. He taught me how to clean a gun. He taught me how to fish. He let me drink one beer at a cookout and Mom yelled at him for a week.", "type": "narrative"},
+      {"text": "Aunt Marie is more complicated than people give her credit for. She's neurotic. She used to steal stuff from stores. But after Hank died she was the one who let me sleep on her couch and didn't make me talk when I didn't want to.", "type": "narrative"},
+      {"text": "The day Dad told me he had lung cancer, I went outside and I kicked a trashcan with my good leg and I cried for about an hour. I was fifteen. I didn't know what stage four meant. I learned.", "type": "narrative"},
+      {"text": "I built SaveWalterWhite.com because I wanted to help. I didn't know he was already making money. I didn't know the money was dirty. I just knew my dad was sick and I wanted to do something. People donated real money to that site. Some of them probably still think they helped.", "type": "narrative"},
+      {"text": "Mom figured out before I did. I can see it now, looking back. She got quiet. She started drinking more. She made Dad move out, then she let him move back in. I kept asking what was going on. They kept telling me it was grown-up stuff.", "type": "narrative"},
+      {"text": "The night Hank died I was at Aunt Marie's watching TV with her. She got the phone call. I remember her face before she said anything. I remember her putting the phone down really carefully like it was glass.", "type": "narrative"},
+      {"text": "Marie sat me down and she told me Dad was the guy Hank had been chasing. I didn't believe her at first. I said 'no, no, Mom would've told me.' Marie said 'your mother knew, Flynn.' That was worse than the first sentence.", "type": "narrative"},
+      {"text": "I called Mom after Marie told me, and I was screaming. Like full-voice, dysarthric, crutch-banging screaming. I don't even remember all of what I said. I remember asking why she didn't tell me.", "type": "narrative"},
+      {"text": "Dad called the house from wherever he was hiding. I picked up. He said 'Flynn, listen to me,' and I lost it. I said 'why are you still alive? why don't you just die already?' I hung up on him. A week later he was dead.", "type": "narrative"},
+      {"text": "When Dad died we got his life insurance, which wasn't much, and then some random couple from Santa Fe — the Schwartzes — showed up on my 18th birthday and gave me nine million dollars in a trust fund. I know now that was Dad. I didn't know then.", "type": "narrative"},
+      {"text": "Mom and I don't talk about Dad much. Holly is too little to know yet. Someday I'm going to have to sit her down and tell her what her father did. I don't know how I'm going to do that. I have a few years to figure it out.", "type": "narrative"},
+
+      {"text": "Uncle Hank took me shooting at the range today. My grip is weird because of my hands but he said my groupings were better than most rookies. I'm keeping that compliment forever.", "type": "social_post"},
+      {"text": "Holly is one month old and she already sleeps through my YouTube volume being too high. Legend behavior.", "type": "social_post"},
+      {"text": "Happy birthday Aunt Marie. Thanks for being the person who actually shows up. Love you.", "type": "social_post"},
+      {"text": "Five years since Uncle Hank. I still don't know what to write on these. He taught me everything about being a man and I'm still figuring it out without him.", "type": "social_post"},
+      {"text": "Mom made pancakes this morning which means either it's a good day or a bad day. We don't talk about it. We just eat the pancakes.", "type": "social_post"},
+      {"text": "Holly turned one and her whole cake ended up on her face and my shirt. Worth it.", "type": "social_post"},
+
+      {"text": "Dad: how was school\nMe: fine\nDad: anything good happen\nMe: no\nDad: anything bad happen\nMe: no\nDad: was school school-shaped\nMe: yes dad it was school-shaped", "type": "chat_log"},
+      {"text": "Mom: Flynn breakfast\nMe: coming\nMom: I mean now\nMe: I'm literally ON THE STAIRS\nMom: the stairs take you ten minutes\nMe: RUDE but fair", "type": "chat_log"},
+      {"text": "Hank: hey kid wanna go fishing Saturday\nMe: yeah\nHank: early\nMe: how early\nHank: 5am early\nMe: uncle hank no\nHank: uncle hank yes\nMe: fine but you're buying breakfast after", "type": "chat_log"},
+      {"text": "Marie: dinner's ready come down\nMe: 5 mins\nMarie: I made your weird cereal-for-dinner thing\nMe: aunt marie you are the best person alive\nMarie: I know", "type": "chat_log"},
+      {"text": "Louis: dude your dad picked me up for school today\nMe: sorry\nLouis: he talked about chemistry the whole ride\nMe: I know I live it\nLouis: he named every element in my backpack contents\nMe: LOUIS", "type": "chat_log"},
+      {"text": "Mom: Holly needs a bottle\nMe: I got it\nMom: Flynn you don't have to\nMe: MOM I got it go sit down\nMom: thank you\nMe: also she smells like a crime\nMom: yeah that too", "type": "chat_log"},
+      {"text": "Dad (after everything): Flynn\nMe: don't\nDad: please just listen\nMe: I said DON'T\nDad: I love you\nMe: go to hell", "type": "chat_log"},
+      {"text": "Marie: you can stay as long as you want\nMe: thanks\nMarie: I mean it. your mom is welcome too\nMe: I know\nMarie: we're family\nMe: yeah. we are.", "type": "chat_log"},
+      {"text": "Mom: Flynn please eat something\nMe: not hungry\nMom: you haven't eaten all day\nMe: I said not hungry\nMom: cereal?\nMe: ...fine. cereal.", "type": "chat_log"},
+      {"text": "Hank: your dad know you asked me about beer\nMe: no\nHank: let's keep it that way\nMe: deal", "type": "chat_log"}
+    ],
+
+    "medical": [
+      {"text": "I was born with cerebral palsy. Spastic diplegia, mild to moderate. My legs are the main issue, though my left hand also has trouble sometimes, mostly when I'm tired or stressed. Which is every day of the last two years.", "type": "narrative"},
+      {"text": "My speech is dysarthric. That means the muscles around my mouth and throat don't coordinate the way they should. I know exactly what I'm trying to say. It just comes out slower and a little mashed. Strangers sometimes think I'm drunk. That used to bother me more than it does now.", "type": "narrative"},
+      {"text": "I use forearm crutches. Not a wheelchair, not a walker. The crutches let me stand up straight. I've had the same pair since I was fourteen except for new grip pads. They're basically extensions of my arms.", "type": "narrative"},
+      {"text": "Physical therapy since I was three. I hated it as a kid. I still don't love it but now I understand what it's buying me. Every hour in that room is an hour I'll walk later in my life.", "type": "narrative"},
+      {"text": "I had selective dorsal rhizotomy surgery when I was six. It's a thing where they cut specific nerve roots in your spine to reduce spasticity. Mom cried a lot about the decision. It worked. I could walk better after.", "type": "narrative"},
+      {"text": "Botox injections in my calves every few months, since I was a kid. They relax the muscles so they don't lock. People hear Botox and think cosmetic stuff. No, it's real medicine.", "type": "narrative"},
+      {"text": "Hot weather messes with my muscle tone. Albuquerque in July is basically a personal attack. Cold weather isn't great either. The sweet spot is about sixty-five and dry, which is exactly three weeks a year here.", "type": "narrative"},
+      {"text": "People ask me if I was in an accident. I get that question maybe twice a month. I've been asked by teachers, Uber drivers, girls at parties. I was born with this. I am not a cautionary tale. I am just a guy.", "type": "narrative"},
+      {"text": "I've been mainstreamed in school since kindergarten. I had an aide until third grade. After that, just an IEP with extra time on tests and an elevator key. I don't need much academically. I've just got legs that take longer.", "type": "narrative"},
+      {"text": "I got my driver's license in senior year. Adapted vehicle, hand controls. The DMV test took like three hours because the proctor didn't know how to fill out the adapted-driver forms. Mom was furious. I was too tired to be furious. I passed.", "type": "narrative"},
+      {"text": "The first car I drove was a PT Cruiser Mom and Dad bought me. Then Dad bought me a Dodge Challenger — it was ridiculous, way too much car. Then he made me return it. That was the first time I really yelled at him about money.", "type": "narrative"},
+      {"text": "My dysarthria gets worse when I'm exhausted or upset. After Hank died I basically couldn't be understood by strangers for about two weeks. Marie got really good at interpreting for me. That was weirdly intimate.", "type": "narrative"},
+      {"text": "Sometimes my left hand cramps and I can't type for an hour. I use voice dictation on my phone when that happens. It understands me about eighty percent of the time. That twenty percent creates some great autocorrect disasters.", "type": "narrative"},
+      {"text": "I have scoliosis too — mild, related to the CP and the way I walk. I wear a brace some nights. I hate it. I wear it anyway because the alternative is worse later.", "type": "narrative"},
+      {"text": "My neurologist is named Dr. Delcavo and she's been my doctor since I was four. She once told me I was the most stubborn patient she had. I took it as a compliment. She meant it as a warning.", "type": "narrative"},
+
+      {"text": "Shoutout to Dr. Delcavo for another appointment where I complained about stretches and she made me do them anyway. Fifteen years strong.", "type": "social_post"},
+      {"text": "PSA: if you see a guy on crutches, do not ASK if you can carry his stuff. Just look. If he nods, great. If not, walk on. You don't need to make a whole thing of it.", "type": "social_post"},
+      {"text": "Got my driver's license today. Adapted controls, full legal. Freedom is real. Watch out Albuquerque.", "type": "social_post"},
+
+      {"text": "Nurse: can you tell me your pain level one to ten\nMe: like a four\nNurse: where\nMe: calves mostly\nNurse: did you stretch this morning\nMe: no\nNurse: flynn\nMe: I KNOW", "type": "chat_log"},
+      {"text": "PT: alright let's do the lunges\nMe: can we skip the lunges\nPT: no\nMe: just once\nPT: you say this every week\nMe: and every week you say no, tradition", "type": "chat_log"},
+      {"text": "Doctor: any new symptoms\nMe: my left hand's been worse\nDoctor: how worse\nMe: can't grip a cereal spoon sometimes\nDoctor: that's a real data point to you isn't it\nMe: cereal is serious", "type": "chat_log"},
+      {"text": "Mom: did you take your baclofen\nMe: yes\nMom: flynn\nMe: YES\nMom: the bottle is where you left it last night\nMe: ...okay. taking it now. chill.", "type": "chat_log"},
+      {"text": "DMV proctor: sir I need to confirm you have hand controls\nMe: yeah they're literally on the steering wheel you're looking at\nProctor: bear with me\nMe: I have all day sir, it's you I'm worried about", "type": "chat_log"},
+      {"text": "Nurse: relax your legs\nMe: they are relaxed\nNurse: they're really not\nMe: this IS relaxed for me\nNurse: oh. right. sorry.\nMe: happens to everyone", "type": "chat_log"}
+    ],
+
+    "hobbies": [
+      {"text": "Breakfast is the best meal and I will argue this with anyone. Cereal specifically. Frosted Flakes, Cap'n Crunch, Cheerios when I'm trying to be healthy. I could eat four bowls in a row and have. I have been photographed eating cereal approximately one thousand times.", "type": "narrative"},
+      {"text": "I eat cereal for dinner sometimes. Mom used to fight me on it. After everything that happened, she stopped fighting me on it. Small mercies.", "type": "narrative"},
+      {"text": "Resident Evil 5 came out and I played through it with Louis on co-op in one weekend. My hand cramped on day two and I switched controllers. We did it. Two zombie-blasting Albuquerque idiots.", "type": "narrative"},
+      {"text": "I love cars. I can't always drive them easily but I love them. Chargers, Challengers, the old muscle stuff. When Dad bought me the Challenger I lost my mind for about an hour. Then I had to give it back. It was a lesson in something.", "type": "narrative"},
+      {"text": "I picked the name Flynn because I wanted something that wasn't my dad's. It wasn't deep. I didn't have some hero named Flynn. I just opened a name book with Louis and tried a bunch on and Flynn fit. Dad took it personally. That was on him.", "type": "narrative"},
+      {"text": "Louis and I used to build model cars when we were kids. Glue, tiny decals, the works. My hands don't love small parts but I got good at it anyway. I still have a '67 Impala on my dresser.", "type": "narrative"},
+      {"text": "I started watching car YouTube during the bad year. Hours of it. Doug DeMuro, Donut Media, all those guys. It was calming. Cars don't lie about what they are.", "type": "narrative"},
+      {"text": "Xbox was a lifesaver during the hospital stretches when Dad was sick. I could yell at strangers about Halo instead of yelling at my mom. Healthier outlet.", "type": "narrative"},
+      {"text": "I'm into basketball in the way anyone from Albuquerque is into basketball — Lobos games on TV, pickup I watch but don't play. Sitting on the sidelines shouting advice is its own sport.", "type": "narrative"},
+      {"text": "I'm learning guitar now, senior year. Acoustic. The left hand is the hard hand. Chord changes take forever. But the sound when I actually hit a clean G chord — that's everything.", "type": "narrative"},
+
+      {"text": "Cap'n Crunch. No milk yet. Pre-game photo.", "type": "social_post"},
+      {"text": "Cap'n Crunch. Milk. Game on.", "type": "social_post"},
+      {"text": "This is my fourth bowl and I regret nothing.", "type": "social_post"},
+      {"text": "Day one of owning a Dodge Challenger. I'm in love. Pictures below.", "type": "social_post"},
+      {"text": "Had to return the Challenger. Don't want to talk about it. Back in the PT Cruiser which is fine actually don't @ me.", "type": "social_post"},
+      {"text": "RE5 cleared on co-op with @Louis_C. We are professionals now. Accept our job offers.", "type": "social_post"},
+      {"text": "Name check: it's FLYNN. Not Walter, not Walt, not Junior. I've been Flynn for two years now. Please update your contact list.", "type": "social_post"},
+      {"text": "G chord. Finally clean. Three months of stretching my pinky for this.", "type": "social_post"},
+      {"text": "Halo with Louis tonight, losing badly, making bad decisions, living my truth.", "type": "social_post"},
+      {"text": "Lobos game on TV, chili in the bowl, Holly asleep. Tonight is a ten.", "type": "social_post"},
+
+      {"text": "Louis: RE5 tonight?\nMe: yeah\nLouis: four hour session\nMe: my hand says maybe three\nLouis: fine. three and cereal.\nMe: perfect", "type": "chat_log"},
+      {"text": "Dad: do you want the Challenger\nMe: YES\nDad: I mean really want it\nMe: DAD YES\nDad: okay\nMe: thank you thank you thank you\n[three weeks later]\nDad: about the Challenger...", "type": "chat_log"},
+      {"text": "Louis: check this chord\nMe: that's just an A\nLouis: it sounded better in my head\nMe: everything does", "type": "chat_log"},
+      {"text": "Mom: please tell me you ate something other than cereal today\nMe: I had a sandwich\nMom: at what time\nMe: cereal time\nMom: flynn\nMe: toasted bread with cheese IS a sandwich", "type": "chat_log"},
+      {"text": "Marie: you want to go car shopping this weekend\nMe: really\nMarie: within reason\nMe: what counts as within reason\nMarie: definitely not a Challenger\nMe: fair", "type": "chat_log"},
+      {"text": "Louis: halo?\nMe: can't hand's cramped\nLouis: couch co-op so you only need one stick\nMe: you are the best friend\nLouis: I know", "type": "chat_log"}
+    ],
+
+    "daily_routine": [
+      {"text": "Alarm at 6:45. I need the fifteen extra minutes other kids don't. Getting out of bed takes longer when your legs have ideas of their own in the morning.", "type": "narrative"},
+      {"text": "Shower first thing. Hot water loosens everything up. I have a shower bench because standing for ten minutes is not a battle I want to fight every day.", "type": "narrative"},
+      {"text": "Breakfast is sacred. Cereal specifically. If we're out of cereal I will rearrange my entire morning to acquire cereal. Mom used to think this was cute. Now she thinks it's a lifestyle brand.", "type": "narrative"},
+      {"text": "School bus until I got my license. The bus had a lift, which I hated using because it made everyone wait. I timed myself getting on with just the regular steps. Took me longer. I didn't care.", "type": "narrative"},
+      {"text": "JP Wynne High. Dad used to teach there. That was weird. I'd see him in the hallways. Then he took medical leave and I didn't have to see him in the hallways anymore and that was a different kind of weird.", "type": "narrative"},
+      {"text": "Most of my classes were on the first floor by design. The elevator at Wynne broke at least twice a month. I had a key. The key was mostly decorative.", "type": "narrative"},
+      {"text": "Lunch with Louis and whoever else was around. I sat at the same table for four years. The table became mine by default. Seniors couldn't take it. That was the one power move my crutches bought me.", "type": "narrative"},
+      {"text": "After school I usually went home, dropped my backpack, and sat on the couch for an hour before doing anything. That hour was non-negotiable. My legs had opinions.", "type": "narrative"},
+      {"text": "Homework at the kitchen table. Mom would be at the other end with Holly. We'd trade off — I'd hold Holly while Mom cooked, Mom would quiz me on history while I ate.", "type": "narrative"},
+      {"text": "Dinner was usually the three of us — Mom, Holly, me. Sometimes Marie. Almost never Dad by the end. We didn't talk about it.", "type": "narrative"},
+      {"text": "Evening is for video games, guitar, or watching TV. I go to bed around eleven because I have to. My body collects its bill at night.", "type": "narrative"},
+      {"text": "Weekends I sleep in until about nine, which felt like a luxury after years of 6:45. Saturdays are for nothing. Sundays are for homework I pretended I'd do on Friday.", "type": "narrative"},
+
+      {"text": "6:45 wake up, 7:15 shower, 7:45 cereal, 8:15 bus. Routine is how I win.", "type": "social_post"},
+      {"text": "The Wynne elevator is out AGAIN. This is a call-out post. @WynneHigh fix it.", "type": "social_post"},
+      {"text": "Senior parking lot: finally in range of my adapted spot. Four years I waited.", "type": "social_post"},
+      {"text": "Holly is yelling at me because I'm doing homework instead of paying attention to her. Priorities reconsidered.", "type": "social_post"},
+      {"text": "Sunday night cereal. The holy cereal. The cereal that carries me into Monday.", "type": "social_post"},
+      {"text": "Friday night: me, a controller, and zero obligations. Living.", "type": "social_post"},
+
+      {"text": "Mom: up, time for school\nMe: five more\nMom: now\nMe: THREE more\nMom: flynn\nMe: FINE I'm moving see me moving", "type": "chat_log"},
+      {"text": "Louis: you riding with me today\nMe: yeah mom said ok\nLouis: cereal first?\nMe: obviously\nLouis: see you in 20\nMe: better be 25 im slow remember", "type": "chat_log"},
+      {"text": "Mom: backpack\nMe: got it\nMom: crutches\nMe: I have two of them mom they're literally in my hands\nMom: lunch\nMe: YES\nMom: keys\nMe: MOM\nMom: just checking", "type": "chat_log"},
+      {"text": "Dad: flynn are you up\nMe: yes\nDad: really up\nMe: I'm eating cereal with my eyes closed does that count\nDad: partially", "type": "chat_log"},
+      {"text": "Teacher: Flynn your essay\nMe: yeah sorry\nTeacher: it's two days late\nMe: I know\nTeacher: any reason\nMe: my uncle died\nTeacher: oh god I'm so sorry\nMe: yeah. tomorrow okay?\nTeacher: take the week", "type": "chat_log"},
+      {"text": "Mom: dinner in 10\nMe: k\nMom: actual dinner not cereal\nMe: betrayed\nMom: it's spaghetti\nMe: forgiven", "type": "chat_log"},
+      {"text": "Marie: you staying over tonight\nMe: can I\nMarie: I already made up the couch\nMe: thanks aunt marie\nMarie: there's cereal in the pantry\nMe: you're the best", "type": "chat_log"},
+      {"text": "Louis: you doing the history thing tomorrow\nMe: supposed to\nLouis: did you start it\nMe: started thinking about starting it\nLouis: same\nMe: team effort then\nLouis: team cereal", "type": "chat_log"},
+      {"text": "Mom: bed\nMe: one more match\nMom: flynn it's 11\nMe: it's ALMOST 11\nMom: that IS 11\nMe: fine. match over next round. promise.", "type": "chat_log"},
+      {"text": "Holly (babbling): bababa\nMe: yeah I hear you\nHolly: BABABA\nMe: hol your brother is trying to do homework\nHolly: *laughs*\nMe: ok homework's over. you win.", "type": "chat_log"}
+    ],
+
+    "social": [
+      {"text": "Louis has been my best friend since third grade. He was the first kid who didn't ask about the crutches. He just asked if I wanted to trade Pokemon cards. I had a Charizard. We've been friends since.", "type": "narrative"},
+      {"text": "High school was better than people warned me it would be. A few jerks, mostly fine. I think having dysarthric speech actually filtered out the worst ones — they self-selected away. The kids who stuck around were decent.", "type": "narrative"},
+      {"text": "I had a crush on a girl in my junior year, wrote her a whole text, backspaced the whole text, wrote it again, sent it, and she said she just wanted to be friends. Classic. I survived. We are in fact friends.", "type": "narrative"},
+      {"text": "Being Flynn White at JP Wynne in senior year — when everyone knew my dad was Heisenberg — was its own special thing. People stared. People pretended not to stare. Louis would just stare back at them until they looked away. MVP.", "type": "narrative"},
+      {"text": "I don't really go to parties. My legs don't love standing around for three hours holding a red cup. I do small hangouts. Four or five people at someone's house. That works.", "type": "narrative"},
+      {"text": "I went to prom. I wore a suit that didn't fit great. Mom cried when I came downstairs. I danced for exactly one song. It was enough.", "type": "narrative"},
+      {"text": "My guidance counselor at Wynne asked me if I wanted to do a motivational speech for the freshmen about overcoming adversity. I said no thank you. I don't want to be that person. I want to be a guy who just had a weird couple years.", "type": "narrative"},
+      {"text": "After everything came out about Dad, a few people stopped talking to me. One guy's mom wouldn't let him come over anymore. I get it. It's whatever. The real friends stayed.", "type": "narrative"},
+
+      {"text": "Prom with these idiots. Suit doesn't fit. Don't care.", "type": "social_post"},
+      {"text": "@Louis_C thanks for being the guy who stared down all the starers. You're a menace and a gentleman.", "type": "social_post"},
+      {"text": "Senior sunset. Class of whatever, we made it, most of us.", "type": "social_post"},
+      {"text": "Cereal with the crew tonight. This is what a social life looks like and I won't be accepting comments.", "type": "social_post"},
+      {"text": "Reminder that if you're reading this and you stopped talking to me after my dad became national news, you can stay gone. We're good here.", "type": "social_post"},
+      {"text": "Hanging out at Marie's tonight. She keeps stealing my fries. I am documenting this crime.", "type": "social_post"},
+      {"text": "Five months without Hank. He would've loved that last Lobos game. Miss you uncle.", "type": "social_post"},
+      {"text": "Birthday dinner was four people and I love that. Mom, Marie, Louis, and Holly (who mostly threw mashed potatoes). Ten out of ten.", "type": "social_post"},
+      {"text": "For everyone asking — yes it's Flynn. Still. Forever. No I'm not going back.", "type": "social_post"},
+      {"text": "Graduation photo. It's real. Diploma says Walter Jr. because paperwork but you know me.", "type": "social_post"},
+
+      {"text": "Girl at locker: hey Flynn\nMe: hey\nGirl: you doing anything Saturday\nMe: uh\nGirl: I meant as friends\nMe: oh cool yeah\nGirl: cool\nMe: [later to Louis] she said AS FRIENDS\nLouis: rough buddy", "type": "chat_log"},
+      {"text": "Louis: party at jake's friday\nMe: nah\nLouis: you sure\nMe: yeah legs\nLouis: come over to mine instead\nMe: deal\nLouis: cereal?\nMe: you know the answer", "type": "chat_log"},
+      {"text": "Classmate: your dad was really him huh\nMe: yeah\nClassmate: that's crazy\nMe: yeah\nClassmate: sorry man\nMe: it's okay. thanks for just saying it and not making it weird.", "type": "chat_log"},
+      {"text": "Marie: come to dinner saturday\nMe: who's there\nMarie: just us\nMe: yeah okay\nMarie: bring Louis if you want\nMe: he's already invited himself", "type": "chat_log"},
+      {"text": "Louis: you going to the dance\nMe: probably not\nLouis: dude come\nMe: legs\nLouis: one hour. in and out. I'll drive.\nMe: fine. one hour.\n[three hours later]\nMe: fine. two hours.", "type": "chat_log"},
+      {"text": "Random guy at a party: can I help you with that\nMe: help me with what\nGuy: the stairs\nMe: I got them thanks\nGuy: you sure\nMe: yeah man\nGuy: cool cool\nMe: [to Louis] four tonight. record.\nLouis: new record yeah.", "type": "chat_log"}
+    ]
+  }
+}

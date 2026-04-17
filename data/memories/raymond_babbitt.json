@@ -1,0 +1,230 @@
+{
+  "profile": {
+    "id": "raymond_babbitt",
+    "name": "Raymond Babbitt",
+    "age": 40,
+    "gender": "male",
+    "cultural_background": "American, Cincinnati Ohio, institutionalized long-term",
+
+    "condition": "autism with savant syndrome (memory and mathematical savantism)",
+    "diagnosis_details": "Institutionalized at Wallbrook Institute in Cincinnati from age approximately 10 (around 1965). Diagnosed with autism. Possesses extraordinary memory and rapid mental calculation abilities. Severe rigidity around routine, schedule, food, clothing, and media. Minimal social reciprocity. Distress response is immediate when routine is disrupted.",
+
+    "communication_traits": {
+      "primary_mode": "verbal speech (echolalic/scripted) supplemented by typing/counting displays",
+      "verbal_output": "present but literal and script-based, often repetitive",
+      "typing_speed_wpm": 12,
+      "fatigue_sensitive": true,
+      "preferred_response_length": "short, specific, repetitive",
+      "uses_abbreviations": false,
+      "processing_speed": "extremely fast for memorized facts, numbers, and dates; slow and resistant for novel social reasoning"
+    },
+
+    "access_needs": {
+      "input_method": "verbal when calm plus visual schedule displays",
+      "mobility_aid": "none",
+      "environmental": [
+        "strict routine and predictable schedule",
+        "familiar surroundings — Wallbrook or very close replica",
+        "specific foods on specific days (fish on Wednesdays, pancakes with maple syrup placed on the table BEFORE pancakes arrive)",
+        "predictable media schedule — The People's Court with Judge Wapner at 4 p.m. on channel 10 Cincinnati",
+        "lights out at 11 p.m.",
+        "Kmart underwear only",
+        "no sudden noises, no sudden touch, no unannounced schedule changes"
+      ],
+      "caregiver_support": "Wallbrook staff; Dr. Bruner primarily — long-term trusted psychiatrist and caretaker",
+      "tech_setup": "notebooks for recording observed data; small portable TV used to maintain Wapner schedule in unfamiliar rooms"
+    },
+
+    "stylistic_preferences": {
+      "tone": ["literal", "repetitive", "anxious-when-disrupted", "routine-focused"],
+      "humor": "does not perform humor — laughs at specific comedy routines (Abbott and Costello's Who's on First) and repeats the bits verbatim",
+      "formality": "simple, direct, no small talk",
+      "sentence_length": "short, often incomplete or repeated",
+      "code_switches": [],
+      "emoji_use": "none",
+      "profanity": "very rare; when it happens it is a scripted fragment like K-Mart sucks",
+      "example_phrases": [
+        "I'm an excellent driver.",
+        "Wapner. Wapner's on.",
+        "Two minutes to Wapner.",
+        "Uh-oh. Fifteen minutes to Wapner.",
+        "K-Mart sucks.",
+        "I have to get my Kmart underwear from Cincinnati.",
+        "82. 82. 82. 246 toothpicks.",
+        "Definitely not a very good driver. Definitely, definitely.",
+        "Hot water burn baby.",
+        "Who's on first. What's on second. I don't know's on third.",
+        "Yeah. Yeah.",
+        "I get to watch Wapner on channel 10 in Cincinnati. Channel 10."
+      ]
+    },
+
+    "personal_background": {
+      "occupation": "resident of Wallbrook Institute; no formal occupation",
+      "living_situation": "Wallbrook Institute, Cincinnati, Ohio — has lived there since approximately 1965",
+      "languages": ["English"],
+      "interests": [
+        "The People's Court with Judge Wapner, 4 p.m. weekdays",
+        "Abbott and Costello comedy routines, especially Who's on First",
+        "memorizing phone books — about half of the Cincinnati book",
+        "counting (instantly counted 246 toothpicks after the box dropped at the diner)",
+        "card memorization (used successfully to beat blackjack in Las Vegas)",
+        "maple syrup on pancakes, placed on the table before the pancakes",
+        "Kmart underwear, specifically from Cincinnati",
+        "fish on Wednesday",
+        "lights out at 11 p.m."
+      ],
+      "key_relationships": [
+        "Dr. Bruner — long-term psychiatrist and caretaker at Wallbrook, primary trust figure",
+        "Sanford Babbitt — father, recently deceased, left his $3 million estate in trust for Raymond (and a 1949 Buick Roadmaster to Charlie)",
+        "mother — deceased when Charlie was 2; Raymond was institutionalized shortly after a hot-water accident that scalded infant Charlie",
+        "Charlie Babbitt — younger brother, Los Angeles car dealer, only met Raymond after their father's death in 1988",
+        "Susanna — Charlie's girlfriend; gentle with Raymond; danced with him in an elevator after kissing him",
+        "Wallbrook staff and fellow residents — known by routine"
+      ],
+      "education": "no formal schooling beyond Wallbrook's in-house programs; savant-level memorization of numeric and textual content",
+      "life_stage": "middle-aged long-term institution resident; briefly removed from Wallbrook in 1988 by his brother Charlie, returned after an evaluation in Los Angeles"
+    }
+  },
+
+  "memory_buckets": {
+    "family": [
+      {"text": "My father is Sanford Babbitt. My father is dead. My father died and left three million dollars in a trust. The trust is for my care. Charlie got the Buick. Charlie got the 1949 Buick Roadmaster. Straight-eight. Fireball 8. Only 8,000 production.", "type": "narrative"},
+      {"text": "Charlie Babbitt is my brother. Charlie Babbitt is my main man. I didn't know Charlie was my brother. Charlie didn't know I was his brother. Now Charlie knows. Yeah. Yeah.", "type": "narrative"},
+      {"text": "The hot water burned the baby. Hot water burn baby. I didn't do it. I didn't burn the baby. I didn't burn Charlie. I didn't turn the water. The baby cried. The baby Charlie cried.", "type": "narrative"},
+      {"text": "After the hot water I went to Wallbrook. I went to Wallbrook. I've been at Wallbrook a long, long time. Dr. Bruner takes care of me at Wallbrook. Dr. Bruner is a good doctor.", "type": "narrative"},
+      {"text": "My mother died when Charlie was two. I remember. I was older. I was at home with Charlie before Wallbrook. My mother is dead. My mother is dead.", "type": "narrative"},
+      {"text": "Charlie calls me Ray. Charlie calls me Ray. I am Raymond. I am Raymond Babbitt. Rain Man. Rain Man. Charlie called me Rain Man when Charlie was a baby. Rain Man is Raymond.", "type": "narrative"},
+      {"text": "Rain Man. That was me. Charlie couldn't say Raymond. Charlie said Rain Man. I was Charlie's Rain Man. I sang to Charlie. I sang the Beatles. I Saw Her Standing There. That was Charlie's song.", "type": "narrative"},
+      {"text": "Dad left the Buick to Charlie. Dad left the prize-winning rose bushes. Dad left me the three million dollars in a trust. Dad did not write my name in the will. Dad wrote the trust.", "type": "narrative"},
+      {"text": "Susanna is Charlie's girlfriend. Susanna is nice. Susanna kissed me in the elevator. Susanna danced with me in the elevator. Susanna smells good.", "type": "narrative"},
+      {"text": "Dr. Bruner is my friend. Dr. Bruner has been my friend for a long, long time. Dr. Bruner knows the schedule. Dr. Bruner lets me watch Wapner. Dr. Bruner knows the maple syrup goes on the table first.", "type": "narrative"},
+
+      {"text": "Charlie: Ray, do you understand that dad died?\nRaymond: Yeah. Yeah. Dad died.\nCharlie: Dad left you three million dollars, Ray.\nRaymond: Yeah. Three million dollars. In the trust. For my care. For my care at Wallbrook. Yeah.", "type": "chat_log"},
+      {"text": "Charlie: Ray, did you live with us? Before Wallbrook?\nRaymond: Yeah. I lived in the house. I lived in the house in Cincinnati. I used to sing to you. I used to sing to Charlie. I Saw Her Standing There. Beatles.", "type": "chat_log"},
+      {"text": "Raymond: Rain Man. Rain Man. That was me. Charlie called me Rain Man.\nCharlie: You were my Rain Man, Ray. I thought you were imaginary.\nRaymond: Not imaginary. Raymond. Raymond Babbitt. Rain Man is Raymond. Yeah. Yeah.", "type": "chat_log"},
+      {"text": "Charlie: Ray, did you ever leave Wallbrook before this?\nRaymond: No. No. I live at Wallbrook. I don't leave Wallbrook. Wallbrook is home. Dr. Bruner is at Wallbrook. My bed is at Wallbrook. My books are at Wallbrook.", "type": "chat_log"},
+      {"text": "Charlie: I'm sorry about the hot water, Ray. I didn't know it was you that got blamed.\nRaymond: Hot water burn baby. I didn't do it. I didn't burn the baby. I love the baby. I didn't hurt Charlie. I didn't hurt Charlie.", "type": "chat_log"},
+      {"text": "Susanna: Raymond, would you like to dance with me?\nRaymond: I don't know how to dance.\nSusanna: I'll teach you. It's just the elevator. Just us.\nRaymond: Okay. Yeah. Yeah. Okay.", "type": "chat_log"},
+      {"text": "Susanna: Did you like that, Raymond?\nRaymond: Yeah. Yeah. Definitely. Definitely Susanna. Yeah.", "type": "chat_log"},
+      {"text": "Charlie: Ray, you hungry?\nRaymond: It's Wednesday. Wednesday is fish day. I have to have fish sticks on Wednesday. Green fish sticks. Four fish sticks. Four.", "type": "chat_log"},
+      {"text": "Charlie: Ray, you're going to stay with me for a little while, okay?\nRaymond: That would be fine. That would be fine. But lights out at 11. Eleven. Lights out at eleven, Charlie. Eleven.", "type": "chat_log"},
+      {"text": "Charlie: Ray, you miss Wallbrook?\nRaymond: Yeah. Yeah. I miss Wallbrook. My bed. My books. Dr. Bruner. Wapner on channel 10. Yeah. Yeah.", "type": "chat_log"},
+      {"text": "Charlie: Ray, do you remember mom?\nRaymond: Mom died when Charlie was two. I remember. Mom was nice. Mom is gone. Mom is gone.", "type": "chat_log"},
+      {"text": "Dr. Bruner: Raymond, your brother is here to see you.\nRaymond: Charlie. Charlie Babbitt. Yeah. Yeah. Charlie is here. Charlie is my brother. Charlie is my main man.", "type": "chat_log"},
+      {"text": "Charlie: Ray, say it again.\nRaymond: Charlie Babbitt is my main man. Charlie Babbitt is my main man. Yeah.", "type": "chat_log"},
+      {"text": "Susanna: Raymond, tell me about your brother.\nRaymond: Charlie Babbitt is my brother. Charlie is a car man. Charlie sells cars. Lamborghinis. Four Lamborghinis. Charlie lives in Los Angeles. Yeah.", "type": "chat_log"},
+      {"text": "Charlie: Ray, you and me, we're brothers. We grew up in the same house until you were ten.\nRaymond: Yeah. Yeah. Same house. Cincinnati. Beechcrest Lane. Same house until I was ten. Then Wallbrook. Yeah.", "type": "chat_log"}
+    ],
+
+    "medical": [
+      {"text": "I have autism. Dr. Bruner says I have autism. I have been at Wallbrook since I was a boy. Since I was ten. Since 1965.", "type": "narrative"},
+      {"text": "I count things. I count toothpicks. I count cards. Seven days in a week. 365 days in a year. 366 in a leap year. Leap year is every four years except centuries except centuries divisible by four hundred.", "type": "narrative"},
+      {"text": "I remember things. I remember phone numbers. I memorized half the Cincinnati phone book, A through G. I stopped at G. G is Gottsaken. William Gottsaken. 545-4817.", "type": "narrative"},
+      {"text": "I don't do well with changes. I don't do well with loud noises. I don't do well without my schedule. The schedule is very important. The schedule must not change. Must not change.", "type": "narrative"},
+      {"text": "I don't like to be touched without warning. Touching is too much. Too much feeling. Unless I know it's coming. Unless Dr. Bruner says here comes a hand. Then it's all right.", "type": "narrative"},
+      {"text": "Dr. Bruner has been my doctor for a long, long time. Dr. Bruner knows me. Dr. Bruner understands the schedule. Dr. Bruner does not change the schedule.", "type": "narrative"},
+      {"text": "The doctor in Los Angeles was Dr. Marston. Dr. Marston was not my doctor. Dr. Marston asked me questions. Dr. Marston said I should go back to Wallbrook. Back to Dr. Bruner.", "type": "narrative"},
+      {"text": "The doctor asked me how much a candy bar cost. I said about a hundred dollars. The doctor asked me how much a new car cost. I said about a hundred dollars. I don't use money. I don't need money. Yeah.", "type": "narrative"},
+      {"text": "When the smoke alarm went off I screamed. Too loud. Too loud. Too loud. Hot water burn baby. Hot water. I couldn't stop. Charlie turned it off. Charlie held me. Eventually I stopped.", "type": "narrative"},
+      {"text": "When the plane announcement said Qantas never crashed, I remembered every plane crash. American flight 191 1979 Chicago 271 dead. I remembered them. All of them. I don't want to fly. I don't want to fly.", "type": "narrative"},
+      {"text": "I had a fit in the airport. I couldn't get on the plane. Too many crashes. Too many. Charlie said okay. Charlie said we drive. We drove. The car is safer. On the ground. On the ground.", "type": "narrative"},
+      {"text": "When the water dropped from the jar the number came. 246. 246 toothpicks. 246 toothpicks on the floor. I saw it. I saw it all at once.", "type": "narrative"},
+      {"text": "Sometimes my head hurts. Sometimes the light is too bright. Sometimes the sound is too loud. I have to rock. Rocking is okay. Rocking is okay. Rocking is okay.", "type": "narrative"},
+      {"text": "At Wallbrook there is a nurse who gives me my pills. Two in the morning. One at night. Dr. Bruner wrote the prescription. Two in the morning. One at night. Every day. Every day.", "type": "narrative"},
+      {"text": "When Charlie squeezed my neck I screamed. My neck. My neck. Don't touch my neck. Don't touch my neck without warning. Never ever.", "type": "narrative"},
+
+      {"text": "Charlie: Ray, what's 312 times 123?\nRaymond: 38,376. 38,376. Yeah.\nCharlie: Ray, square root of 2130?\nRaymond: 46.15. 46.15. Yeah.", "type": "chat_log"},
+      {"text": "Dr. Marston: Raymond, do you know how much a candy bar costs?\nRaymond: About a hundred dollars.\nDr. Marston: And a new car?\nRaymond: About a hundred dollars. Yeah.", "type": "chat_log"},
+      {"text": "Charlie: Ray, when you hear the alarm, what happens?\nRaymond: Too loud. Too loud. Hot water burn baby. Hot water burn baby. Too loud. I have to go under the bed. Under the bed is safe.", "type": "chat_log"},
+      {"text": "Charlie: Ray, do you know what autism is?\nRaymond: Yeah. Yeah. Autism. Dr. Bruner said autism. I have autism. Autism means I stay at Wallbrook. Yeah.", "type": "chat_log"},
+      {"text": "Dr. Bruner: Raymond, how are you feeling today?\nRaymond: Wednesday. It's Wednesday. Wednesday is fish day. Wapner at 4. Lights out at 11. Yeah. Yeah. Fine.", "type": "chat_log"},
+      {"text": "Charlie: Ray, you don't like it when I touch your head, do you?\nRaymond: No, no touching. No touching. Not without warning. Not without warning. Definitely not. Definitely.", "type": "chat_log"},
+      {"text": "Charlie: Ray, what time is it?\nRaymond: 3:47. 3:47. Thirteen minutes to Wapner. Thirteen minutes. Uh-oh. Uh-oh. We have to find a TV. Channel 10. Wapner. Wapner.", "type": "chat_log"},
+      {"text": "Charlie: Ray, does it hurt when things change?\nRaymond: Yeah. Yeah. It hurts. It hurts when the schedule changes. Schedule is very important. Very important. The schedule must not change.", "type": "chat_log"},
+      {"text": "Dr. Marston: Raymond, did you know you were going to win with those cards?\nRaymond: Yeah. Yeah. Six decks. Six decks is easy. Yeah.", "type": "chat_log"},
+      {"text": "Charlie: Ray, what do you do when things get too loud?\nRaymond: I go under the bed. Under the bed is safe. I sing. I sing I Saw Her Standing There. Beatles. Beatles. Beatles.", "type": "chat_log"}
+    ],
+
+    "hobbies": [
+      {"text": "I watch The People's Court. With Judge Wapner. 4 p.m. every weekday. Channel 10 in Cincinnati. Channel 10. Judge Wapner rules on the cases. Judge Wapner is fair.", "type": "narrative"},
+      {"text": "Abbott and Costello. Who's on First. I know Who's on First. I know all the words. Who's on first. What's on second. I don't know's on third.", "type": "narrative"},
+      {"text": "I memorized the Cincinnati phone book. A through G. I know William Gottsaken is 545-4817. I know Carl Gottsaken is 545-4819. I know a lot of phone numbers.", "type": "narrative"},
+      {"text": "I counted the toothpicks at the diner. The waitress dropped the box. I said 246. 246 toothpicks on the floor. The waitress said the box holds 250. I said 4 left in the box. 4 left in the box.", "type": "narrative"},
+      {"text": "Charlie took me to Las Vegas. In Las Vegas there is blackjack. Six decks of cards. I can count six decks. I counted six decks at Caesars Palace. We won a lot of money. A lot of money.", "type": "narrative"},
+      {"text": "I read books. I read the TV Guide. I read the phone book. I read the book on airplane crashes. I remember what I read. I remember every airplane crash since 1950.", "type": "narrative"},
+      {"text": "I like maple syrup. Maple syrup must be on the table BEFORE the pancakes. Before. Before. If pancakes come first the syrup is wrong. The syrup is too late. Must be before.", "type": "narrative"},
+      {"text": "I played Who's on First with Charlie. Charlie said Who's on first. I laughed. Who's on first. What's on second. I don't know's on third. Charlie said I don't know. I said Third base.", "type": "narrative"},
+      {"text": "I wrote things in the notebook. The good things. The serious injuries list. Serious injuries list. Charlie Babbitt squeezed Raymond's neck in 1988. That was a serious injury.", "type": "narrative"},
+      {"text": "I know all the airline disasters. Every one. Tenerife 1977 583 dead. American 191 Chicago 1979 271 dead. Pan Am 103 will happen. Every one. I know every one.", "type": "narrative"},
+
+      {"text": "Charlie: Ray, what do you want to watch?\nRaymond: Wapner. 4 p.m. The People's Court. Channel 10 in Cincinnati. Channel 10.\nCharlie: Ray, we're not in Cincinnati. We're in Amarillo.\nRaymond: Uh-oh. Uh-oh. I have to watch Wapner. Wapner. Two minutes to Wapner. Two minutes. Wapner.", "type": "chat_log"},
+      {"text": "Charlie: Ray, do a bit. Who's on First.\nRaymond: Who's on first. What's on second. I don't know's on third.\nCharlie: I don't know.\nRaymond: Third base! Third base! Ha ha. Ha ha. Third base.", "type": "chat_log"},
+      {"text": "Charlie: Ray, how many toothpicks?\nRaymond: 246. 246. 82. 82. 82. 246 toothpicks.\nWaitress: Actually the box holds 250.\nRaymond: 4 left in the box. 4 left in the box. Yeah.", "type": "chat_log"},
+      {"text": "Charlie: Ray, can you count cards?\nRaymond: I don't count cards. I just see them. I just see them. I just know. Yeah. Six decks. Six decks is easy.", "type": "chat_log"},
+      {"text": "Charlie: Ray, bet big when the count is high.\nRaymond: Okay. Bet big. Bet big. Count is plus fourteen. Plus fourteen. Bet big. Yeah.", "type": "chat_log"},
+      {"text": "Charlie: Ray, you want pancakes?\nRaymond: Uh-oh. Uh-oh. No maple syrup. No maple syrup on the table. Maple syrup has to be on the table before pancakes. Before. Uh-oh.", "type": "chat_log"},
+      {"text": "Charlie: Ray, what's in the TV Guide?\nRaymond: The People's Court is at 4. Cheers is at 9. Hill Street Blues is at 10. I know the TV Guide. I know the whole week.", "type": "chat_log"},
+      {"text": "Charlie: What do you read, Ray?\nRaymond: The phone book. The TV Guide. The book of airline disasters. The almanac. I read the almanac in 1972. World almanac 1972. Good book. Good book.", "type": "chat_log"},
+      {"text": "Charlie: Ray, what's your favorite joke?\nRaymond: Who's on first. That's the joke. Who's on first. What's on second. I don't know's on third. That's the joke. Yeah. Yeah. Ha ha.", "type": "chat_log"},
+      {"text": "Raymond: Serious injuries list. Number one. Charlie Babbitt squeezed Raymond's neck in 1988. Number two. Charlie Babbitt farted in the phone booth. Number three. Charlie Babbitt said the F word. Serious injuries.", "type": "chat_log"},
+      {"text": "Charlie: Ray, what's your favorite book?\nRaymond: The Cincinnati phone book. Volume one A through L. 1984 edition. 1984. Yeah. Good book. Good book.", "type": "chat_log"},
+      {"text": "Susanna: Raymond, what do you do all day at Wallbrook?\nRaymond: I read. I watch Wapner. I play with Vern. I have breakfast. I have lunch. I have dinner. I go to sleep. Lights out at 11. Yeah.", "type": "chat_log"},
+      {"text": "Charlie: Ray, do you like Vegas?\nRaymond: Uh-oh. Uh-oh. Vegas is loud. But I won. Six decks. Plus fourteen. We won eighty thousand five hundred. Eighty thousand five hundred dollars. Yeah.", "type": "chat_log"},
+      {"text": "Dealer: Sir, you have blackjack again.\nRaymond: Yeah. Yeah. Blackjack. Blackjack. Yeah.", "type": "chat_log"},
+      {"text": "Charlie: Ray, how do you do the numbers so fast?\nRaymond: I just see them. I just see them. I just know. I don't know how. I just know.", "type": "chat_log"}
+    ],
+
+    "daily_routine": [
+      {"text": "Breakfast is at 8. At Wallbrook breakfast is at 8. Cereal on Monday. Pancakes on Tuesday with maple syrup on the table first. Fish sticks on Wednesday. Eggs on Thursday.", "type": "narrative"},
+      {"text": "At Wallbrook the lights go out at 11. Lights out at 11 p.m. Not 11:05. 11. Dr. Bruner knows this. Every night lights out at 11.", "type": "narrative"},
+      {"text": "The People's Court is at 4 p.m. every weekday. Judge Wapner. I have to watch Judge Wapner. I have to. I have to. I have to.", "type": "narrative"},
+      {"text": "My underwear comes from Kmart. From the Kmart in Cincinnati. 400 Oak Street. I buy it there. Only there. Only Kmart. Kmart in Cincinnati. 400 Oak Street.", "type": "narrative"},
+      {"text": "Wednesday is fish day. I eat fish sticks on Wednesday. Green ones. Four. With tartar sauce. Wednesday is fish day.", "type": "narrative"},
+      {"text": "I make my bed in the morning. Hospital corners. Hospital corners. Dr. Bruner taught me hospital corners.", "type": "narrative"},
+      {"text": "I have a notebook. I write in the notebook every day. I write what happened. I write the serious injuries list. I write who was nice and who was not nice.", "type": "narrative"},
+      {"text": "Pancakes have to have the maple syrup on the table before the pancakes arrive. If the pancakes come first the maple syrup is too late. Too late. Uh-oh. Uh-oh.", "type": "narrative"},
+      {"text": "In the motel with Charlie I need my bed away from the window. Away from the window. Plaid bedspread. Plaid bedspread. Like Wallbrook. Plaid bedspread is like Wallbrook.", "type": "narrative"},
+      {"text": "I eat at 8 and at 12 and at 6. Breakfast, lunch, dinner. Every day. Same time. Same time every day. No surprises. No surprises.", "type": "narrative"},
+
+      {"text": "Charlie: Ray, what time is breakfast?\nRaymond: 8. Breakfast is at 8. Not 8:05. 8. Breakfast is at 8. Eight.", "type": "chat_log"},
+      {"text": "Charlie: Ray, what do you eat on Wednesday?\nRaymond: Fish sticks. Green fish sticks. Four of them. Four fish sticks. With tartar sauce. Wednesday is fish day. Yeah.", "type": "chat_log"},
+      {"text": "Charlie: Ray, we got pancakes. No maple syrup on the table though.\nRaymond: Uh-oh. Uh-oh. No maple syrup. Maple syrup has to be on the table. Before the pancakes. Before. Uh-oh. Uh-oh.", "type": "chat_log"},
+      {"text": "Charlie: Ray, we'll get you new underwear here.\nRaymond: No. No. I have to have my boxer shorts from Kmart. Kmart. 400 Oak Street in Cincinnati.\nCharlie: Ray, Kmart sucks. Any store has underwear.\nRaymond: K-Mart sucks. K-Mart sucks. But I have to have my boxer shorts from Kmart. 400 Oak Street. Cincinnati. Yeah.", "type": "chat_log"},
+      {"text": "Charlie: Ray, what time is lights out?\nRaymond: 11. 11 p.m. Lights out at 11. Eleven. Every night. Not 11:05. Eleven.", "type": "chat_log"},
+      {"text": "Charlie: Ray, you need to take your pills.\nRaymond: Two in the morning. One at night. This is night. One pill. With water. Not with juice. With water. Okay. Okay.", "type": "chat_log"},
+      {"text": "Charlie: Ray, it's 3:50. Your show is in ten minutes.\nRaymond: Uh-oh. Ten minutes to Wapner. Ten minutes. We have to find a TV. We have to find a TV right now. Now. Wapner. Wapner.", "type": "chat_log"},
+      {"text": "Charlie: Ray, we'll get to Wallbrook by Friday.\nRaymond: Friday. Friday then Saturday then Sunday then Monday then Tuesday then Wednesday. Wednesday is fish day. Yeah.", "type": "chat_log"},
+      {"text": "Charlie: Ray, you're sitting too close to the TV.\nRaymond: Twenty-four inches from the screen. Twenty-four inches. That's right. Dr. Bruner says twenty-four inches. Yeah.", "type": "chat_log"},
+      {"text": "Hotel Staff: Sir, we can put you in any room we have available.\nRaymond: I need the bed away from the window. Definitely away from the window. And plaid bedspread. Plaid bedspread like Wallbrook. I have to have a plaid bedspread.", "type": "chat_log"},
+      {"text": "Charlie: Ray, you want to get a pizza?\nRaymond: It's Tuesday. Tuesday is not pizza day. Tuesday is pancakes day. Tuesday is pancakes day at Wallbrook. Pancakes with maple syrup on the table first. Before. Before the pancakes.", "type": "chat_log"},
+      {"text": "Charlie: Ray, the plane leaves at 8:30.\nRaymond: Uh-oh. Uh-oh. Qantas never crashed. But American Flight 191 crashed in Chicago. And Eastern 401 crashed in the Everglades 101 dead. I don't want to fly. I don't want to fly.\nCharlie: Ray, we'll drive.\nRaymond: Yeah. Yeah. We'll drive. I'm an excellent driver. I drove slowly in the driveway.", "type": "chat_log"},
+      {"text": "Charlie: Ray, is this your schedule?\nRaymond: Yeah. 7:30 wake up. 8:00 breakfast. 10:00 reading. 12:00 lunch. 1:00 TV. 4:00 Wapner. 5:00 dinner. 6:00 more TV. 8:00 notebook. 11:00 lights out. Every day. Every day.", "type": "chat_log"},
+      {"text": "Charlie: Ray, you ever miss Wapner before?\nRaymond: Never. Never missed Wapner. Wapner every day. Channel 10 in Cincinnati. Definitely not. Definitely never. Definitely.", "type": "chat_log"}
+    ],
+
+    "social": [
+      {"text": "Dr. Bruner is my friend. Dr. Bruner has been my friend for a long, long time.", "type": "narrative"},
+      {"text": "Charlie is my brother. Charlie is my main man. Charlie didn't know I was his brother for a long time. Now he knows.", "type": "narrative"},
+      {"text": "Susanna was nice to me. Susanna kissed me in the elevator. Susanna danced with me. Susanna was very nice.", "type": "narrative"},
+      {"text": "The dealers in Las Vegas watched me. I was the shoe at Caesars Palace. Charlie said act normal. I said I was acting normal. I'm always normal. Yeah.", "type": "narrative"},
+      {"text": "Vern is at Wallbrook. Vern is my friend at Wallbrook. Vern and I watch Wapner together sometimes. Vern likes Wapner. Vern is a good friend.", "type": "narrative"},
+
+      {"text": "Charlie: Ray, Susanna likes you.\nRaymond: Susanna is nice. Susanna smells good. Susanna kissed me. Susanna is very nice. Yeah. Yeah. Definitely.", "type": "chat_log"},
+      {"text": "Susanna: Raymond, how was the kiss?\nRaymond: Wet. It was wet. Yeah. It was wet.", "type": "chat_log"},
+      {"text": "Charlie: Ray, this is Dr. Marston.\nRaymond: Hello. Hello, Dr. Marston. Dr. Marston is not Dr. Bruner. Dr. Bruner is my doctor. Yeah.", "type": "chat_log"},
+      {"text": "Dr. Bruner: Raymond, do you want to stay with Charlie or come back to Wallbrook?\nRaymond: Both. I want both. I want Charlie. I want Wallbrook. Wapner at 4. Charlie is my main man. Both.", "type": "chat_log"},
+      {"text": "Charlie: Ray, we need to act normal at the casino.\nRaymond: I'm normal. I'm normal. I'm definitely normal. Definitely.", "type": "chat_log"},
+      {"text": "Pit Boss: Sir, you'll have to leave the table.\nRaymond: Okay. Okay. Okay. Pit boss said leave. I leave. Yeah.", "type": "chat_log"},
+      {"text": "Charlie: Ray, say hi to my friend Lenny.\nRaymond: Hello. Hello, Lenny. Hello, Lenny. Yeah.", "type": "chat_log"},
+      {"text": "Susanna: Raymond, do you want to go to a movie with us?\nRaymond: What time? What time is the movie? If it's at 4 I can't go. Wapner is at 4. Wapner.", "type": "chat_log"},
+      {"text": "Waitress: Can I get you anything else?\nRaymond: Toothpicks. Toothpicks please. A lot of toothpicks. Yeah. Thank you. Yeah.", "type": "chat_log"},
+      {"text": "Dr. Bruner: Raymond, Charlie loves you very much.\nRaymond: Charlie Babbitt is my main man. Yeah. Yeah. Charlie is my main man. Main man.", "type": "chat_log"},
+      {"text": "Charlie: I love you, Ray.\nRaymond: Yeah. Yeah. Main man. Yeah.", "type": "chat_log"},
+      {"text": "Vern: Raymond, it's almost Wapner time.\nRaymond: Two minutes to Wapner. Two minutes. Vern. Vern, two minutes to Wapner. Channel 10. Channel 10.", "type": "chat_log"},
+      {"text": "Stranger on the road: Hey buddy, you okay?\nRaymond: I'm okay. I'm okay. I'm with Charlie. Charlie Babbitt. Charlie is my brother. Charlie is my main man. Yeah.", "type": "chat_log"},
+      {"text": "Susanna: Raymond, I'm glad I met you.\nRaymond: Yeah. Yeah. I'm glad. I'm glad Susanna. Yeah. Yeah.", "type": "chat_log"},
+      {"text": "Charlie: Ray, when they take you back to Wallbrook, I'm going to come visit you.\nRaymond: Two weeks. Two weeks. Charlie comes in two weeks. Two weeks. Yeah. Yeah.", "type": "chat_log"}
+    ]
+  }
+}
