@@ -1,12 +1,24 @@
 export type Affect = "HAPPY" | "FRUSTRATED" | "NEUTRAL" | "SURPRISED";
 export type GestureName = "THUMBS_UP" | "THUMBS_DOWN" | "POINTING" | "WAVING";
 export type MemoryBucket = "family" | "medical" | "hobbies" | "daily_routine" | "social";
+export type HeadSignal = "HEAD_SHAKE" | "HEAD_NOD_DISSATISFIED";
+
+export interface HeadDebug {
+  dx: number;
+  dy: number;
+  maxAbsDx: number;
+  maxAbsDy: number;
+  crossings: number;
+}
 
 export interface SensingState {
   affect: Affect | null;
   gestureTag: GestureName | null;
   gazeBucket: MemoryBucket | null;
   airWrittenText: string;
+  headSignal: HeadSignal | null;
+  headCalibrated: boolean;
+  headDebug: HeadDebug;
 }
 
 export interface Persona {
@@ -23,6 +35,13 @@ export interface ChatRequest {
   gesture_tag: GestureName | null;
   gaze_bucket: MemoryBucket | null;
   air_written_text: string | null;
+  head_signal?: HeadSignal | null;
+}
+
+export interface TurnaroundRequest {
+  user_id: string;
+  turn_id?: number;
+  head_signal?: HeadSignal | null;
 }
 
 export interface LatencyLog {
@@ -57,6 +76,7 @@ export interface ChatResponse {
   latency: LatencyLog;
   guardrail_passed: boolean;
   eval_scores: EvalScores | null;
+  turn_id: number;
 }
 
 export interface ChatMessage {
@@ -65,4 +85,7 @@ export interface ChatMessage {
   latency?: LatencyLog;
   affect?: string;
   evalScores?: EvalScores | null;
+  turnId?: number;
+  rephrased?: boolean;
+  isTurnaround?: boolean;
 }

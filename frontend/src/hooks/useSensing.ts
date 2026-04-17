@@ -11,6 +11,7 @@ import {
   classifyGesture,
   GazeTracker,
   AirWriter,
+  HeadPoseTracker,
 } from "../lib/sensing";
 
 const EMA_ALPHA = 0.3;
@@ -20,6 +21,9 @@ export function useSensing() {
   const handLandmarkerRef = useRef<HandLandmarker | null>(null);
   const gazeTrackerRef = useRef(new GazeTracker());
   const airWriterRef = useRef(new AirWriter());
+  const headTrackerRef = useRef(new HeadPoseTracker());
+  const calibratePendingRef = useRef(false);
+  const headDebugRef = useRef({ dx: 0, dy: 0, maxAbsDx: 0, maxAbsDy: 0, crossings: 0 });
   const neutralLCPRef = useRef<number | null>(null);
   const smoothedRef = useRef({ MAR: 0, EAR: 0.3, BRI: -0.3, LCP: 0 });
   const initingRef = useRef(false);
@@ -30,6 +34,9 @@ export function useSensing() {
     gestureTag: null,
     gazeBucket: null,
     airWrittenText: "",
+    headSignal: null,
+    headCalibrated: false,
+    headDebug: { dx: 0, dy: 0, maxAbsDx: 0, maxAbsDy: 0, crossings: 0 },
   });
 
   // Cleanup MediaPipe resources on unmount
@@ -95,6 +102,7 @@ export function useSensing() {
 
       let affect: SensingState["affect"] = null;
       let gazeBucket: SensingState["gazeBucket"] = null;
+      let headSignal: SensingState["headSignal"] = null;
 
       const faceResult = faceLandmarker.detectForVideo(video, timestamp);
       if (faceResult.faceLandmarks && faceResult.faceLandmarks.length > 0) {
@@ -103,6 +111,11 @@ export function useSensing() {
         if (neutralLCPRef.current === null) {
           neutralLCPRef.current =
             (landmarks[61].x + landmarks[291].x) / 2;
+        }
+
+        if (calibratePendingRef.current) {
+          headTrackerRef.current.calibrate(landmarks);
+          calibratePendingRef.current = false;
         }
 
         const raw = computeAffectVector(landmarks, neutralLCPRef.current);
@@ -118,6 +131,8 @@ export function useSensing() {
 
         affect = classifyAffect(smoothed);
         gazeBucket = gazeTrackerRef.current.process(landmarks);
+        headSignal = headTrackerRef.current.process(landmarks);
+        headDebugRef.current = headTrackerRef.current.debug;
       }
 
       let gestureTag: SensingState["gestureTag"] = null;
@@ -144,6 +159,9 @@ export function useSensing() {
         airWrittenText: newAirText
           ? prev.airWrittenText + newAirText
           : prev.airWrittenText,
+        headSignal: headSignal ?? prev.headSignal,
+        headCalibrated: headTrackerRef.current.calibrated,
+        headDebug: headDebugRef.current,
       }));
     },
     []
@@ -153,12 +171,40 @@ export function useSensing() {
     setSensing((prev) => ({ ...prev, airWrittenText: "" }));
   }, []);
 
+  const clearHeadSignal = useCallback(() => {
+    setSensing((prev) => ({ ...prev, headSignal: null }));
+  }, []);
+
+  const calibrateHeadPose = useCallback(() => {
+    calibratePendingRef.current = true;
+    setSensing((prev) => ({ ...prev, headSignal: null }));
+  }, []);
+
   const resetCalibration = useCallback(() => {
     neutralLCPRef.current = null;
     smoothedRef.current = { MAR: 0, EAR: 0.3, BRI: -0.3, LCP: 0 };
     gazeTrackerRef.current.reset();
-    setSensing({ affect: null, gestureTag: null, gazeBucket: null, airWrittenText: "" });
+    headTrackerRef.current.reset();
+    setSensing({
+      affect: null,
+      gestureTag: null,
+      gazeBucket: null,
+      airWrittenText: "",
+      headSignal: null,
+      headCalibrated: false,
+      headDebug: { dx: 0, dy: 0, maxAbsDx: 0, maxAbsDy: 0, crossings: 0 },
+    });
   }, []);
 
-  return { sensing, ready, initError, init, processFrame, clearAirWrittenText, resetCalibration };
+  return {
+    sensing,
+    ready,
+    initError,
+    init,
+    processFrame,
+    clearAirWrittenText,
+    clearHeadSignal,
+    calibrateHeadPose,
+    resetCalibration,
+  };
 }

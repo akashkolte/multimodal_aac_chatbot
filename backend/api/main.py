@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import json
+import logging
 
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
@@ -15,9 +16,12 @@ from backend.generation.llm_client import (  # active_model used by /debug/confi
 )
 from backend.guardrails.checks import check_input
 from backend.pipeline.graph import run_pipeline
+from backend.pipeline.intent_kind import classify_intent_kind
+from backend.pipeline.nodes import feedback as feedback_node
+from backend.pipeline.nodes import planner as planner_node
 from backend.pipeline.state import PipelineState
 from backend.retrieval.bucket_priors import uniform_priors
-from backend.retrieval.vector_store import _get_embedder
+from backend.retrieval.vector_store import _get_embedder, retrieve
 
 app = FastAPI(
     title="Multimodal AAC Chatbot API",
@@ -32,6 +36,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+_log = logging.getLogger(__name__)
 _models_ready = False
 
 
@@ -64,6 +69,13 @@ class ChatRequest(BaseModel):
     gesture_tag: str | None = None
     gaze_bucket: str | None = None
     air_written_text: str | None = None
+    head_signal: str | None = None  # "HEAD_SHAKE"|"HEAD_NOD_DISSATISFIED"
+
+
+class TurnaroundRequest(BaseModel):
+    user_id: str
+    turn_id: int | None = None  # optional guard against stale turnaround calls
+    head_signal: str | None = None
 
 
 class EvalScoresResponse(BaseModel):
@@ -91,6 +103,7 @@ class ChatResponse(BaseModel):
     latency: dict
     guardrail_passed: bool
     eval_scores: EvalScoresResponse | None = None
+    turn_id: int
 
 
 # ── Helpers ────────────────────────────────────────────────────────────────────
@@ -145,6 +158,8 @@ def _build_initial_state(req: ChatRequest, session: dict) -> PipelineState:
         gesture_tag=req.gesture_tag,
         gaze_bucket=req.gaze_bucket,
         air_written_text=req.air_written_text,
+        head_signal=req.head_signal,
+        turnaround_triggered=False,
         raw_query=req.query,
         intent_route=None,
         generation_config=None,
@@ -166,6 +181,58 @@ def _build_initial_state(req: ChatRequest, session: dict) -> PipelineState:
         run_id=None,
         guardrail_passed=True,
     )
+
+
+def _re_retrieve_excluding(
+    query: str,
+    user_id: str,
+    rejected_chunks: list[dict],
+) -> list[dict] | None:
+    """Pull fresh chunks for a turnaround, excluding the bucket and exact texts
+    of the rejected chunks.
+
+    Returns:
+        - list of chunks (passing min-score floor) when re-retrieval improved
+          on the rejected set
+        - None when re-retrieval should not be used (no signal, all dropped by
+          dedupe, or all below score floor) — caller should keep original chunks
+    """
+    if not rejected_chunks:
+        return None
+    rejected_bucket = rejected_chunks[0].get("bucket")
+    rejected_texts = {c.get("text") for c in rejected_chunks if c.get("text")}
+    if not rejected_bucket:
+        return None
+
+    try:
+        # Pull a wider net (top_k * 2) so dedupe + bucket-exclusion still leaves
+        # enough candidates to fill rerank_k.
+        fresh = retrieve(
+            query=query,
+            user_id=user_id,
+            top_k=settings.retrieval_top_k * 2,
+            rerank_k=settings.retrieval_top_k * 2,
+            bucket_filter=None,
+        )
+    except Exception as exc:
+        _log.warning("turnaround re-retrieval failed: %r", exc)
+        return None
+
+    filtered = [
+        c
+        for c in fresh
+        if c.get("bucket") != rejected_bucket
+        and c.get("text") not in rejected_texts
+        and float(c.get("score", 0.0)) >= settings.turnaround_min_score
+    ]
+    if not filtered:
+        _log.info(
+            "turnaround re-retrieval found no chunks above score floor %.2f — "
+            "keeping original chunks",
+            settings.turnaround_min_score,
+        )
+        return None
+    return filtered[: settings.retrieval_rerank_k]
 
 
 # ── Routes ─────────────────────────────────────────────────────────────────────
@@ -222,6 +289,7 @@ def chat(req: ChatRequest):
             retrieval_mode="none",
             latency={},
             guardrail_passed=False,
+            turn_id=0,
         )
 
     session = _get_or_init_session(req.user_id)
@@ -232,6 +300,7 @@ def chat(req: ChatRequest):
     # Persist updated session state
     session["session_history"] = result["session_history"]
     session["bucket_priors"] = result["bucket_priors"]
+    session["last_state"] = result
 
     # Compute evaluation metrics
     affect_emotion = (result.get("affect") or {}).get("emotion", "NEUTRAL")
@@ -256,4 +325,101 @@ def chat(req: ChatRequest):
         latency=result.get("latency_log") or {},
         guardrail_passed=result.get("guardrail_passed", True),
         eval_scores=eval_scores,
+        turn_id=result["turn_id"],
+    )
+
+
+@app.post("/chat/turnaround", response_model=ChatResponse)
+def chat_turnaround(req: TurnaroundRequest):
+    if req.user_id not in _sessions:
+        raise HTTPException(status_code=404, detail="no active session")
+
+    session = _sessions[req.user_id]
+    last: PipelineState | None = session.get("last_state")
+    if last is None:
+        raise HTTPException(status_code=409, detail="no prior turn to rephrase")
+
+    if req.turn_id is not None and req.turn_id != last["turn_id"]:
+        raise HTTPException(status_code=409, detail="stale turn_id")
+
+    # feedback.run will re-append (partner, aac_user) for this turn, so strip
+    # both of those tail entries to avoid duplicating the partner line. The
+    # rejected aac_user text is also excluded from the re-plan context this way.
+    trimmed_history = list(last.get("session_history") or [])
+    if trimmed_history and trimmed_history[-1].get("role") == "aac_user":
+        trimmed_history.pop()
+    if trimmed_history and trimmed_history[-1].get("role") == "partner":
+        trimmed_history.pop()
+
+    intent_kind = classify_intent_kind(last.get("intent_route"))
+
+    gen_cfg = dict(last.get("generation_config") or {})
+    if intent_kind == "present_state":
+        gen_cfg["persona_mod"] = "present_state_retry"
+        gen_cfg["tone_tag"] = "[TONE:HONEST_UNCERTAIN]"
+    else:
+        gen_cfg["persona_mod"] = "reverse_stance"
+        gen_cfg.setdefault("tone_tag", "[TONE:CLARIFYING_REPHRASE]")
+
+    replan_state: PipelineState = dict(last)  # type: ignore[assignment]
+    replan_state["session_history"] = trimmed_history
+    replan_state["generation_config"] = gen_cfg
+    replan_state["head_signal"] = req.head_signal or last.get("head_signal")
+    replan_state["turnaround_triggered"] = True
+    replan_state["latency_log"] = {
+        "t_sensing": 0.0,
+        "t_intent": 0.0,
+        "t_retrieval": 0.0,
+        "t_generation": 0.0,
+        "t_total": 0.0,
+    }
+
+    # For PERSONAL turnarounds, pull fresh chunks excluding the bucket and
+    # exact texts of the rejected response — same chunks would just produce
+    # the same wrong answer. _re_retrieve_excluding returns None when the
+    # fresh batch is no better than what we already had, in which case we
+    # keep the original chunks rather than degrade to lower-relevance ones.
+    if intent_kind == "memory":
+        fresh_chunks = _re_retrieve_excluding(
+            query=last["raw_query"],
+            user_id=last["user_id"],
+            rejected_chunks=last.get("retrieved_chunks") or [],
+        )
+        if fresh_chunks is not None:
+            replan_state["retrieved_chunks"] = fresh_chunks
+            replan_state["retrieval_mode_used"] = "turnaround_rebucket"
+
+    planner_update = planner_node.run_primary(replan_state)
+    replan_state.update(planner_update)  # type: ignore[typeddict-item]
+
+    feedback_update = feedback_node.run(replan_state)
+    replan_state.update(feedback_update)  # type: ignore[typeddict-item]
+
+    session["session_history"] = replan_state["session_history"]
+    session["bucket_priors"] = replan_state["bucket_priors"]
+    session["last_state"] = replan_state
+
+    affect_emotion = (replan_state.get("affect") or {}).get("emotion", "NEUTRAL")
+    eval_scores = compute_evals(
+        response=replan_state["selected_response"] or "",
+        chunks=replan_state.get("retrieved_chunks") or [],
+        latency_log=replan_state.get("latency_log") or {},
+        affect=affect_emotion,
+        gesture_tag=replan_state.get("gesture_tag"),
+        gaze_bucket=replan_state.get("gaze_bucket"),
+        slo_target=settings.slo_target_s,
+    )
+
+    return ChatResponse(
+        user_id=req.user_id,
+        query=replan_state["raw_query"],
+        response=replan_state["selected_response"] or "",
+        affect=affect_emotion,
+        llm_tier=replan_state.get("llm_tier_used", "unknown"),
+        llm_model=replan_state.get("llm_model_used", "unknown"),
+        retrieval_mode=replan_state.get("retrieval_mode_used", "unknown"),
+        latency=replan_state.get("latency_log") or {},
+        guardrail_passed=replan_state.get("guardrail_passed", True),
+        eval_scores=eval_scores,
+        turn_id=replan_state["turn_id"],
     )

@@ -19,11 +19,20 @@ from backend.sensing.bucket_keywords import infer_bucket
 
 _CLASS_EXEMPLARS: dict[str, list[str]] = {
     "PERSONAL": [
-        "how are you today",
         "what is your favourite food",
         "tell me about your family",
-        "what do you do in the mornings",
-        "did you enjoy the weekend",
+        "what do you do for work",
+        "did you grow up around here",
+        "what was your childhood like",
+    ],
+    "PRESENT_STATE": [
+        "how are you feeling today",
+        "are you tired right now",
+        "what are you doing at the moment",
+        "did you sleep well last night",
+        "are you in pain today",
+        "how is your day going",
+        "are you having a good day",
     ],
     "CONTEXTUAL": [
         "what did you just say",
@@ -46,6 +55,10 @@ _CLASSIFIER_THRESHOLD = (
 )
 _CONTEXTUAL_MARGIN_MIN = (
     0.08  # CONTEXTUAL must beat runner-up by at least this — it over-matches without it
+)
+_PRESENT_STATE_MARGIN_MIN = (
+    0.05  # PRESENT_STATE skips retrieval, so a narrow win against PERSONAL would silently
+    # drop persona memories. Require a clear margin before going down that path.
 )
 _MIN_FRAGMENT_WORDS = 3
 _MAX_FRAGMENTS = 4
@@ -150,6 +163,15 @@ def _classify(fragment: str) -> str:
         if margin < _CONTEXTUAL_MARGIN_MIN or not has_discourse_marker:
             return "PERSONAL"
 
+    # PRESENT_STATE skips retrieval entirely, so a narrow win over PERSONAL
+    # would silently drop persona memories with no recovery path. Demote to
+    # PERSONAL if the win isn't decisive — better to over-retrieve than to
+    # answer a personal question with no chunks.
+    if best_cls == "PRESENT_STATE":
+        margin = best_score - runner_up_score
+        if margin < _PRESENT_STATE_MARGIN_MIN:
+            return "PERSONAL"
+
     return best_cls
 
 
@@ -193,11 +215,17 @@ def run(state: PipelineState) -> dict:
 
     air_written = state.get("air_written_text")
     if air_written:
+        # Classify the air-written supplement the same way as a normal fragment
+        # so a present-tense supplement ("tired") on a present-state question
+        # doesn't silently flip the route to PERSONAL and re-enable retrieval.
+        air_cls = _classify(air_written)
         sub_intents.append(
             {
-                "type": "PERSONAL",
+                "type": air_cls,
                 "query": air_written,
-                "bucket_hint": infer_bucket(air_written),
+                "bucket_hint": infer_bucket(air_written)
+                if air_cls == "PERSONAL"
+                else None,
                 "priority": priority,
             }
         )

@@ -189,6 +189,227 @@ export class GazeTracker {
   }
 }
 
+// ── Head-pose tracker (shake / sharp-nod-dissatisfied) ──────────────────────
+
+export type HeadSignal = "HEAD_SHAKE" | "HEAD_NOD_DISSATISFIED";
+
+const NOSE_TIP = 1;
+
+interface NosePoint {
+  x: number;
+  y: number;
+  t: number;
+}
+
+export interface HeadDebug {
+  dx: number;        // current x displacement from neutral
+  dy: number;        // current y displacement from neutral
+  maxAbsDx: number;  // peak |dx| within the window
+  maxAbsDy: number;  // peak |dy| within the window
+  crossings: number; // side crossings within the window (deadband-filtered)
+}
+
+export class HeadPoseTracker {
+  private neutralX: number | null = null;
+  private neutralY: number | null = null;
+  private history: NosePoint[] = [];
+  private lastEmitTs = 0;
+  private lastDebug: HeadDebug = {
+    dx: 0,
+    dy: 0,
+    maxAbsDx: 0,
+    maxAbsDy: 0,
+    crossings: 0,
+  };
+
+  private static WINDOW_MS = 1000;
+  private static REFRACTORY_MS = 2000;
+  private static SHAKE_AMPLITUDE = 0.015;
+  private static SHAKE_MIN_CROSSINGS = 3;
+  // Per-frame jitter below this magnitude is ignored when counting side
+  // crossings, so micro-fidgets near neutral can't rack up false crossings.
+  private static SHAKE_DEADBAND = 0.005;
+  private static NOD_DROP = 0.06;
+  private static NOD_WINDOW_MS = 600;
+  // Reject "nod" when horizontal motion exceeds this — it's a shake/sway.
+  private static NOD_MAX_HORIZONTAL = 0.015;
+  // Recovery: head must come back to within this of neutral.
+  private static NOD_RECOVERY = 0.015;
+  // The drop must start from near-neutral (not from a tilted resting pose).
+  private static NOD_START_THRESHOLD = 0.015;
+  // Minimum frames between drop start and peak — guards against single-frame
+  // landmark glitches that look like an instantaneous jerk.
+  private static NOD_MIN_DROP_FRAMES = 3;
+  // Minimum frames between peak and recovery — same reason, going up.
+  private static NOD_MIN_RECOVERY_FRAMES = 2;
+
+  calibrate(landmarks: { x: number; y: number }[]): void {
+    if (!landmarks[NOSE_TIP]) return;
+    this.neutralX = landmarks[NOSE_TIP].x;
+    this.neutralY = landmarks[NOSE_TIP].y;
+    this.history = [];
+    this.lastEmitTs = 0;
+  }
+
+  process(landmarks: { x: number; y: number }[]): HeadSignal | null {
+    if (!landmarks[NOSE_TIP]) return null;
+    if (this.neutralX === null || this.neutralY === null) return null;
+
+    const now = performance.now();
+    const nose = landmarks[NOSE_TIP];
+    this.history.push({ x: nose.x, y: nose.y, t: now });
+    const cutoff = now - HeadPoseTracker.WINDOW_MS;
+    this.history = this.history.filter((p) => p.t >= cutoff);
+
+    this.updateDebug(nose);
+
+    if (now - this.lastEmitTs < HeadPoseTracker.REFRACTORY_MS) return null;
+    if (this.history.length < 6) return null;
+
+    const shake = this.detectShake();
+    if (shake) {
+      this.lastEmitTs = now;
+      return shake;
+    }
+
+    const nod = this.detectNod(now);
+    if (nod) {
+      this.lastEmitTs = now;
+      return nod;
+    }
+
+    return null;
+  }
+
+  private updateDebug(nose: { x: number; y: number }): void {
+    if (this.neutralX === null || this.neutralY === null) return;
+    let maxAbsDx = 0;
+    let maxAbsDy = 0;
+    let crossings = 0;
+    let prevSide = 0;
+    for (const p of this.history) {
+      const dx = p.x - this.neutralX;
+      const dy = p.y - this.neutralY;
+      const absDx = Math.abs(dx);
+      maxAbsDx = Math.max(maxAbsDx, absDx);
+      maxAbsDy = Math.max(maxAbsDy, Math.abs(dy));
+      if (absDx < HeadPoseTracker.SHAKE_DEADBAND) continue;
+      const side = dx > 0 ? 1 : -1;
+      if (prevSide !== 0 && side !== prevSide) crossings += 1;
+      prevSide = side;
+    }
+    this.lastDebug = {
+      dx: nose.x - this.neutralX,
+      dy: nose.y - this.neutralY,
+      maxAbsDx,
+      maxAbsDy,
+      crossings,
+    };
+  }
+
+  get debug(): HeadDebug {
+    return this.lastDebug;
+  }
+
+  private detectShake(): HeadSignal | null {
+    if (this.neutralX === null) return null;
+    let crossings = 0;
+    let prevSide = 0;
+    let maxAbs = 0;
+    for (const p of this.history) {
+      const dx = p.x - this.neutralX;
+      const absDx = Math.abs(dx);
+      maxAbs = Math.max(maxAbs, absDx);
+      // Only commit to a side once the displacement clears the deadband —
+      // otherwise sub-millimeter jitter near neutral fakes crossings.
+      if (absDx < HeadPoseTracker.SHAKE_DEADBAND) continue;
+      const side = dx > 0 ? 1 : -1;
+      if (prevSide !== 0 && side !== prevSide) crossings += 1;
+      prevSide = side;
+    }
+    if (
+      crossings >= HeadPoseTracker.SHAKE_MIN_CROSSINGS &&
+      maxAbs >= HeadPoseTracker.SHAKE_AMPLITUDE
+    ) {
+      return "HEAD_SHAKE";
+    }
+    return null;
+  }
+
+  private detectNod(now: number): HeadSignal | null {
+    if (this.neutralX === null || this.neutralY === null) return null;
+    const windowStart = now - HeadPoseTracker.NOD_WINDOW_MS;
+    const recent = this.history.filter((p) => p.t >= windowStart);
+    if (recent.length < 6) return null;
+
+    // Reject if there's significant horizontal motion — that's a shake/sway.
+    let maxAbsDx = 0;
+    for (const p of recent) {
+      maxAbsDx = Math.max(maxAbsDx, Math.abs(p.x - this.neutralX));
+    }
+    if (maxAbsDx > HeadPoseTracker.NOD_MAX_HORIZONTAL) return null;
+
+    // Find the peak (lowest head position) within the window.
+    let maxDrop = 0;
+    let peakIdx = -1;
+    for (let i = 0; i < recent.length; i++) {
+      const drop = recent[i].y - this.neutralY;
+      if (drop > maxDrop) {
+        maxDrop = drop;
+        peakIdx = i;
+      }
+    }
+    if (maxDrop < HeadPoseTracker.NOD_DROP || peakIdx < 0) return null;
+
+    // Find a near-neutral start before the peak — a nod is a deliberate
+    // motion *from* neutral, not a recovery from an already-tilted pose.
+    let startIdx = -1;
+    for (let i = peakIdx - 1; i >= 0; i--) {
+      if (
+        recent[i].y - this.neutralY <=
+        HeadPoseTracker.NOD_START_THRESHOLD
+      ) {
+        startIdx = i;
+        break;
+      }
+    }
+    if (
+      startIdx < 0 ||
+      peakIdx - startIdx < HeadPoseTracker.NOD_MIN_DROP_FRAMES
+    ) {
+      return null;
+    }
+
+    // Recovery: head must return near neutral after the peak.
+    let recoveryIdx = -1;
+    for (let i = peakIdx + 1; i < recent.length; i++) {
+      if (recent[i].y - this.neutralY < HeadPoseTracker.NOD_RECOVERY) {
+        recoveryIdx = i;
+        break;
+      }
+    }
+    if (
+      recoveryIdx < 0 ||
+      recoveryIdx - peakIdx < HeadPoseTracker.NOD_MIN_RECOVERY_FRAMES
+    ) {
+      return null;
+    }
+
+    return "HEAD_NOD_DISSATISFIED";
+  }
+
+  reset(): void {
+    this.neutralX = null;
+    this.neutralY = null;
+    this.history = [];
+    this.lastEmitTs = 0;
+  }
+
+  get calibrated(): boolean {
+    return this.neutralX !== null && this.neutralY !== null;
+  }
+}
+
 // ── Air-writing DTW (ported from backend/sensing/air_writing.py) ─────────────
 
 const INDEX_TIP = 8;

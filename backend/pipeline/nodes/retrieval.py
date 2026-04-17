@@ -4,6 +4,7 @@ from __future__ import annotations
 import time
 
 from backend.config.settings import settings
+from backend.pipeline.intent_kind import is_present_state_only
 from backend.pipeline.state import PipelineState, RetrievedChunk, SubIntent
 from backend.retrieval.contextual import retrieve_from_history
 from backend.retrieval.vector_store import retrieve
@@ -16,6 +17,8 @@ _OPEN_DOMAIN_STUB_TEXT = (
 def run_fast(state: PipelineState) -> dict:
     """Fast retrieval path for FRUSTRATED affect (k=2, no reranker)."""
     t0 = time.perf_counter()
+    if is_present_state_only(state.get("intent_route")):
+        return _build_return(state, [], "skipped_present_state", t0)
     chunks = _dispatch_all(state, per_intent_k=settings.retrieval_fast_k)
     return _build_return(state, chunks, "fast", t0)
 
@@ -23,6 +26,8 @@ def run_fast(state: PipelineState) -> dict:
 def run_full(state: PipelineState) -> dict:
     """Full retrieval path: top_k cosine matches narrowed to rerank_k."""
     t0 = time.perf_counter()
+    if is_present_state_only(state.get("intent_route")):
+        return _build_return(state, [], "skipped_present_state", t0)
     chunks = _dispatch_all(state, per_intent_k=settings.retrieval_rerank_k)
     return _build_return(state, chunks, "full", t0)
 
@@ -50,6 +55,12 @@ def _dispatch_all(state: PipelineState, per_intent_k: int) -> list[RetrievedChun
             merged.extend(_retrieve_contextual(sub, state, per_intent_k))
         elif kind == "OPEN_DOMAIN":
             merged.extend(_retrieve_open_domain(sub))
+        elif kind == "PRESENT_STATE":
+            # PRESENT_STATE is grounded in the affect signal, not memory.
+            # In a pure-present-state route the run_fast/run_full early skip
+            # already short-circuits us; in a mixed route we just contribute
+            # nothing here so the planner doesn't see misleading chunks.
+            continue
         else:
             merged.extend(_retrieve_personal(sub, state, per_intent_k))
 

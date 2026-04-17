@@ -43,6 +43,8 @@ def _log_to_jsonl(state: PipelineState, run_id: str) -> None:
         "llm_tier": state.get("llm_tier_used", "unknown"),
         "retrieval_mode": state.get("retrieval_mode_used", "unknown"),
         "affect": affect,
+        "head_signal": state.get("head_signal"),
+        "turnaround_triggered": state.get("turnaround_triggered", False),
         "guardrail_passed": state.get("guardrail_passed", True),
         "num_chunks": len(chunks),
         "num_personal": sum(

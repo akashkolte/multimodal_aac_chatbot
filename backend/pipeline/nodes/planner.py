@@ -6,6 +6,7 @@ import time
 from backend.config.settings import settings
 from backend.generation.llm_client import active_model, chat_complete
 from backend.guardrails.checks import check_output
+from backend.pipeline.intent_kind import classify_intent_kind
 from backend.pipeline.state import PipelineState
 from backend.sensing.labels import GESTURE_TO_TAG
 
@@ -53,6 +54,11 @@ def _run(state: PipelineState, tier: str) -> dict:
     )
     gesture_tag = state.get("gesture_tag")
     air_written_text = state.get("air_written_text")
+    turnaround_triggered = state.get("turnaround_triggered", False)
+    rejected_response: str | None = None
+    if turnaround_triggered:
+        rejected_response = state.get("selected_response")
+    intent_kind = classify_intent_kind(state.get("intent_route"))
     messages = _build_messages(
         profile,
         chunks,
@@ -62,6 +68,9 @@ def _run(state: PipelineState, tier: str) -> dict:
         gen_cfg,
         gesture_tag=gesture_tag,
         air_written_text=air_written_text,
+        rejected_response=rejected_response,
+        intent_kind=intent_kind,
+        affect=affect,
     )
 
     selected = chat_complete(
@@ -102,6 +111,14 @@ def _resolve_tone_tag(user_id: str, affect: str, default_tag: str) -> str:
     return _PERSONA_TONE_OVERRIDES.get(user_id, {}).get(affect, default_tag)
 
 
+_AFFECT_HINTS = {
+    "HAPPY": "You currently feel positive — light, content, energetic.",
+    "FRUSTRATED": "You currently feel frustrated — tired, irritable, or off.",
+    "SURPRISED": "You currently feel surprised or caught off-guard.",
+    "NEUTRAL": "Your current state is unclear from the affect signal.",
+}
+
+
 def _build_messages(
     profile: dict,
     chunks: list[dict],
@@ -111,6 +128,9 @@ def _build_messages(
     gen_cfg: dict,
     gesture_tag: str | None = None,
     air_written_text: str | None = None,
+    rejected_response: str | None = None,
+    intent_kind: str = "memory",
+    affect: str = "NEUTRAL",
 ) -> list[dict]:
     # Split into a stable system message (same per persona — gets cached by the
     # provider) and a turn-specific user message. Anything that changes per
@@ -126,6 +146,9 @@ def _build_messages(
         gesture_tag,
         air_written_text,
         profile["name"],
+        rejected_response=rejected_response,
+        intent_kind=intent_kind,
+        affect=affect,
     )
     return [
         {"role": "system", "content": system_content},
@@ -178,6 +201,24 @@ _PERSONA_MOD_INSTRUCTIONS = {
     "suppress_humor": "Be direct and supportive. Suppress humor.",
     "baseline": "Use your natural communication style.",
     "add_confirmation": "Add a clarifying question or confirmation at the end.",
+    "turnaround": (
+        "Your previous reply missed what you actually meant. Rephrase "
+        "more directly — change the wording meaningfully, not just "
+        "surface tweaks — and end with a one-sentence clarifying "
+        "question to confirm you're on the right track."
+    ),
+    "reverse_stance": (
+        "Your previous reply was substantively wrong — not poorly worded, "
+        "but the wrong content. Take a meaningfully different stance using "
+        "the available memories or, if none fit, honestly say you don't "
+        "know. Do NOT just reword the previous reply."
+    ),
+    "present_state_retry": (
+        "Your previous reply was wrong about your current state. The "
+        "affect signal probably misled you. Either flip the emotional "
+        "read (if you said 'good', try 'not great') or honestly admit "
+        "you're not sure how you feel right now. Do NOT invent details."
+    ),
 }
 
 
@@ -190,6 +231,10 @@ def _build_user(
     gesture_tag: str | None,
     air_written_text: str | None,
     persona_name: str,
+    *,
+    rejected_response: str | None = None,
+    intent_kind: str = "memory",
+    affect: str = "NEUTRAL",
 ) -> str:
     personal_chunks = [c for c in chunks if c.get("source", "personal") == "personal"]
     contextual_chunks = [c for c in chunks if c.get("source") == "contextual"]
@@ -231,8 +276,38 @@ def _build_user(
         _PERSONA_MOD_INSTRUCTIONS["baseline"],
     )
 
+    turnaround_line = ""
+    if rejected_response:
+        safe_rejected = rejected_response.replace('"', "'").replace("\n", " ")[:300]
+        turnaround_line = (
+            f"\nYour previous reply (which you need to replace, not repeat): "
+            f'"{safe_rejected}"'
+        )
+
+    if intent_kind == "present_state":
+        affect_hint = _AFFECT_HINTS.get(affect, _AFFECT_HINTS["NEUTRAL"])
+        return f"""\
+{tone_tag}{gesture_line}{air_writing_line}{turnaround_line}
+{persona_instruction}
+
+The partner is asking about your present state (right now, today).
+Your autobiographical memories do NOT contain this — do not fabricate details from them.
+
+Current affect read: {affect}
+  {affect_hint}
+
+Recent conversation:
+{history_block}
+
+Partner just said: {query}
+
+Reply as {persona_name} in 1–2 sentences, first person.
+- Ground the answer in the affect read above and recent conversation only.
+- If the affect read is NEUTRAL or doesn't match what you'd say, it's better to say "I'm not sure" or "honestly, I don't really know right now" than to invent.
+- Do NOT use autobiographical facts (job, family, hobbies) unless the partner asked."""
+
     return f"""\
-{tone_tag}{gesture_line}{air_writing_line}
+{tone_tag}{gesture_line}{air_writing_line}{turnaround_line}
 {persona_instruction}
 
 Personal memories:
