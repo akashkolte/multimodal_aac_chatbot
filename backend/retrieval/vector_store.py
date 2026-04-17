@@ -37,7 +37,7 @@ _index_cache: dict[str, tuple[torch.Tensor, list[dict]]] = {}
 
 def load_index(user_id: str) -> tuple[torch.Tensor, list[dict]]:
     if user_id not in _index_cache:
-        store_path = settings.faiss_store_dir / user_id
+        store_path = settings.vector_store_dir / user_id
         vecs = torch.load(
             store_path / "vectors.pt", map_location=_DEVICE, weights_only=True
         )
@@ -126,7 +126,7 @@ def build_all(
     store_dir: str | Path | None = None,
 ) -> None:
     memories_dir = Path(memories_dir or settings.memories_dir)
-    store_dir = Path(store_dir or settings.faiss_store_dir)
+    store_dir = Path(store_dir or settings.vector_store_dir)
 
     print(f"Embedder device: {_DEVICE}")
     for persona_file in sorted(memories_dir.glob("*.json")):

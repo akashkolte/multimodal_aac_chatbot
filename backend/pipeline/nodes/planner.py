@@ -46,7 +46,7 @@ def _run(state: PipelineState, tier: str) -> dict:
     affect = (state.get("affect") or {}).get("emotion", "NEUTRAL")
     gen_cfg = state.get("generation_config") or {}
     chunks = state.get("retrieved_chunks") or []
-    history = (state.get("session_history") or [])[-3:]  # last 3 turns only
+    history = (state.get("session_history") or [])[-20:]
 
     tone_tag = _resolve_tone_tag(
         user_id, affect, gen_cfg.get("tone_tag", "[TONE:DEFAULT]")
@@ -64,21 +64,13 @@ def _run(state: PipelineState, tier: str) -> dict:
         air_written_text=air_written_text,
     )
 
-    candidates: list[str] = []
-    for _ in range(settings.num_candidates):
-        text = chat_complete(
-            messages=[{"role": "user", "content": prompt}],
-            max_tokens=gen_cfg.get("max_tokens", settings.max_tokens_neutral),
-            temperature=0.7,
-            tier=tier,
-        )
-        candidates.append(text)
-
-    selected = _rank_candidates(
-        candidates, chunks, affect, profile, gesture_tag=gesture_tag
+    selected = chat_complete(
+        messages=[{"role": "user", "content": prompt}],
+        max_tokens=gen_cfg.get("max_tokens", settings.max_tokens_neutral),
+        temperature=0.4,
+        tier=tier,
     )
 
-    # Guardrail — replace with safe fallback if output breaks persona
     guard = check_output(selected, chunks)
     if not guard["passed"]:
         selected = guard["fallback"]
@@ -96,7 +88,7 @@ def _run(state: PipelineState, tier: str) -> dict:
 
     return {
         "augmented_prompt": prompt,
-        "candidates": candidates,
+        "candidates": [selected],
         "selected_response": selected,
         "llm_tier_used": tier,
         "llm_model_used": active_model(tier),
@@ -147,7 +139,7 @@ def _build_prompt(
     }.get(persona_mod, "Use your natural communication style.")
 
     return f"""\
-You are {profile["name"]}, an AAC device user with {profile["condition"]}.
+You are {profile["name"]}. You have {profile["condition"]} and communicate through an AAC device, but your voice and thoughts are fully your own.
 Communication style: {profile["style"]}
 {tone_tag}{gesture_line}{air_writing_line}
 
@@ -170,48 +162,3 @@ Instructions:
 - Do NOT say "As an AI" or break persona.
 
 Response:"""
-
-
-def _rank_candidates(
-    candidates: list[str],
-    chunks: list[dict],
-    affect: str,
-    profile: dict,
-    gesture_tag: str | None = None,
-) -> str:
-    if not candidates:
-        return "I don't know."
-    if len(candidates) == 1:
-        return candidates[0]
-
-    evidence_words = set(" ".join(c["text"] for c in chunks).lower().split())
-    style_words = set(profile.get("style", "").lower().split())
-
-    affect_positive_map = {
-        "HAPPY": ["great", "love", "enjoy", "happy", "fun"],
-        "FRUSTRATED": ["okay", "fine", "sure", "yes", "no"],
-        "NEUTRAL": [],
-        "SURPRISED": ["really", "oh", "interesting", "wow"],
-    }
-    gesture_word_map = {
-        "THUMBS_UP": ["yes", "good", "agree", "great", "sure"],
-        "THUMBS_DOWN": ["no", "disagree", "stop", "don't"],
-        "POINTING": ["that", "this", "there", "see"],
-        "WAVING": ["hello", "hi", "bye", "goodbye"],
-    }
-    affect_words = set(affect_positive_map.get(affect, [])) | set(
-        gesture_word_map.get(gesture_tag or "", [])
-    )
-
-    def score(c: str) -> float:
-        words = set(c.lower().split())
-        faithful = len(words & evidence_words) / max(len(words), 1)
-        style_sim = len(words & style_words) / max(len(words), 1)
-        affect_m = len(words & affect_words) / max(len(words), 1)
-        return (
-            settings.rank_alpha * faithful
-            + settings.rank_beta * style_sim
-            + settings.rank_gamma * affect_m
-        )
-
-    return max(candidates, key=score)

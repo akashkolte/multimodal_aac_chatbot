@@ -110,7 +110,7 @@ Copy `.env.example` → `.env` and set:
 |------|---------|
 | `data/users.json` | Flat user index (id, name, condition, style) |
 | `data/memories/<uid>.json` | Full persona JSON with bucketed memories |
-| `data/faiss_store/<uid>/` | `vectors.pt` + `meta.json` — **rebuild after any persona edit** |
+| `data/vector_store/<uid>/` | `vectors.pt` + `meta.json` — **rebuild after any persona edit** |
 | `data/generate_users.py` | Regenerates memories + users.json |
 
 ---
@@ -140,6 +140,6 @@ Copy `.env.example` → `.env` and set:
 - **Guardrail tuning**: edit signal lists in `backend/guardrails/checks.py`
 - **Affect → generation mapping**: `_AFFECT_CONFIG` in `backend/pipeline/nodes/intent.py`
   and `_PERSONA_TONE_OVERRIDES` in `backend/pipeline/nodes/planner.py`
-- Vector indexes in `data/faiss_store/` are gitignored — rebuilt from source JSONs
+- Vector indexes in `data/vector_store/` are gitignored — rebuilt from source JSONs
   via `python -m backend.retrieval.vector_store`
 - Frontend uses pnpm, Node 22+

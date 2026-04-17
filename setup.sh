@@ -39,7 +39,7 @@ fi
 
 info "Building vector indexes (downloads BGE-small embedder on first run)..."
 python -m backend.retrieval.vector_store
-ok "Vector indexes built in data/faiss_store/"
+ok "Vector indexes built in data/vector_store/"
 
 # Ollama: tiers point at Ollama Cloud — no local pull needed. Just check the
 # daemon is reachable so the OpenAI-compatible proxy works.

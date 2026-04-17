@@ -80,7 +80,7 @@ The setup script handles:
 - Python dependency installation
 - `.env` file creation from template
 - Vector index building (downloads BGE-small embedder on first run, saves
-  per-user `vectors.pt` under `data/faiss_store/`)
+  per-user `vectors.pt` under `data/vector_store/`)
 - Frontend dependency installation (pnpm)
 
 ---
@@ -160,7 +160,7 @@ multimodal_aac_chatbot/
 ├── data/
 │   ├── users.json                 Persona index
 │   ├── memories/                  Per-persona memory JSONs
-│   └── faiss_store/               vectors.pt + meta.json (gitignored, rebuilt)
+│   └── vector_store/              vectors.pt + meta.json (gitignored, rebuilt)
 ├── logs/                          Per-turn JSONL logs (gitignored)
 │
 ├── setup.sh                       One-time setup script
@@ -196,7 +196,7 @@ Heads up: all camera/sensing stuff is in the frontend (MediaPipe JS). Backend ju
 - [ ] **[Core]** Memories are only autobiographical narratives right now. Need more variety:
   - [ ] social media posts (voice-matched, synth with LLM)
   - [ ] past chat logs (synth with LLM)
-  - [ ] update the generator script + rebuild faiss
+  - [ ] update the generator script + rebuild vector store
   - [ ] tag chunks by type so retriever knows what it pulled
 - [ ] **[Core]** Write down the data schema somewhere so evals can reuse it
 
@@ -214,7 +214,7 @@ Heads up: all camera/sensing stuff is in the frontend (MediaPipe JS). Backend ju
 
 > Current state: routing is keyword-based, not LLM-based. The original LLM router (Pydantic-validated JSON) kept emitting the wrong shape with `gemma4:31b-cloud` and hitting the `max_tokens` truncation — 3 retries + hard fallback on every turn, ~30s of dead latency before generation. The keyword router (5 buckets matched against word lists in `intent.py`) handles the demo personas and adds ~0ms. Trade-off: stuck with the 5 hardcoded buckets (`family`, `medical`, `hobbies`, `daily_routine`, `social`) and can't tell `OPEN_DOMAIN` from `PERSONAL`. Fine for now since all personas only have personal memories. Revisit when Ollama Cloud ships `response_format=json_schema` or we add a tiny local classifier.
 
-- [ ] **[Core]** Personal / Contextual / Open-domain all hit the same FAISS index right now. Make them actually go different places — open-domain → web search (or stub), contextual → session memory
+- [ ] **[Core]** Personal / Contextual / Open-domain all hit the same vector index right now. Make them actually go different places — open-domain → web search (or stub), contextual → session memory
 - [ ] intent node is slow. Cache the prompt, use a tiny model for routing, parallelise the sub-queries
 
 ### Retrieval
@@ -230,7 +230,7 @@ Heads up: all camera/sensing stuff is in the frontend (MediaPipe JS). Backend ju
 
 - [ ] **[Core]** API returns one response. Should return multiple candidates so the user can pick (and so the next item works)
 - [ ] **[Core]** Frontend needs a candidate picker — show all the options, let the user click one, send the selection back
-- [ ] **[Bonus]** When user picks a candidate, save the `(query, picked)` pair to a side faiss index and check it first next turn
+- [ ] **[Bonus]** When user picks a candidate, save the `(query, picked)` pair to a side vector index and check it first next turn
 
 ### Evals
 

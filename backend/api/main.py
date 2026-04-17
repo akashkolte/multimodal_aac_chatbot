@@ -175,7 +175,6 @@ def debug_config():
         "retrieval_rerank_k": settings.retrieval_rerank_k,
         "fallback_latency_threshold": settings.fallback_latency_threshold,
         "slo_target_s": settings.slo_target_s,
-        "num_candidates": settings.num_candidates,
     }
 
 
