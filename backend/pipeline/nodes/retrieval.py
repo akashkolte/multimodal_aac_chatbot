@@ -3,11 +3,14 @@ from __future__ import annotations
 
 import time
 
+import torch
+
 from backend.config.settings import settings
 from backend.pipeline.intent_kind import is_present_state_only
 from backend.pipeline.state import PipelineState, RetrievedChunk, SubIntent
 from backend.retrieval.contextual import retrieve_from_history
-from backend.retrieval.vector_store import retrieve
+from backend.retrieval.reranker import build_context_vector, mmr_rerank
+from backend.retrieval.vector_store import get_device, get_embedder, retrieve
 
 _OPEN_DOMAIN_STUB_TEXT = (
     "(no external knowledge source wired — answer from general knowledge)"
@@ -15,24 +18,30 @@ _OPEN_DOMAIN_STUB_TEXT = (
 
 
 def run_fast(state: PipelineState) -> dict:
-    """Fast retrieval path for FRUSTRATED affect (k=2, no reranker)."""
+    """Fast retrieval path for FRUSTRATED affect (k=2, MMR-only rerank)."""
     t0 = time.perf_counter()
     if is_present_state_only(state.get("intent_route")):
-        return _build_return(state, [], "skipped_present_state", t0)
-    chunks = _dispatch_all(state, per_intent_k=settings.retrieval_fast_k)
-    return _build_return(state, chunks, "fast", t0)
+        return _build_return(state, [], "skipped_present_state", t0, 0.0)
+    final_k = settings.retrieval_fast_k
+    pool_k = settings.rerank_fast_pool_k
+    chunks, t_rerank = _dispatch_all(state, pool_k=pool_k, final_k=final_k)
+    return _build_return(state, chunks, "fast", t0, t_rerank)
 
 
 def run_full(state: PipelineState) -> dict:
-    """Full retrieval path: top_k cosine matches narrowed to rerank_k."""
+    """Full retrieval path: wide cosine pool reranked by MMR + conversation context."""
     t0 = time.perf_counter()
     if is_present_state_only(state.get("intent_route")):
-        return _build_return(state, [], "skipped_present_state", t0)
-    chunks = _dispatch_all(state, per_intent_k=settings.retrieval_rerank_k)
-    return _build_return(state, chunks, "full", t0)
+        return _build_return(state, [], "skipped_present_state", t0, 0.0)
+    final_k = settings.retrieval_rerank_k
+    pool_k = settings.rerank_pool_k
+    chunks, t_rerank = _dispatch_all(state, pool_k=pool_k, final_k=final_k)
+    return _build_return(state, chunks, "full", t0, t_rerank)
 
 
-def _dispatch_all(state: PipelineState, per_intent_k: int) -> list[RetrievedChunk]:
+def _dispatch_all(
+    state: PipelineState, pool_k: int, final_k: int
+) -> tuple[list[RetrievedChunk], float]:
     route = state.get("intent_route") or {}
     sub_intents: list[SubIntent] = route.get("sub_intents") or []
 
@@ -46,15 +55,22 @@ def _dispatch_all(state: PipelineState, per_intent_k: int) -> list[RetrievedChun
             }
         ]
 
-    merged: list[RetrievedChunk] = []
+    rerankable: list[tuple[RetrievedChunk, torch.Tensor | None]] = []
+    pinned: list[RetrievedChunk] = []
+
+    # When rerank is off we'd just truncate to final_k anyway, so don't fetch the wider pool.
+    fetch_k = pool_k if settings.rerank_enabled else final_k
+
     for sub in sub_intents:
         kind = (sub.get("type") or "PERSONAL").upper()
         if kind == "PERSONAL":
-            merged.extend(_retrieve_personal(sub, state, per_intent_k))
+            rerankable.extend(_retrieve_personal(sub, state, fetch_k))
         elif kind == "CONTEXTUAL":
-            merged.extend(_retrieve_contextual(sub, state, per_intent_k))
+            rerankable.extend(_retrieve_personal(sub, state, fetch_k))
+            for c in _retrieve_contextual_history(sub, state, final_k):
+                rerankable.append((c, None))
         elif kind == "OPEN_DOMAIN":
-            merged.extend(_retrieve_open_domain(sub))
+            pinned.extend(_retrieve_open_domain(sub))
         elif kind == "PRESENT_STATE":
             # PRESENT_STATE is grounded in the affect signal, not memory.
             # In a pure-present-state route the run_fast/run_full early skip
@@ -62,14 +78,24 @@ def _dispatch_all(state: PipelineState, per_intent_k: int) -> list[RetrievedChun
             # nothing here so the planner doesn't see misleading chunks.
             continue
         else:
-            merged.extend(_retrieve_personal(sub, state, per_intent_k))
+            rerankable.extend(_retrieve_personal(sub, state, fetch_k))
 
-    return _dedupe(merged)
+    rerankable = _dedupe_with_vecs(rerankable)
+
+    t_rerank = 0.0
+    if not settings.rerank_enabled or not rerankable:
+        chunks = [c for c, _ in rerankable[:final_k]]
+    else:
+        t1 = time.perf_counter()
+        chunks = _rerank_merged(state, rerankable, final_k)
+        t_rerank = time.perf_counter() - t1
+
+    return chunks + pinned, t_rerank
 
 
 def _retrieve_personal(
     sub: SubIntent, state: PipelineState, k: int
-) -> list[RetrievedChunk]:
+) -> list[tuple[RetrievedChunk, torch.Tensor | None]]:
     priors = state["bucket_priors"]
     prior_vals = list(priors.values()) if priors else []
     priors_uniform = prior_vals and (max(prior_vals) - min(prior_vals)) < 0.05
@@ -80,14 +106,25 @@ def _retrieve_personal(
         or (_top_prior_bucket(priors) if not priors_uniform else None)
     )
 
-    top_k = max(k, settings.retrieval_top_k) if k >= settings.retrieval_rerank_k else k
-    return retrieve(
+    if not settings.rerank_enabled:
+        chunks = retrieve(
+            query=sub["query"],
+            user_id=state["user_id"],
+            top_k=k,
+            rerank_k=k,
+            bucket_filter=bucket_hint,
+        )
+        return [(c, None) for c in chunks]
+
+    chunks, vecs = retrieve(
         query=sub["query"],
         user_id=state["user_id"],
-        top_k=top_k,
+        top_k=k,
         rerank_k=k,
         bucket_filter=bucket_hint,
+        return_vectors=True,
     )
+    return [(chunks[i], vecs[i]) for i in range(len(chunks))]
 
 
 _CONTEXTUAL_MIN_SCORE = (
@@ -95,19 +132,12 @@ _CONTEXTUAL_MIN_SCORE = (
 )
 
 
-def _retrieve_contextual(
+def _retrieve_contextual_history(
     sub: SubIntent, state: PipelineState, k: int
 ) -> list[RetrievedChunk]:
-    # CONTEXTUAL means "this turn leans on the recent conversation" — but the
-    # persona's memories are still the primary grounding. Always pull personal
-    # chunks; add contextual ones on top when the session history is relevant.
-    personal_chunks = _retrieve_personal(sub, state, k)
     history = state.get("session_history") or []
     history_chunks = retrieve_from_history(query=sub["query"], history=history, top_k=k)
-    relevant_history = [
-        c for c in history_chunks if c["score"] >= _CONTEXTUAL_MIN_SCORE
-    ]
-    return personal_chunks + relevant_history
+    return [c for c in history_chunks if c["score"] >= _CONTEXTUAL_MIN_SCORE]
 
 
 def _retrieve_open_domain(sub: SubIntent) -> list[RetrievedChunk]:
@@ -124,16 +154,58 @@ def _retrieve_open_domain(sub: SubIntent) -> list[RetrievedChunk]:
     ]
 
 
-def _dedupe(chunks: list[RetrievedChunk]) -> list[RetrievedChunk]:
+def _dedupe_with_vecs(
+    items: list[tuple[RetrievedChunk, torch.Tensor | None]],
+) -> list[tuple[RetrievedChunk, torch.Tensor | None]]:
     seen: set[tuple[str, str]] = set()
-    out: list[RetrievedChunk] = []
-    for c in chunks:
+    out: list[tuple[RetrievedChunk, torch.Tensor | None]] = []
+    for c, v in items:
         key = (c["source"], c["text"])
         if key in seen:
             continue
         seen.add(key)
-        out.append(c)
+        out.append((c, v))
     return out
+
+
+def _rerank_merged(
+    state: PipelineState,
+    items: list[tuple[RetrievedChunk, torch.Tensor | None]],
+    final_k: int,
+) -> list[RetrievedChunk]:
+    missing_idxs = [i for i, (_, v) in enumerate(items) if v is None]
+    if missing_idxs:
+        embedder = get_embedder()
+        encoded = embedder.encode(
+            [items[i][0]["text"] for i in missing_idxs],
+            convert_to_tensor=True,
+            normalize_embeddings=True,
+            device=get_device(),
+        )
+        vecs: list[torch.Tensor] = []
+        encoded_iter = iter(encoded)
+        for _, v in items:
+            vecs.append(next(encoded_iter) if v is None else v)
+    else:
+        vecs = [v for _, v in items]  # type: ignore[misc]
+
+    candidate_vecs = torch.stack(vecs)  # (N, D)
+    candidate_chunks = [c for c, _ in items]
+
+    query_vec = build_context_vector(
+        raw_query=state["raw_query"],
+        history=state.get("session_history"),
+        last_n_turns=settings.rerank_history_turns,
+        weight_current=settings.rerank_query_weight,
+    )
+
+    return mmr_rerank(
+        query_vec=query_vec,
+        candidate_vecs=candidate_vecs,
+        candidate_chunks=candidate_chunks,
+        top_k=final_k,
+        lambda_=settings.rerank_lambda,
+    )
 
 
 def _top_prior_bucket(priors: dict[str, float]) -> str | None:
@@ -147,11 +219,13 @@ def _build_return(
     chunks: list[RetrievedChunk],
     mode: str,
     t0: float,
+    t_rerank: float,
 ) -> dict:
     t_retrieval = time.perf_counter() - t0
 
     latency_log = dict(state.get("latency_log") or {})
     latency_log["t_retrieval"] = round(t_retrieval, 4)
+    latency_log["t_rerank"] = round(t_rerank, 4)
 
     return {
         "retrieved_chunks": chunks,

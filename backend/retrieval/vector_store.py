@@ -58,7 +58,8 @@ def retrieve(
     top_k: int = 5,
     rerank_k: int = 3,
     bucket_filter: str | None = None,
-) -> list[RetrievedChunk]:
+    return_vectors: bool = False,
+) -> list[RetrievedChunk] | tuple[list[RetrievedChunk], torch.Tensor]:
     embedder = _get_embedder()
     vecs, meta = load_index(user_id)
 
@@ -76,16 +77,18 @@ def retrieve(
     top_idxs_list = top_idxs.tolist()
 
     candidates = [
-        (top_scores_list[i], meta[idx])
+        (top_scores_list[i], int(idx), meta[idx])
         for i, idx in enumerate(top_idxs_list)
         if 0 <= idx < len(meta)
     ]
 
     if bucket_filter:
-        filtered = [(s, c) for s, c in candidates if c["bucket"] == bucket_filter]
+        filtered = [t for t in candidates if t[2]["bucket"] == bucket_filter]
         candidates = filtered if filtered else candidates  # fallback: all buckets
 
-    return [
+    selected = candidates[:rerank_k]
+
+    chunks = [
         RetrievedChunk(
             text=c["text"],
             bucket=c["bucket"],
@@ -94,8 +97,18 @@ def retrieve(
             score=float(s),
             source="personal",
         )
-        for s, c in candidates[:rerank_k]
+        for s, _, c in selected
     ]
+
+    if return_vectors:
+        if selected:
+            sel_idxs = torch.tensor([idx for _, idx, _ in selected], device=_DEVICE)
+            sel_vecs = vecs.index_select(0, sel_idxs)
+        else:
+            sel_vecs = torch.empty((0, vecs.shape[1]), device=_DEVICE)
+        return chunks, sel_vecs
+
+    return chunks
 
 
 # Index builder.

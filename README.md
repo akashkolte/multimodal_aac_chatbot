@@ -46,12 +46,12 @@ Five layers, each a tiny file:
 |-------|--------|-------------|
 | L1 | `frontend/src/hooks/useSensing.ts` | Watches the webcam. Turns faces/hands/gaze/air-writing into string labels. Purely frontend. |
 | L2 | `backend/pipeline/nodes/intent.py` | Splits the partner's question on conjunctions and punctuation, then classifies each fragment as PERSONAL, CONTEXTUAL, or OPEN_DOMAIN using cosine similarity against a handful of seed sentences. No LLM call. ~30ms per turn. |
-| L3 | `backend/pipeline/nodes/retrieval.py` | Each sub-intent goes to its own pool. Personal → the user's memory vector store. Contextual → persona memory + relevant in-session turns layered on top (so "what did I just ask" still sounds like *them*). Open-domain → a stub chunk telling the LLM to answer from its own knowledge (web search is deliberately out of scope). |
+| L3 | `backend/pipeline/nodes/retrieval.py` | Each sub-intent goes to its own pool. Personal → the user's memory vector store. Contextual → persona memory + relevant in-session turns layered on top (so "what did I just ask" still sounds like *them*). Open-domain → a stub chunk telling the LLM to answer from its own knowledge (web search is deliberately out of scope). Wide cosine pool → MMR rerank against a query-fused-with-recent-history vector → top 3. |
 | L4 | `backend/pipeline/nodes/planner.py` | Builds the prompt, calls the LLM, picks a response. Tone and max_tokens are shaped by the detected affect. |
 | L5 | `backend/pipeline/nodes/feedback.py` | Writes one JSONL row per turn and bumps the Bayesian priors over which memory bucket was useful. |
 
 Two places the pipeline branches:
-- **Frustrated affect** → use the fast retrieval path (k=2, skip the reranker). The user wants an answer, not a thesis.
+- **Frustrated affect** → use the fast retrieval path (smaller cosine pool of 8, MMR-rerank to k=2). The user wants an answer, not a thesis.
 - **Cumulative latency past 3.5s** → switch to the smaller fallback model for generation.
 
 ### End-to-end: from partner speaking to response rendered
@@ -77,17 +77,18 @@ flowchart LR
         direction TB
         HYD[Hydrate PipelineState<br/>session_history, priors, profile] --> INT
         INT[Intent node<br/>split query + classify fragments] --> BR1{FRUSTRATED?}
-        BR1 -- yes --> RFAST[Fast retrieval<br/>k=2]
-        BR1 -- no --> RFULL[Full retrieval<br/>k=5 → rerank 3]
+        BR1 -- yes --> RFAST[Fast retrieval<br/>pool=8 → MMR k=2]
+        BR1 -- no --> RFULL[Full retrieval<br/>pool=12 → MMR k=3]
         RFAST --> POOL
         RFULL --> POOL[Dispatch per sub-intent]
         POOL --> PP[PERSONAL<br/>BGE vector store]
         POOL --> PC[CONTEXTUAL<br/>personal + BGE over history]
         POOL --> PO[OPEN_DOMAIN<br/>stub chunk]
-        PP --> MERGE[Merge + dedupe chunks]
+        PP --> MERGE[Merge + dedupe]
         PC --> MERGE
         PO --> MERGE
-        MERGE --> PLAN[Planner<br/>build prompt with<br/>3 retrieval blocks + tone tag]
+        MERGE --> RR[MMR rerank<br/>query fused with<br/>last-N user turns]
+        RR --> PLAN[Planner<br/>build prompt with<br/>retrieval blocks + tone tag]
         PLAN --> BR2{Total latency<br/>&gt; 3.5s?}
         BR2 -- yes --> LLMF[Fallback LLM<br/>Ollama Cloud, smaller]
         BR2 -- no --> LLMP[Primary LLM<br/>Ollama Cloud]
@@ -124,8 +125,8 @@ flowchart TD
     B --> C[POST /chat]
     C --> D[Intent node<br/>split + classify]
     D --> E{Any FRUSTRATED<br/>affect signal?}
-    E -- yes --> F[Fast retrieval<br/>k=2, no reranker]
-    E -- no --> G[Full retrieval<br/>k=5 → rerank to 3]
+    E -- yes --> F[Fast retrieval<br/>pool=8 → MMR k=2]
+    E -- no --> G[Full retrieval<br/>pool=12 → MMR k=3]
     F --> H{Cumulative<br/>latency &gt; 3.5s?}
     G --> H
     H -- yes --> I[Fallback LLM<br/>smaller, faster]
@@ -225,6 +226,9 @@ Everything is a Pydantic setting in [backend/config/settings.py](backend/config/
 | `FALLBACK_MODEL` | `gemma4:31b-cloud` | Smaller/faster model for the fallback tier. Point this at whatever smaller cloud model you have access to. |
 | `PRIMARY_BASE_URL` | `http://localhost:11434/v1` | OpenAI-compatible endpoint. Defaults to the local Ollama proxy. |
 | `FALLBACK_LATENCY_THRESHOLD` | `3.5` | If intent+retrieval already took this many seconds, skip the primary tier. |
+| `RERANK_ENABLED` | `true` | Kill-switch for the MMR reranker. When off, retrieval truncates the cosine top-k directly. |
+| `RERANK_LAMBDA` | `0.7` | MMR balance: `1.0` = pure cosine relevance, lower = more diversity. Drop to `0.5` if results look repetitive. |
+| `RERANK_QUERY_WEIGHT` | `0.7` | Weight on the current turn vs the mean of recent user turns when building the rerank query. Lower if follow-ups under-weight prior context. |
 | `LOGS_DIR` | `logs` | Where the per-turn JSONL goes. |
 
 ---
@@ -377,12 +381,16 @@ Heads up: all camera/sensing stuff is in the frontend (MediaPipe JS). Backend ju
 
 ### Retrieval
 
+> Current state: BGE-small cosine search over per-user torch tensors. Each personal sub-intent fetches a wider pool (12 candidates, 8 on the FRUSTRATED fast path), then MMR reranks against a query vector that's fused with the last 2 user turns — see `build_context_vector` and `mmr_rerank` in [backend/retrieval/reranker.py](backend/retrieval/reranker.py). MMR runs across the merged personal + contextual pool so history-derived chunks compete with persona memories. Knobs in [backend/config/settings.py](backend/config/settings.py): `rerank_lambda` (relevance vs diversity, default 0.7), `rerank_query_weight` (current turn vs history, default 0.7), `rerank_enabled` as kill-switch. Steady-state `t_rerank` is ~15ms with no history, ~50ms when history is fused.
+
+- [x] **[Core]** Reranking — MMR with conversation-context query fusion. Wider cosine pool, then diversity-aware reorder against `0.7·current_query + 0.3·mean(last-2-user-turns)`. Both fast and full paths rerank; OPEN_DOMAIN stub is pinned outside the rerank.
 - [ ] **[Bonus]** Bucket priors only live for the session. Persist them per user
 - [ ] **[Bonus]** Latency fallback only switches LLM tier. Add more steps:
-  - drop reranker if retrieval is slow
+  - flip `rerank_enabled=False` if retrieval+rerank is slow (cheap kill-switch already in place)
   - return a canned response if we blow the budget entirely
   - threshold is 3.5s, spec says 6s — pick one
-- [ ] **[Scale]** past ~100k chunks per user, swap torch matmul for `hnswlib`; add a reranker if top_k grows past ~30
+- [ ] **[Bonus]** Cache encoded user-turn embeddings across the session — `build_context_vector` re-encodes the same recent turns every turn (~50ms steady-state cost)
+- [ ] **[Scale]** past ~100k chunks per user, swap torch matmul for `hnswlib`; consider a cross-encoder reranker (e.g. `bge-reranker-base`) if `rerank_pool_k` grows past ~30
 
 ### Generation
 
