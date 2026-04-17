@@ -7,7 +7,7 @@ import re
 import time
 from pathlib import Path
 
-from fastapi import BackgroundTasks, FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 
@@ -23,7 +23,7 @@ from backend.pipeline.intent_kind import classify_intent_kind
 from backend.pipeline.nodes import feedback as feedback_node
 from backend.pipeline.nodes import planner as planner_node
 from backend.pipeline.state import PipelineState
-from backend.retrieval.bucket_priors import uniform_priors
+from backend.retrieval.priors import BUCKETS, CHUNK_TYPES, uniform
 from backend.retrieval.vector_store import _get_embedder, retrieve
 
 app = FastAPI(
@@ -95,6 +95,7 @@ class ChatResponse(BaseModel):
     guardrail_passed: bool
     run_id: str | None = None
     turn_id: int
+    eval_scores: dict | None = None
 
 
 class RatingRequest(BaseModel):
@@ -135,7 +136,8 @@ def _get_or_init_session(user_id: str) -> dict:
         _sessions[user_id] = {
             "persona_profile": _load_persona_profile(user_id),
             "session_history": [],
-            "bucket_priors": uniform_priors(),
+            "bucket_priors": uniform(BUCKETS),
+            "type_priors": uniform(CHUNK_TYPES),
             "turn_id": 0,
         }
     return _sessions[user_id]
@@ -164,6 +166,7 @@ def _build_initial_state(req: ChatRequest, session: dict) -> PipelineState:
         generation_config=None,
         retrieved_chunks=[],
         bucket_priors=session["bucket_priors"],
+        type_priors=session["type_priors"],
         retrieval_mode_used="",
         augmented_prompt=None,
         candidates=[],
@@ -274,8 +277,8 @@ def reset_session(user_id: str):
     return {"status": "reset", "user_id": user_id}
 
 
-def _score_and_persist(
-    run_id: str,
+def _compute_and_persist_evals(
+    run_id: str | None,
     user_id: str,
     turn_id: int,
     response: str,
@@ -284,7 +287,9 @@ def _score_and_persist(
     affect: str,
     gesture_tag: str | None,
     gaze_bucket: str | None,
-) -> None:
+) -> dict | None:
+    if not settings.evals_enabled or not run_id:
+        return None
     try:
         scores = compute_evals(
             response=response,
@@ -295,6 +300,11 @@ def _score_and_persist(
             gaze_bucket=gaze_bucket,
             slo_target=settings.slo_target_s,
         )
+    except Exception:
+        _log.exception("evals scoring failed for run %s", run_id)
+        return None
+
+    try:
         entry = {
             "run_id": run_id,
             "ts": time.time(),
@@ -307,11 +317,13 @@ def _score_and_persist(
         with open(logs_dir / "evals.jsonl", "a", encoding="utf-8") as f:
             f.write(json.dumps(entry, ensure_ascii=False) + "\n")
     except Exception:
-        _log.exception("evals background scoring failed for run %s", run_id)
+        _log.exception("evals JSONL persist failed for run %s", run_id)
+
+    return scores
 
 
 @app.post("/chat", response_model=ChatResponse)
-def chat(req: ChatRequest, background_tasks: BackgroundTasks):
+def chat(req: ChatRequest):
     guard = check_input(req.query)
     if not guard["allowed"]:
         return ChatResponse(
@@ -334,24 +346,23 @@ def chat(req: ChatRequest, background_tasks: BackgroundTasks):
 
     session["session_history"] = result["session_history"]
     session["bucket_priors"] = result["bucket_priors"]
+    session["type_priors"] = result["type_priors"]
     session["last_state"] = result
 
     affect_emotion = (result.get("affect") or {}).get("emotion", "NEUTRAL")
     run_id = result.get("run_id")
 
-    if settings.evals_enabled and run_id:
-        background_tasks.add_task(
-            _score_and_persist,
-            run_id=run_id,
-            user_id=req.user_id,
-            turn_id=result["turn_id"],
-            response=result["selected_response"] or "",
-            chunks=list(result.get("retrieved_chunks") or []),
-            latency_log=dict(result.get("latency_log") or {}),
-            affect=affect_emotion,
-            gesture_tag=req.gesture_tag,
-            gaze_bucket=req.gaze_bucket,
-        )
+    eval_scores = _compute_and_persist_evals(
+        run_id=run_id,
+        user_id=req.user_id,
+        turn_id=result["turn_id"],
+        response=result["selected_response"] or "",
+        chunks=list(result.get("retrieved_chunks") or []),
+        latency_log=dict(result.get("latency_log") or {}),
+        affect=affect_emotion,
+        gesture_tag=req.gesture_tag,
+        gaze_bucket=req.gaze_bucket,
+    )
 
     return ChatResponse(
         user_id=req.user_id,
@@ -365,11 +376,12 @@ def chat(req: ChatRequest, background_tasks: BackgroundTasks):
         guardrail_passed=result.get("guardrail_passed", True),
         run_id=run_id,
         turn_id=result["turn_id"],
+        eval_scores=eval_scores,
     )
 
 
 @app.post("/chat/turnaround", response_model=ChatResponse)
-def chat_turnaround(req: TurnaroundRequest, background_tasks: BackgroundTasks):
+def chat_turnaround(req: TurnaroundRequest):
     if req.user_id not in _sessions:
         raise HTTPException(status_code=404, detail="no active session")
 
@@ -436,24 +448,23 @@ def chat_turnaround(req: TurnaroundRequest, background_tasks: BackgroundTasks):
 
     session["session_history"] = replan_state["session_history"]
     session["bucket_priors"] = replan_state["bucket_priors"]
+    session["type_priors"] = replan_state["type_priors"]
     session["last_state"] = replan_state
 
     affect_emotion = (replan_state.get("affect") or {}).get("emotion", "NEUTRAL")
     run_id = replan_state.get("run_id")
 
-    if settings.evals_enabled and run_id:
-        background_tasks.add_task(
-            _score_and_persist,
-            run_id=run_id,
-            user_id=req.user_id,
-            turn_id=replan_state["turn_id"],
-            response=replan_state["selected_response"] or "",
-            chunks=list(replan_state.get("retrieved_chunks") or []),
-            latency_log=dict(replan_state.get("latency_log") or {}),
-            affect=affect_emotion,
-            gesture_tag=replan_state.get("gesture_tag"),
-            gaze_bucket=replan_state.get("gaze_bucket"),
-        )
+    eval_scores = _compute_and_persist_evals(
+        run_id=run_id,
+        user_id=req.user_id,
+        turn_id=replan_state["turn_id"],
+        response=replan_state["selected_response"] or "",
+        chunks=list(replan_state.get("retrieved_chunks") or []),
+        latency_log=dict(replan_state.get("latency_log") or {}),
+        affect=affect_emotion,
+        gesture_tag=replan_state.get("gesture_tag"),
+        gaze_bucket=replan_state.get("gaze_bucket"),
+    )
 
     return ChatResponse(
         user_id=req.user_id,
@@ -467,6 +478,7 @@ def chat_turnaround(req: TurnaroundRequest, background_tasks: BackgroundTasks):
         guardrail_passed=replan_state.get("guardrail_passed", True),
         run_id=run_id,
         turn_id=replan_state["turn_id"],
+        eval_scores=eval_scores,
     )
 
 

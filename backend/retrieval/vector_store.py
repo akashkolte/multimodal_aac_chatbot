@@ -1,5 +1,6 @@
 # BGE embeddings + torch-tensor cosine search (mps → cuda → cpu).
 import json
+import math
 from functools import lru_cache
 from pathlib import Path
 
@@ -7,6 +8,24 @@ import torch
 
 from backend.config.settings import settings
 from backend.pipeline.state import RetrievedChunk
+from backend.retrieval.priors import BUCKET_WEIGHT, TYPE_WEIGHT
+
+
+def _prior_boost(
+    chunk_meta: dict,
+    bucket_priors: dict[str, float] | None,
+    type_priors: dict[str, float] | None,
+) -> float:
+    b = 0.0
+    if bucket_priors:
+        b += BUCKET_WEIGHT * math.log(
+            max(bucket_priors.get(chunk_meta["bucket"], 1e-3), 1e-3)
+        )
+    if type_priors:
+        b += TYPE_WEIGHT * math.log(
+            max(type_priors.get(chunk_meta.get("type", "narrative"), 1e-3), 1e-3)
+        )
+    return b
 
 
 def _select_device() -> str:
@@ -58,6 +77,8 @@ def retrieve(
     top_k: int = 5,
     rerank_k: int = 3,
     bucket_filter: str | None = None,
+    bucket_priors: dict[str, float] | None = None,
+    type_priors: dict[str, float] | None = None,
     return_vectors: bool = False,
 ) -> list[RetrievedChunk] | tuple[list[RetrievedChunk], torch.Tensor]:
     embedder = _get_embedder()
@@ -76,15 +97,26 @@ def retrieve(
     top_scores_list = top_scores.tolist()
     top_idxs_list = top_idxs.tolist()
 
+    # Priors rerank within this cosine top-k pool, not across all chunks —
+    # top_k must be wide enough that favored labels have candidates here.
     candidates = [
         (top_scores_list[i], int(idx), meta[idx])
         for i, idx in enumerate(top_idxs_list)
         if 0 <= idx < len(meta)
     ]
 
+    # Gaze is an explicit user signal — hard filter.
     if bucket_filter:
         filtered = [t for t in candidates if t[2]["bucket"] == bucket_filter]
         candidates = filtered if filtered else candidates  # fallback: all buckets
+
+    # Soft-weight by log P(bucket) + log P(type); uniform priors are no-ops.
+    if bucket_priors or type_priors:
+        candidates = [
+            (s + _prior_boost(c, bucket_priors, type_priors), idx, c)
+            for s, idx, c in candidates
+        ]
+        candidates.sort(key=lambda x: x[0], reverse=True)
 
     selected = candidates[:rerank_k]
 

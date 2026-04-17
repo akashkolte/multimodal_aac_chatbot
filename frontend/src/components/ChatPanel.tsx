@@ -87,6 +87,7 @@ export function ChatPanel({
             affect: res.affect,
             runId: res.run_id,
             turnId: res.turn_id,
+            evalScores: res.eval_scores ?? null,
             isTurnaround: true,
           });
           return next;
@@ -176,6 +177,7 @@ export function ChatPanel({
           affect: res.affect,
           runId: res.run_id,
           turnId: res.turn_id,
+          evalScores: res.eval_scores ?? null,
         },
       ]);
       onLatency(res.latency);
@@ -229,6 +231,7 @@ export function ChatPanel({
                 runId={msg.runId}
                 userId={userId}
                 latencyTotal={msg.latency?.t_total ?? 0}
+                evalScores={msg.evalScores ?? null}
               />
             )}
           </div>

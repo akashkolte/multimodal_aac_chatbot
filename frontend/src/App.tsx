@@ -80,7 +80,10 @@ function App() {
   return (
     <div className="app-layout">
       <aside className="sidebar">
-        <h1 className="app-title">AAC Chatbot</h1>
+        <h1 className="app-title">
+          <img src="/favicon.svg" alt="" className="app-logo" />
+          AAC Chatbot
+        </h1>
 
         <PersonaSelector
           selected={persona?.id ?? null}

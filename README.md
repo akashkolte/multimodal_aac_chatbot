@@ -46,13 +46,34 @@ Five layers, each a tiny file:
 |-------|--------|-------------|
 | L1 | `frontend/src/hooks/useSensing.ts` | Watches the webcam. Turns faces/hands/gaze/air-writing into string labels. Purely frontend. |
 | L2 | `backend/pipeline/nodes/intent.py` | Splits the partner's question on conjunctions and punctuation, then classifies each fragment as PERSONAL, CONTEXTUAL, or OPEN_DOMAIN using cosine similarity against a handful of seed sentences. No LLM call. ~30ms per turn. |
-| L3 | `backend/pipeline/nodes/retrieval.py` | Each sub-intent goes to its own pool. Personal → the user's memory vector store. Contextual → persona memory + relevant in-session turns layered on top (so "what did I just ask" still sounds like *them*). Open-domain → a stub chunk telling the LLM to answer from its own knowledge (web search is deliberately out of scope). Wide cosine pool → MMR rerank against a query-fused-with-recent-history vector → top 3. |
+| L3 | `backend/pipeline/nodes/retrieval.py` | Each sub-intent goes to its own pool. Personal → the user's memory vector store, softly reranked by session-level bucket + type priors (see below). Contextual → persona memory + relevant in-session turns layered on top (so "what did I just ask" still sounds like *them*). Open-domain → a stub chunk telling the LLM to answer from its own knowledge (web search is deliberately out of scope). Wide cosine pool → MMR rerank against a query-fused-with-recent-history vector → top 3. |
 | L4 | `backend/pipeline/nodes/planner.py` | Builds the prompt, calls the LLM, picks a response. Tone and max_tokens are shaped by the detected affect. |
-| L5 | `backend/pipeline/nodes/feedback.py` | Writes one JSONL row per turn and bumps the Bayesian priors over which memory bucket was useful. |
+| L5 | `backend/pipeline/nodes/feedback.py` | Writes one JSONL row per turn and updates the session-level Bayesian priors over which memory buckets were useful. Skips the update when the guardrail blocked the turn. |
 
 Two places the pipeline branches:
 - **Frustrated affect** → use the fast retrieval path (smaller cosine pool of 8, MMR-rerank to k=2). The user wants an answer, not a thesis.
 - **Cumulative latency past 3.5s** → switch to the smaller fallback model for generation.
+
+### Session priors — two axes of topic tracking
+
+The pipeline keeps **two** per-session Bayesian distributions that track what the current conversation is actually drawing from, and softly biases retrieval toward both:
+
+- **P(bucket)** over the five memory buckets: `family`, `medical`, `hobbies`, `daily_routine`, `social`.
+- **P(type)** over the three chunk types: `narrative`, `social_post`, `chat_log`. A casual "what's up today?" pulls more chat-log style; a factual question pulls more narrative.
+
+Both axes share one axis-generic core in [backend/retrieval/priors.py](backend/retrieval/priors.py) — the `BUCKETS` and `CHUNK_TYPES` label vocabularies live there too. Same three pieces each:
+
+- **Soft weighting, not hard filter.** In [vector_store.retrieve()](backend/retrieval/vector_store.py) each candidate's cosine score is adjusted by `0.3 · log P(bucket) + 0.2 · log P(type)`. Uniform priors add the same constant to every candidate — zero ranking effect at session start. As a topic (or style) accumulates evidence, its label gets a positive boost. Gaze fixation (an explicit user signal) still hard-filters the bucket axis.
+- **Score-weighted evidence.** After each turn, the feedback node accumulates per-label mass across *all* retrieved personal chunks (cosine-shifted into `[0, ∞)`). A strong `medical` × `narrative` match moves both priors more than a weak `social` × `chat_log` one, and mixed turns update every contributing label proportionally.
+- **Topic-drift decay.** Before each update the current distributions are pulled 15% toward uniform. Stale mass decays — if the conversation pivots from "medical" to "hobbies", the old medical prior relaxes within a handful of turns instead of dominating the rest of the session. Guardrail-blocked turns skip both updates entirely.
+
+The per-turn JSONL log includes both `bucket_priors_after` and `type_priors_after`, so you can trace how either distribution evolved with a one-liner DuckDB query over `logs/turns.jsonl`.
+
+### Per-turn eval pills in the UI
+
+Every AAC-user bubble renders its eval scores inline: the SLO latency badge, a groundedness pill (faithfulness against retrieved memory), and three multimodal-alignment pills (affect / gesture / gaze). Pills go green / grey / red on 0.75 / 0.4 thresholds, and groundedness renders `—` when the turn had no retrieved evidence to check against. Authenticity stars sit on the right. All values come from `eval_scores` on the `/chat` response, computed synchronously and persisted to `logs/evals.jsonl`.
+
+![eval pills rendered inline under an AAC response](docs/images/eval-pills.png)
 
 ### End-to-end: from partner speaking to response rendered
 
@@ -364,11 +385,7 @@ Heads up: all camera/sensing stuff is in the frontend (MediaPipe JS). Backend ju
 
 ### Dataset
 
-- [ ] **[Core]** Memories are only autobiographical narratives right now. Need more variety:
-  - [ ] social media posts (voice-matched, synth with LLM)
-  - [ ] past chat logs (synth with LLM)
-  - [ ] update the generator script + rebuild vector store
-  - [ ] tag chunks by type so retriever knows what it pulled
+- [x] **[Core]** Memories carry three chunk types per persona — `narrative`, `social_post`, `chat_log` — each with a `bucket` label. Type is preserved through the vector-store metadata and feeds the P(type) session prior.
 - [ ] **[Core]** Write down the data schema somewhere so evals can reuse it
 
 ### Sensing (frontend)
@@ -400,7 +417,7 @@ Heads up: all camera/sensing stuff is in the frontend (MediaPipe JS). Backend ju
 > Current state: BGE-small cosine search over per-user torch tensors. Each personal sub-intent fetches a wider pool (12 candidates, 8 on the FRUSTRATED fast path), then MMR reranks against a query vector that's fused with the last 2 user turns — see `build_context_vector` and `mmr_rerank` in [backend/retrieval/reranker.py](backend/retrieval/reranker.py). MMR runs across the merged personal + contextual pool so history-derived chunks compete with persona memories. Knobs in [backend/config/settings.py](backend/config/settings.py): `rerank_lambda` (relevance vs diversity, default 0.7), `rerank_query_weight` (current turn vs history, default 0.7), `rerank_enabled` as kill-switch. Steady-state `t_rerank` is ~15ms with no history, ~50ms when history is fused.
 
 - [x] **[Core]** Reranking — MMR with conversation-context query fusion. Wider cosine pool, then diversity-aware reorder against `0.7·current_query + 0.3·mean(last-2-user-turns)`. Both fast and full paths rerank; OPEN_DOMAIN stub is pinned outside the rerank.
-- [ ] **[Bonus]** Bucket priors only live for the session. Persist them per user
+- [x] **[Bonus]** Session-level priors on two axes — P(bucket) and P(type) — with evidence weighting, topic-drift decay, and soft log-weighted reranking applied inside `retrieve()` before MMR (see the architecture section). Still in-memory — persisting per user across server restarts is a follow-up.
 - [ ] **[Bonus]** Latency fallback only switches LLM tier. Add more steps:
   - flip `rerank_enabled=False` if retrieval+rerank is slow (cheap kill-switch already in place)
   - return a canned response if we blow the budget entirely
@@ -417,7 +434,7 @@ Heads up: all camera/sensing stuff is in the frontend (MediaPipe JS). Backend ju
 
 ### Evals
 
-Scoring runs out-of-band via FastAPI `BackgroundTasks` after `/chat` returns — the response path stays clean. Each scored turn is appended to `logs/evals.jsonl`, keyed by `run_id`, so it joins back to `logs/turns.jsonl` offline. Likert ratings from the UI go to `logs/ratings.jsonl`.
+Scoring runs synchronously on the `/chat` response path and the `eval_scores` dict is returned inline so the frontend can render pills on the AAC bubble immediately. Each scored turn is also appended to `logs/evals.jsonl`, keyed by `run_id`, so it joins back to `logs/turns.jsonl` offline. Likert ratings from the UI go to `logs/ratings.jsonl`.
 
 | Metric | Status | Where |
 |--------|--------|-------|
@@ -426,7 +443,7 @@ Scoring runs out-of-band via FastAPI `BackgroundTasks` after `/chat` returns —
 | Multimodal alignment | affect (sentiment lexicon), gesture (opener regex), gaze (bucket overlap) | [multimodal_alignment.py](backend/evals/multimodal_alignment.py) |
 | Authenticity | star rating under every assistant bubble → `POST /feedback/rating` → `logs/ratings.jsonl` | [EvalPanel.tsx](frontend/src/components/EvalPanel.tsx), [api/main.py](backend/api/main.py) |
 
-**First-turn caveat:** the NLI model (`cross-encoder/nli-deberta-v3-small`, ~140MB) is lazy-loaded on the first background score after a server restart. Turn 1's score lands a few seconds after the response; every turn after that is fast.
+**First-turn caveat:** the NLI model (`cross-encoder/nli-deberta-v3-small`, ~140MB) is lazy-loaded on the first score after a server restart, so turn 1 pays a one-time ~2-3s warmup on top of the LLM call. Every turn after that adds ~100-300ms for sentence-level scoring.
 
 - [x] **[Eval]** Faithfulness — NLI scorer, sentence split, threshold on entailment prob. `no_evidence` flagged when nothing retrieved
 - [x] **[Eval]** Efficiency — per-turn SLO + aggregate latency (p50/p95/p99) via `aggregate.py`, grouped by `user_id × llm_tier`
