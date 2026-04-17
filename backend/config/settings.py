@@ -10,7 +10,7 @@ class Settings(BaseSettings):
 
     # ── Paths ──────────────────────────────────────────────────────────────────
     data_dir: Path = Path("data")
-    faiss_store_dir: Path = Path("data/faiss_store")  # name kept for back-compat
+    vector_store_dir: Path = Path("data/vector_store")
     memories_dir: Path = Path("data/memories")
     users_json: Path = Path("data/users.json")
     logs_dir: Path = Path("logs")
@@ -45,7 +45,6 @@ class Settings(BaseSettings):
     max_tokens_neutral: int = 100
     max_tokens_frustrated: int = 60
     max_tokens_surprised: int = 80
-    num_candidates: int = 2  # responses generated per turn for ranking
 
     # ── Sensing ───────────────────────────────────────────────────────────────
     affect_ema_alpha: float = 0.3  # exponential moving average smoothing
@@ -54,11 +53,6 @@ class Settings(BaseSettings):
     air_write_velocity_end: int = 5  # px/frame — stroke end threshold
     air_write_end_gap_ms: int = 200  # ms of stillness to end a stroke
     conflict_overlap_ms: int = 500  # audio + gesture co-occurrence window
-
-    # ── Candidate ranking weights ───────────────────────────────────────────────
-    rank_alpha: float = 0.4  # faithfulness weight
-    rank_beta: float = 0.3  # style similarity weight
-    rank_gamma: float = 0.3  # affect-match weight
 
     # ── Evaluation ────────────────────────────────────────────────────────────
     slo_target_s: float = 6.0  # max acceptable response latency (seconds)

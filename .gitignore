@@ -17,7 +17,7 @@ env/
 .env
 
 # Data — indexes are rebuilt from source; do NOT commit binaries
-data/faiss_store/
+data/vector_store/
 
 # Per-turn JSONL logs (contain user conversation content)
 logs/
