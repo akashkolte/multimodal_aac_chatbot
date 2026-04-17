@@ -24,6 +24,7 @@ class AffectState(TypedDict):
 class RetrievedChunk(TypedDict):
     text: str
     bucket: str  # family | medical | hobbies | daily_routine | social
+    type: str  # narrative | social_post | chat_log
     user: str
     score: float  # cosine similarity from the embedder
 

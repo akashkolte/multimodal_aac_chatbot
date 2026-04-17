@@ -83,7 +83,11 @@ def retrieve(
 
     return [
         RetrievedChunk(
-            text=c["text"], bucket=c["bucket"], user=c["user"], score=float(s)
+            text=c["text"],
+            bucket=c["bucket"],
+            type=c.get("type", "narrative"),
+            user=c["user"],
+            score=float(s),
         )
         for s, c in candidates[:rerank_k]
     ]
@@ -99,8 +103,12 @@ def build_index(persona_path: str | Path) -> tuple[torch.Tensor, list[dict]]:
 
     for bucket, memories in persona["memory_buckets"].items():
         for mem in memories:
-            chunks.append(mem)
-            meta.append({"text": mem, "bucket": bucket, "user": user_name})
+            text = mem["text"]
+            mem_type = mem.get("type", "narrative")
+            chunks.append(text)
+            meta.append(
+                {"text": text, "bucket": bucket, "user": user_name, "type": mem_type}
+            )
 
     embedder = _get_embedder()
     vecs = embedder.encode(

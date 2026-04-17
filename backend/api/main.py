@@ -96,6 +96,19 @@ class ChatResponse(BaseModel):
 # ── Helpers ────────────────────────────────────────────────────────────────────
 
 
+def _load_persona_profile(user_id: str) -> dict:
+    memories_path = settings.memories_dir / f"{user_id}.json"
+    try:
+        with open(memories_path) as f:
+            persona = json.load(f)
+    except FileNotFoundError as e:
+        raise HTTPException(
+            status_code=404,
+            detail=f"Persona file not found: {memories_path}",
+        ) from e
+    return persona["profile"]
+
+
 def _get_or_init_session(user_id: str) -> dict:
     if user_id not in _sessions:
         try:
@@ -108,7 +121,7 @@ def _get_or_init_session(user_id: str) -> dict:
         if user_id not in users:
             raise HTTPException(status_code=404, detail=f"User '{user_id}' not found")
         _sessions[user_id] = {
-            "persona_profile": users[user_id],
+            "persona_profile": _load_persona_profile(user_id),
             "session_history": [],
             "bucket_priors": uniform_priors(),
             "turn_id": 0,

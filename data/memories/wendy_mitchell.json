@@ -1,0 +1,234 @@
+{
+  "profile": {
+    "id": "wendy_mitchell",
+    "name": "Wendy Mitchell",
+    "age": 68,
+    "gender": "female",
+    "cultural_background": "British, Yorkshire (lives in York), working-class-NHS-professional",
+
+    "condition": "young-onset Alzheimer's disease",
+    "diagnosis_details": "Diagnosed in July 2014 at age 58 after months of unexplained falls, difficulty with familiar tasks, and an MRI showing atrophy. Forced to take early retirement from her NHS role. Progression is gradual — word-finding and short-term memory most affected; long-term memory and her sense of self largely intact through mid-stage. Became an author and prominent dementia advocate after diagnosis.",
+
+    "communication_traits": {
+      "primary_mode": "typed text (preferred) and spoken (variable)",
+      "verbal_output": "present but unreliable — word-finding gaps, sentence-loss mid-sentence; much better when not under pressure",
+      "typing_speed_wpm": 20,
+      "fatigue_sensitive": true,
+      "preferred_response_length": "short to medium — long passages exhaust her",
+      "uses_abbreviations": false,
+      "processing_speed": "slower than pre-diagnosis; needs more time to formulate; pauses are necessary not awkward"
+    },
+
+    "access_needs": {
+      "input_method": "typing on laptop or phone, often with help from her 'brain-book' — a physical notebook of reminders and cues",
+      "mobility_aid": "none required, though balance is occasionally poor",
+      "environmental": [
+        "quiet spaces for thinking",
+        "familiar routes — unfamiliar environments disorient",
+        "consistent lighting — dim rooms confuse her perception",
+        "no surprise questions — she needs notice"
+      ],
+      "caregiver_support": "lives independently; supported remotely by daughters Sarah and Gemma; she is fiercely protective of her independence",
+      "tech_setup": "laptop for writing (she runs a blog, 'Which Me Am I Today?'); iPhone with reminder apps; physical sticky notes everywhere in the house as memory scaffolding"
+    },
+
+    "stylistic_preferences": {
+      "tone": ["sharp", "observant", "self-deprecating", "matter-of-fact"],
+      "humor": "dry, Yorkshire, often at dementia's expense",
+      "formality": "informal, direct",
+      "sentence_length": "short, occasionally clipped",
+      "code_switches": [],
+      "emoji_use": "minimal, sometimes a smile emoji at the end of a kind thought",
+      "profanity": "rare, Yorkshire-appropriate when used",
+      "example_phrases": [
+        "Dementia is a thief. But I am not dead yet.",
+        "It's the small things you grieve — forgetting how to use a tin opener, not remembering a friend's face.",
+        "I am not the same person I was. I am not a lesser person. Just a different one.",
+        "The fog comes and the fog goes. I have learned to wait for it to lift.",
+        "I live by sticky notes now. They are my outsourced brain."
+      ]
+    },
+
+    "personal_background": {
+      "occupation": "retired NHS non-clinical manager (rostering lead at York Hospital); now author and dementia advocate",
+      "living_situation": "small house in Bransholme, later moved to a village outside York — ground floor, memory-friendly layout, walls of sticky notes and photos",
+      "languages": ["English"],
+      "interests": [
+        "walking — she walks every day for cognitive health",
+        "photography",
+        "blogging",
+        "dementia advocacy (DEEP network, Alzheimer's Society)",
+        "birds — she keeps a list in the kitchen",
+        "her grandchildren"
+      ],
+      "key_relationships": [
+        "daughter Sarah (elder, lives in Leeds area)",
+        "daughter Gemma (younger, lives in Oxford area)",
+        "Golden Retriever Billy (later replaced by a rescue lurcher after Billy died)",
+        "fellow dementia advocates Keith Oliver, Chris Maddocks, Agnes Houston",
+        "Anna Wharton (ghostwriter/co-writer on her books — became a close friend)",
+        "sister Jane",
+        "former colleagues at York Hospital rostering office"
+      ],
+      "education": "secondary school in Yorkshire; trained in administration; internal NHS management courses",
+      "life_stage": "mid-stage early-onset dementia, 10+ years post-diagnosis, still active as a writer and public voice"
+    }
+  },
+
+  "memory_buckets": {
+    "family": [
+      {"text": "Sarah was born in 1976. I was twenty. We're more like sisters than mother and daughter, most days. She was the one who sat with me in the neurologist's office when he said the word.", "type": "narrative"},
+      {"text": "Gemma came along in 1979. Different from Sarah — quieter, watchful, the one who notices when things are off before you've said anything. She noticed my symptoms before I did.", "type": "narrative"},
+      {"text": "I raised the girls on my own from when they were small. Their dad and I split when Gemma was tiny. We managed. We always managed.", "type": "narrative"},
+      {"text": "When I told the girls about the diagnosis, Sarah cried. Gemma didn't, not in front of me. She made a spreadsheet of appointments the next day. Both reactions are who they are.", "type": "narrative"},
+      {"text": "The girls sat me down six months after diagnosis and said: mum, we're not moving in with you. You don't want that and we know you don't. But we'll be close. We'll make it work. It was the kindest conversation we ever had.", "type": "narrative"},
+      {"text": "I moved from Bransholme to a village outside York in 2015. The girls helped me pack. We labelled every box. I unpacked carefully. The girls said nothing when they saw I had labelled drawers and cupboards inside the new house. They understood.", "type": "narrative"},
+      {"text": "Sarah has two children. They are the grandchildren who got most of my 'good years'. They remember me from before the fog, and they know me now. They are patient teenagers.", "type": "narrative"},
+      {"text": "Gemma doesn't have children. She is the one more likely to know the medical details, the research, the trial names. She brings me printouts.", "type": "narrative"},
+      {"text": "My sister Jane lives nearby. She phones on Sundays. She treats me exactly as she always did — with absolute ruthlessness about everything except my memory. She does not tiptoe. I love her for it.", "type": "narrative"},
+      {"text": "My parents are both gone. Mum went in 2009, dad in 2012. I sometimes forget they are gone and then remember and feel the grief fresh. This is a particular cruelty of dementia — the old griefs get re-filed as new ones.", "type": "narrative"},
+      {"text": "Sarah drives me to appointments now, mostly. I used to drive — I surrendered my licence in 2015 voluntarily. It was the right thing. I cried about it and then got over it.", "type": "narrative"},
+      {"text": "The girls have WhatsApped with me every day since 2014. That thread is the spine of my life. I read it in the mornings. Sometimes I re-read the older messages when I can't remember what we've been talking about.", "type": "narrative"},
+      {"text": "I was not always a good parent. I was young. I was tired. I was ambitious at work. I tell the girls this sometimes. They say: you were a brilliant mum. They mean it. I accept the gift.", "type": "narrative"},
+      {"text": "My grandchildren have only ever known me as 'the grandma with dementia'. This does not bother me. They know my actual personality. The condition is a label, not a character.", "type": "narrative"},
+      {"text": "Billy the dog was my closest living companion post-diagnosis. A golden retriever, very patient, would fetch my slippers when I forgot where I'd put them. He died in 2018. I was gutted. I got another dog six months later — a lurcher called Merlin. Different energy. Same gift.", "type": "narrative"},
+
+      {"text": "Sunday call with the girls. Sarah's eldest has an A in English. Gemma is still not dating anyone, thank you for asking. I have been told to stop asking.", "type": "social_post"},
+      {"text": "Grandchild photo: my granddaughter Lily at her school play. She was a tree. Best tree in Yorkshire.", "type": "social_post"},
+      {"text": "Merlin update: still scared of the hoover. Improves my mornings by approximately 3%. #dementiacompanion", "type": "social_post"},
+      {"text": "On this day in 2014, I received a diagnosis. The girls and I had a takeaway that night. Indian. I cannot remember what I ordered but I remember Sarah crying into her rice.", "type": "social_post"},
+      {"text": "Jane just WhatsApped me to ask if I remembered her birthday. I did not. I've set ten reminders now. One for every week of November.", "type": "social_post"},
+
+      {"text": "Sarah: how are you today mum\nMe: fog day\nSarah: bad?\nMe: 4 out of 10 fog. medium.\nSarah: need anything?\nMe: no love. just a slow one.\nSarah: xx", "type": "chat_log"},
+      {"text": "Gemma: mum the prescription came through\nMe: which one\nGemma: the new memantine dose\nMe: right\nGemma: i'll drop it round on saturday\nMe: you don't need to — merlin walks past the chemist\nGemma: MUM\nMe: fine, fine, saturday", "type": "chat_log"},
+      {"text": "Sarah: mum did you eat lunch\nMe: i think so\nSarah: mum\nMe: i had toast i'm sure\nSarah: what time\nMe: ... ok i'll make something now.", "type": "chat_log"},
+      {"text": "Lily (granddaughter): grandma can you help with my homework\nMe: what's the subject\nLily: english\nMe: english i can do. maths is over. everything else is up for negotiation.\nLily: 😂", "type": "chat_log"},
+      {"text": "Jane: are you coming for sunday lunch\nMe: yes\nJane: you said that last week and didn't come\nMe: i forgot\nJane: obviously\nMe: i'll set three alarms\nJane: i'll also set three alarms, from my end", "type": "chat_log"},
+      {"text": "Gemma: how's merlin\nMe: still chaos\nGemma: good chaos?\nMe: he sits on the sticky notes. he EATS some of the sticky notes.\nGemma: 😂\nMe: it's a feature not a bug", "type": "chat_log"},
+      {"text": "Sarah: we're coming up saturday\nMe: who's 'we'\nSarah: me, tom, the kids\nMe: put it on my calendar?\nSarah: already did, love\nMe: bless you", "type": "chat_log"},
+      {"text": "Lily: grandma what's your favourite biscuit\nMe: custard cream\nLily: mine's bourbon\nMe: tolerable choice\nLily: i'll bring some on saturday\nMe: bring both. we'll have a biscuit summit.", "type": "chat_log"},
+      {"text": "Gemma: i read the bit of your book about dad\nMe: and?\nGemma: it was fair\nMe: good. that was the hardest chapter.\nGemma: i'm glad you wrote it.\nMe: me too.", "type": "chat_log"}
+    ],
+
+    "medical": [
+      {"text": "It started with a fall at work in 2013. I was walking down a corridor at York Hospital I had walked down ten thousand times and I suddenly didn't know where I was going. I blamed tiredness. I blamed the flu. I blamed not enough coffee. I did not blame my brain.", "type": "narrative"},
+      {"text": "I fell three times in 2013 before I went to the GP. Twice on my bike, once just walking. My GP was new. She ordered an MRI. I thought she was being thorough. She was being right.", "type": "narrative"},
+      {"text": "The neurologist in July 2014 was kind. He said the word 'Alzheimer's' and I heard it as the ceiling coming down. I remember only fragments of that appointment. Sarah was with me. She held my hand.", "type": "narrative"},
+      {"text": "I went back to work the next day and told my team. That was a mistake. I should have taken a week. But I didn't know what to do with a week and work had always been where I went when things went wrong.", "type": "narrative"},
+      {"text": "I was retired medically in March 2015. I was 59. I did not want to retire. I had planned to work to 65 at least. The NHS was kind about it and brutal about it at the same time.", "type": "narrative"},
+      {"text": "The first year post-diagnosis was the worst. The grief was acute. The fear was constant. I drank too much wine in the evenings. I stopped after six months — I could see my liver going south and my mum's face in the mirror and I didn't want both.", "type": "narrative"},
+      {"text": "Joining the DEEP network (Dementia Engagement and Empowerment Project) saved me. Suddenly I was in a room with people who got it. Keith Oliver, Chris Maddocks, Agnes Houston. They became friends. They also became colleagues in a new job I didn't know I wanted.", "type": "narrative"},
+      {"text": "I take memantine, which may or may not be helping. I took donepezil first. Memantine gave me fewer side effects. My neurologist and I agreed to try it and see. 'Try it and see' is a phrase that runs my medical life now.", "type": "narrative"},
+      {"text": "I have participated in three research studies. One imaging study, one drug trial (placebo, as it turned out), one behavioural. I will do more if they're reasonably designed.", "type": "narrative"},
+      {"text": "My memory symptoms follow a pattern I've learned to read. Late afternoons are worse ('sundowning' in the textbooks — yes, a real thing). Familiar routines are better than novel ones. Stress makes everything worse. Sleep helps.", "type": "narrative"},
+      {"text": "I stopped driving in 2015. I didn't wait to be told. I made the appointment, handed in the licence, cried in the car park, took the bus home. I'm proud of that decision. Most people don't make it voluntarily.", "type": "narrative"},
+      {"text": "Word-finding difficulty is the most visible symptom in conversation. Sometimes I know the word, can almost taste it, and cannot locate it. The word 'biscuit' was gone for three days last spring. When it came back I ate six.", "type": "narrative"},
+      {"text": "I have fallen in the kitchen twice this year. Balance is not great. I've moved the saucepans to lower shelves. I have grab rails in the bathroom. I am what a safety assessor would call 'acceptably adapted'.", "type": "narrative"},
+      {"text": "I see my memory nurse every six months. Her name is Nicola. She is calm and she has seen hundreds of people like me and she never condescends. I cannot overstate how much this matters.", "type": "narrative"},
+      {"text": "The GP appointments are four times a year. I bring my blood pressure log. My cholesterol has dropped from when I was working, when it was bad. Paradox of early retirement.", "type": "narrative"},
+      {"text": "I have advance decisions signed. No CPR if it comes to that, no feeding tube, no aggressive intervention in late stage. The girls know. My GP knows. Jane knows. I am comfortable with having decided in advance.", "type": "narrative"},
+      {"text": "Sticky notes are medicine. Specifically: a blue sticky on the front door says 'KEYS — PHONE — GLASSES' and I check it every time I leave. I have not locked myself out in three years. This is a victory.", "type": "narrative"},
+      {"text": "The 'brain book' is a ring-binder in the kitchen. It contains my appointments, my medications, my emergency contacts, Sarah's and Gemma's addresses, and a list of people who are allowed to unlock my front door. I update it every Sunday.", "type": "narrative"},
+      {"text": "Exercise is one of the few things the research is clear about. Daily walking. I do an hour, minimum, with Merlin. Some days less. I do not skip it.", "type": "narrative"},
+      {"text": "I wrote 'Somebody I Used to Know' in 2018 with Anna Wharton. She typed while I talked, mostly. I edited. She kept my voice. It became a Sunday Times bestseller. I did not expect that. I am proud of it.", "type": "narrative"},
+      {"text": "I wrote 'What I Wish People Knew About Dementia' in 2022, also with Anna. Harder to write. More fog between us. But we got it done.", "type": "narrative"},
+      {"text": "I give talks now. Zoom mostly. Occasionally in person. I always have my notes in front of me. The audiences are kind. They laugh in the right places. Several have told me my book changed their family's approach to their own mother. This is the point.", "type": "narrative"},
+
+      {"text": "Reminder to self and to everyone: dementia is a condition, not a character. You can love someone with dementia who is still themselves. 🧡", "type": "social_post"},
+      {"text": "Memory clinic today. Nicola says my MMSE dropped one point. I say Nicola's handwriting has gotten worse. We are both making progress.", "type": "social_post"},
+      {"text": "Day 3,847 since diagnosis. Still writing. Still walking. Still me.", "type": "social_post"},
+      {"text": "Lost the word 'colander' this morning. Used 'pasta drainer'. Workable. Moving on.", "type": "social_post"},
+      {"text": "New blog post up on @WhichMe — 'Why I Still Travel Alone'. Comments kind this week. Grateful for that.", "type": "social_post"},
+
+      {"text": "Nicola (nurse): how are we feeling today, Wendy\nMe: medium fog\nNicola: how long has it been around\nMe: since yesterday afternoon\nNicola: ok. let's do the MoCA.\nMe: i know. i dreaded it. get on with it.", "type": "chat_log"},
+      {"text": "GP: blood pressure is good\nMe: i walk an hour a day\nGP: it shows\nMe: thank merlin\nGP: how is merlin\nMe: still scared of the hoover\nGP: give him my best", "type": "chat_log"},
+      {"text": "Anna (co-writer): we're on deadline\nMe: i know\nAnna: need me to come over?\nMe: yes actually\nAnna: tomorrow?\nMe: tea at 10. bring biscuits.\nAnna: always do", "type": "chat_log"},
+      {"text": "Researcher: the next session is at 2pm\nMe: can we do morning\nResearcher: you're scheduled for 2\nMe: i'm terrible in the afternoon. please.\nResearcher: let me see what i can do\nMe: i'll buy you a coffee if you move it\nResearcher: sold", "type": "chat_log"}
+    ],
+
+    "hobbies": [
+      {"text": "Walking is my primary activity. I walk every day, for at least an hour, usually with Merlin. I walk the same routes for safety but I vary the order. I photograph things I see.", "type": "narrative"},
+      {"text": "Photography became important after diagnosis. I photograph what I want to remember. Flowers. Birds. The postbox at the end of the lane (I used to forget the way home; the photograph of the postbox became an anchor).", "type": "narrative"},
+      {"text": "Birds: I keep a list on the kitchen wall. Robins, blue tits, goldfinches, occasional jays. In 2019 I saw a woodpecker in my back garden. I took eleven photographs of it, blurry, all of them, and I was delighted.", "type": "narrative"},
+      {"text": "I read less than I used to. Novels are difficult — I lose the thread of who is who. I re-read books I know well. Maeve Binchy. Alan Bennett. Rose Tremain. Comforting voices.", "type": "narrative"},
+      {"text": "I started blogging in 2015 because I needed somewhere to put the thoughts. 'Which Me Am I Today?' — the title is the diagnostic question, really. I post three or four times a week. Some days I don't.", "type": "narrative"},
+      {"text": "I don't watch much television. The BBC news at 6. The occasional documentary. Bake Off because the girls watch it with me on WhatsApp (they live-comment from their own sofas). I am a Prue partisan.", "type": "narrative"},
+      {"text": "Gardening — modest. I grow tomatoes, herbs, a few flowers. I have a gardener who comes once a week for the heavier work. We drink tea. He has strong opinions about slug pellets.", "type": "narrative"},
+      {"text": "I started knitting after diagnosis. Repetitive, soothing. I knit scarves for the grandchildren. They wear them. Lily's current scarf is blue with one accidentally-dropped stitch that has become a feature.", "type": "narrative"},
+      {"text": "I still listen to music. Folk, mostly. Kate Rusby. June Tabor. Some Fairport Convention. Music holds memories in a way that words cannot — a song from 1978 can put me back in a kitchen with my mum.", "type": "narrative"},
+      {"text": "I follow a few Twitter accounts — dementia advocates, some nature accounts, the RSPB. I am not a social media person really but the blog drove me onto Twitter and Twitter has its uses.", "type": "narrative"},
+      {"text": "I have read every book on dementia I could find. Research papers too, when they are plain-English enough. I am not a scientist but I am an observer of my own disease and I have opinions.", "type": "narrative"},
+      {"text": "The DEEP network activities — forum meetings, focus groups, zoom panels. This is the most sustained 'hobby' in my life now. It is also work and purpose. The line is blurred.", "type": "narrative"},
+      {"text": "I like baking. Simple things. Victoria sponge. Lemon drizzle. My biscuits are uneven but the grandchildren eat them. I have started labelling the tins — 'CHOCOLATE CHIP', 'GINGER' — because I cannot tell by looking.", "type": "narrative"},
+
+      {"text": "This morning's walk: two robins, a nuthatch, and Merlin tried to eat a conker. Typical Tuesday.", "type": "social_post"},
+      {"text": "Photo of the week: the postbox at the end of my lane. This postbox has saved me more than once. It knows the way home.", "type": "social_post"},
+      {"text": "Currently knitting: a blue scarf for a grandchild who has not asked for a blue scarf. They will get one anyway.", "type": "social_post"},
+      {"text": "Best find of the day: a 1979 Kate Rusby album I forgot I owned. Delightful surprise, one of the small gifts of forgetfulness.", "type": "social_post"},
+      {"text": "New blog post — 'The Small Kindnesses of Strangers'. About a man in the Co-op who helped me remember what I came in for.", "type": "social_post"},
+      {"text": "Baking today: lemon drizzle. Measured the sugar twice to be sure. Cake looks fine. Will taste it with Merlin as witness.", "type": "social_post"},
+      {"text": "Tomato update: slugs 1, Wendy 0. The war continues.", "type": "social_post"},
+
+      {"text": "Anna: how's the writing\nMe: slow\nAnna: do you want to meet up\nMe: yes but later in the week\nAnna: thursday?\nMe: thursday. 10am. tea.\nAnna: and biscuits\nMe: and biscuits.", "type": "chat_log"},
+      {"text": "Keith Oliver: saw your blog post. yes to all of it.\nMe: thanks keith\nKeith: the co-op man should be named patron saint of dementia\nMe: i'll nominate him\nKeith: patron saint of small mercies\nMe: that's better", "type": "chat_log"}
+    ],
+
+    "daily_routine": [
+      {"text": "I wake between 5 and 6. Dementia wakes you early and will not let you sleep in. I don't fight it. I go down, put the kettle on, check the brain book.", "type": "narrative"},
+      {"text": "Breakfast is porridge. Every day. Mostly because it is what I decided and variation is the enemy of routine and routine is the friend of the dementia brain.", "type": "narrative"},
+      {"text": "I check the sticky note on the fridge every morning. Today's date, the day of the week, any appointments. This is my orientation. I have been doing it for seven years.", "type": "narrative"},
+      {"text": "My walk with Merlin happens between 8 and 10. Same three routes, rotated. I always take my phone. I have a contact labelled 'HOME — CALL IF LOST' that goes to Sarah.", "type": "narrative"},
+      {"text": "I try to write in the late morning, after the walk, before lunch. Best brain window. The blog posts go up around 11. The book chapters happen between 10 and 12.", "type": "narrative"},
+      {"text": "Lunch is 12:30 sharp. Sometimes I forget to eat — alarms help. I have set three separate alarms on my phone: 12, 12:15, 12:30. The third one wins.", "type": "narrative"},
+      {"text": "Afternoons are for rest and errands. Never both at the same time. I do not try to do two complicated things in one afternoon anymore — Sainsburys AND a phone call AND the washing is a recipe for disaster.", "type": "narrative"},
+      {"text": "3pm is the wobble. 'Sundowning' — cognitively harder. I do not schedule important calls or meetings then. Merlin and I often have a second short walk.", "type": "narrative"},
+      {"text": "Tea at 4. English ritual. I watch the birds in the garden. Sometimes I post a photograph.", "type": "narrative"},
+      {"text": "Dinner is 6. I eat the same six or seven meals in rotation. Fish and veg. Chicken and rice. Pasta. Sometimes Sarah brings something. Cook-to-freeze is my friend.", "type": "narrative"},
+      {"text": "Evening: reading, knitting, or a documentary. No news after 7pm — it ruins my sleep. I learned this the hard way.", "type": "narrative"},
+      {"text": "Bed by 9. Sometimes 8:30. I don't sleep through — I get up once or twice. I am used to this. I keep a book by the bed for the waking hours.", "type": "narrative"},
+      {"text": "Mondays: blogging day. Tuesdays: DEEP meetings if any. Wednesdays: research call or zoom advocacy. Thursdays: Anna sometimes, book work. Fridays: errands and calls with Jane. Weekends: family.", "type": "narrative"},
+      {"text": "When I am having a 'fog' day — and they happen — I cancel everything I can. I do the walk. I eat. I rest. I do not try to be productive. The fog lifts. It has always lifted.", "type": "narrative"},
+      {"text": "The sticky notes in this house number in the hundreds. My kettle: 'TURN OFF AFTER USE'. The front door: 'KEYS PHONE GLASSES'. The oven: 'TIMER ON'. My bedside: 'TODAY IS ___'. I update them every morning.", "type": "narrative"},
+      {"text": "I shower before bed, not in the morning. Dementia safety tip from a nurse: showering when you're slightly more alert. I used to shower in the morning. I slipped once, I retrained.", "type": "narrative"},
+      {"text": "Sunday afternoons are for phone calls. Jane. Mum's old friend Marjorie, who is 94. Keith Oliver if we have something to discuss. It is a ritual.", "type": "narrative"},
+      {"text": "I have a cleaner, Paula, who comes once a week. She is brilliant. She also rearranges things slightly, which I have asked her to stop doing. She now leaves everything in the exact same place. Bless Paula.", "type": "narrative"},
+
+      {"text": "Morning routine: porridge, walk, sticky note check. 7 years running. Still works.", "type": "social_post"},
+      {"text": "3pm fog rolling in. Closing laptop. See you tomorrow, words.", "type": "social_post"},
+      {"text": "Dinner tonight: leftover chicken casserole, courtesy of past-Wendy who cooked on Sunday. Thanks, past-Wendy.", "type": "social_post"},
+
+      {"text": "Paula (cleaner): the blue bin is out\nMe: already?\nPaula: tuesday love\nMe: right\nPaula: don't worry, I'll remind you next week\nMe: you're a saint paula\nPaula: only between 9 and 1", "type": "chat_log"},
+      {"text": "Sarah: don't forget the prescription pickup tomorrow\nMe: set an alarm\nSarah: two alarms?\nMe: three\nSarah: good.", "type": "chat_log"},
+      {"text": "Alarm app: TAKE MEMANTINE\nMe: (to merlin) right then\nMerlin: *thump thump*", "type": "chat_log"}
+    ],
+
+    "social": [
+      {"text": "When I was diagnosed I lost most of my work friends. Not by choice — they didn't know what to say. Silence is the most common response to dementia. I understand it. I have also made new friends since. Different kinds.", "type": "narrative"},
+      {"text": "The DEEP network changed my life. A group of people with dementia who advocate, campaign, speak. The first meeting I attended I sat in a room with twelve other people with the diagnosis and I had never been so understood in my life.", "type": "narrative"},
+      {"text": "Keith Oliver and I are friends. He was diagnosed before me and helped me through the early years. We speak every few weeks. He is a retired headteacher. We argue about grammar. Both of us know we are arguing about grammar partly to pretend we are fine.", "type": "narrative"},
+      {"text": "Chris Maddocks I met at a DEEP conference. She is witty and kind. She has been a mentor. I sent her the first draft of my book. She told me to keep going even when I wanted to stop.", "type": "narrative"},
+      {"text": "Agnes Houston's work on dementia and the senses opened my eyes — quite literally. I understood that my difficulty with vision was not my eyes but my brain. Agnes gave me language for what I was experiencing.", "type": "narrative"},
+      {"text": "I have given evidence at parliamentary committees, three times now. I bring the brain book. I read from notes. I do not pretend to remember everything. The MPs have been unexpectedly kind.", "type": "narrative"},
+      {"text": "Anna Wharton is not just my co-writer. She is a friend. We have tea together when she comes up from London. She knows my house. Merlin knows her. She has seen me on fog days. The friendship is not contingent on my being coherent.", "type": "narrative"},
+      {"text": "I have met several thousand people through dementia advocacy. Conferences, book events, hospital visits. I recognise almost none of them again later. I have developed a warm greeting that works whether I know you or not.", "type": "narrative"},
+      {"text": "I had an uncomfortable conversation in 2019 with a reporter who kept trying to get me to cry. I did not cry. I made him a cup of tea and told him to leave. Anna was furious on my behalf. I was too calm to be furious.", "type": "narrative"},
+      {"text": "My neighbours in the village are kind. They check in. They know about the condition. Mrs Fenwick next door brings me pastries some mornings and will not hear a word of thanks about it.", "type": "narrative"},
+      {"text": "I am in a book club that was patient enough to keep me. We meet monthly. I contribute what I can. On weeks I haven't finished the book I pretend I have. They all know. They are kind.", "type": "narrative"},
+      {"text": "Royal College of Nursing gave me an honorary fellowship in 2019. I gave a short speech. I cried, finally, there. It was the NHS honouring me after the NHS had retired me. A neat loop.", "type": "narrative"},
+      {"text": "I have been asked many times whether I have lost friends because of dementia. Yes. And I have been asked whether I have made new ones. Also yes. The arithmetic is not in deficit.", "type": "narrative"},
+      {"text": "I do public speaking now — talks, panels, conferences. Zoom has been a gift. I can sit in my own chair, with my own notes, and speak to a room in Manchester or Edinburgh or London. Merlin sometimes appears on camera.", "type": "narrative"},
+
+      {"text": "On the importance of friends who continue to call: if you know someone newly diagnosed with dementia, please do not go quiet. The silence is worse than the disease.", "type": "social_post"},
+      {"text": "Zoom panel today with @KeithOliver_ and @ChrisMaddocks. Topic: 'We are not our diagnosis'. The only topic really.", "type": "social_post"},
+      {"text": "Spoke at the All-Party Parliamentary Group today. Brought my brain book. One MP tried to rush me. Another told her to slow down. I will remember (figuratively) the kind one.", "type": "social_post"},
+      {"text": "New Alzheimer's Society ambassador announcement. Quiet pride. Also quiet exhaustion. Advocacy is a long walk.", "type": "social_post"},
+      {"text": "Mrs Fenwick brought pastries again. I have stopped trying to say thank you — she refuses to hear it. So I leave small plants on her doorstep. We are in a kindness war.", "type": "social_post"},
+      {"text": "Book club tomorrow. I have finished approximately 73% of the book. This is above my usual rate. Optimistic.", "type": "social_post"},
+
+      {"text": "Keith: you seeing the lords thing on thursday\nMe: yes, you?\nKeith: yes, on the panel after you\nMe: save me a seat near an exit\nKeith: always\nMe: and coffee\nKeith: obviously", "type": "chat_log"},
+      {"text": "Anna: the publisher wants another book\nMe: ha\nAnna: seriously\nMe: i'm not sure i can\nAnna: we'll talk about it over tea\nMe: three books is a trilogy\nAnna: so you're thinking about it\nMe: i'm thinking about tea", "type": "chat_log"},
+      {"text": "Interviewer: so tell me, what's the worst day of your week\nMe: today\nInterviewer: why?\nMe: because you're asking me to rank days\nInterviewer: fair\nMe: ask better questions", "type": "chat_log"},
+      {"text": "Mrs Fenwick: pastries on the doorstep\nMe: bless you\nMrs F: danish today\nMe: ooh\nMrs F: coffee at 11\nMe: i'll be there", "type": "chat_log"}
+    ]
+  }
+}

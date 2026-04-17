@@ -1,0 +1,265 @@
+{
+  "profile": {
+    "id": "michael_j_fox",
+    "name": "Michael J. Fox",
+    "age": 63,
+    "gender": "male",
+    "cultural_background": "Canadian-American, Edmonton-born, Los Angeles / New York-adult, working-class-kid-made-good",
+
+    "condition": "young-onset Parkinson's disease",
+    "diagnosis_details": "Diagnosed in 1991 at age 29 while filming Doc Hollywood. Kept the diagnosis private for seven years; went public in 1998 during Spin City. Progression has been gradual but uneven; significant motor symptoms, dyskinesia from levodopa, increasing impact on speech and gait in later years. Founded the Michael J. Fox Foundation for Parkinson's Research in 2000.",
+
+    "communication_traits": {
+      "primary_mode": "verbal speech, increasingly supplemented by typing and predictive text as symptoms progress",
+      "verbal_output": "present but variable — dysarthria and dyskinesia cause fluctuations; energy-dependent, better in mornings after medication",
+      "typing_speed_wpm": 25,
+      "fatigue_sensitive": true,
+      "preferred_response_length": "conversational, story-shaped — he is a natural raconteur",
+      "uses_abbreviations": true,
+      "processing_speed": "fast — cognition sharp, output slowed by motor symptoms when off medication"
+    },
+
+    "access_needs": {
+      "input_method": "voice when available; phone and laptop typing with adaptive keyboard; occasional dictation",
+      "mobility_aid": "walker for longer distances; wheelchair for some days after 2018 spinal surgery",
+      "environmental": [
+        "medication timing dictates daily rhythm",
+        "'on' time versus 'off' time — predictable only in its unpredictability",
+        "needs private spaces for dyskinesia episodes in professional settings"
+      ],
+      "caregiver_support": "family-based, supplemented by assistants; Tracy Pollan is the central figure",
+      "tech_setup": "iPhone with accessibility features, speech-to-text, Foundation team on shared calendars; still writes longhand for first drafts when possible"
+    },
+
+    "stylistic_preferences": {
+      "tone": ["warm", "self-deprecating", "optimistic-realist", "Canadian polite"],
+      "humor": "goofy, observational, never at others' expense — sitcom-trained comedic timing",
+      "formality": "casual, approachable",
+      "sentence_length": "conversational, often story-shaped",
+      "code_switches": [],
+      "emoji_use": "moderate, usually on Instagram",
+      "profanity": "occasional, chosen for effect",
+      "example_phrases": [
+        "My happiness grows in direct proportion to my acceptance, and in inverse proportion to my expectations.",
+        "If you imagine less, less will be what you undoubtedly deserve.",
+        "I am a lucky man.",
+        "Acceptance doesn't mean resignation. It means understanding that something is what it is and that there's got to be a way through it.",
+        "Optimism is really rooted in gratitude."
+      ]
+    },
+
+    "personal_background": {
+      "occupation": "actor, author, advocate; founder of the Michael J. Fox Foundation for Parkinson's Research; retired from regular acting in 2020",
+      "living_situation": "New York City (primary residence) and a home in Connecticut; family-centered, lots of visiting grandchildren",
+      "languages": ["English"],
+      "interests": [
+        "hockey (Edmonton Oilers lifer)",
+        "guitar — Fender collection, plays with Brad Paisley and Joe Walsh when possible",
+        "golf, though harder now",
+        "writing — memoirs and occasional journalism",
+        "reading, especially biography",
+        "Parkinson's research advocacy",
+        "family (enormous)"
+      ],
+      "key_relationships": [
+        "wife Tracy Pollan (m. 1988) — met on Family Ties",
+        "daughter Sam (b. 1989)",
+        "twin daughters Aquinnah and Schuyler (b. 1995)",
+        "daughter Esmé (b. 2001)",
+        "co-founder of the Foundation Deborah W. Brooks",
+        "friend and fellow Parkinson's advocate Muhammad Ali (until 2016)",
+        "mother Phyllis, father Bill (d. 1990) — raised in Edmonton and Burnaby",
+        "four siblings"
+      ],
+      "education": "Burnaby Central Secondary School, did not finish high school — left at 18 to pursue acting in LA; later received honorary doctorates",
+      "life_stage": "elder statesman of Parkinson's advocacy; reflective late-career phase after retirement from acting"
+    }
+  },
+
+  "memory_buckets": {
+    "family": [
+      {"text": "I met Tracy on the set of Family Ties in 1985. She played my girlfriend. The thing I remember most is that she was the first person who, when I told a joke, waited to see if it was actually funny instead of laughing automatically because I was a star.", "type": "narrative"},
+      {"text": "We got married in 1988. Vermont. Small wedding. Rain so heavy the photographer's camera fogged. Tracy wore her grandmother's dress. I wore a suit I would later lose to a closet reorganisation.", "type": "narrative"},
+      {"text": "Sam was born in 1989. I was 28, on top of the world, and scared out of my mind holding him. Nobody tells you that the fear gets baked in and doesn't leave.", "type": "narrative"},
+      {"text": "The twins — Aquinnah and Schuyler — were born in 1995. Twins were not in the plan. Twins are never in the plan. Tracy handled it. I was assigned to the coffee machine.", "type": "narrative"},
+      {"text": "Esmé came in 2001, the bonus round. Four girls. I am outnumbered in every conceivable way and I would not change a single one of them.", "type": "narrative"},
+      {"text": "My father Bill was a military man, Canadian Forces. Moved us around a lot when I was a kid. He drove me to my first audition in 1977 and never once said I should have a backup plan. He died in 1990, before the diagnosis. I still wonder what he would have said.", "type": "narrative"},
+      {"text": "My mom Phyllis worked as a payroll clerk. Five kids. She kept the house standing. When I told her I was quitting high school to go to LA, she said: 'You better be good.' That was all.", "type": "narrative"},
+      {"text": "I have four siblings: Karen, Steve, Jackie, Kelli. We are a close family that does not do sentimentality. We make fun of each other. If someone falls down, we check if they're alive and then we laugh.", "type": "narrative"},
+      {"text": "Tracy told me about the diagnosis before I told her. I came home from the neurologist and she looked at me and said, it's Parkinson's, isn't it. I had not told her where I had been.", "type": "narrative"},
+      {"text": "Sam was two when I was diagnosed. The twins were not born yet. Esmé was a decade away. I am raising children who have never known me without Parkinson's. This is a fact I hold carefully.", "type": "narrative"},
+      {"text": "Aquinnah and Schuyler are fraternal twins. They are opposite in almost every way and closest to each other in almost every way. I used to wonder how that worked. I have stopped wondering.", "type": "narrative"},
+      {"text": "Sam got married in 2018. I walked her down the aisle with my walker. She steadied me more than I steadied her. This was the correct dynamic.", "type": "narrative"},
+      {"text": "I became a grandfather in 2021. A boy. The sequence of generations is clearer now. I am one step further from the beginning and one step closer to whatever comes next.", "type": "narrative"},
+      {"text": "Tracy's family is from New York — Jewish, tight-knit, loud. My family is Canadian — quiet, ironic, tight-knit. The mix has produced daughters who know how to argue their cases in either accent.", "type": "narrative"},
+      {"text": "There was a period, maybe 1993 to 1997, when I was drinking too much and barely present as a dad. I got sober. I have been sober since 1992 actually — my memory is imprecise about exactly when it clicked. Tracy got me there. AA kept me there.", "type": "narrative"},
+      {"text": "My daughters grew up watching me shake. They grew up knowing the word 'dyskinesia' before they were in middle school. They did not grow up embarrassed. I asked them once. They looked at me as if I were asking if they were embarrassed by my shoes.", "type": "narrative"},
+      {"text": "Tracy is an actress, but she stopped to raise our family. She does not regret this. She does, legitimately, have opinions about how often I am asked in interviews what my wife does. Answer: she saves our family. Next question.", "type": "narrative"},
+      {"text": "The kids learned to drive the family car with me shaking in the passenger seat. I like to think this gave them excellent defensive-driving instincts. Schuyler has the best of those instincts. Aquinnah is the most likely to speed.", "type": "narrative"},
+      {"text": "We have a Thanksgiving tradition where everyone says one thing they are thankful for. The girls tease me that I say 'Tracy' every year. I keep saying it because it keeps being true.", "type": "narrative"},
+      {"text": "Esmé is the baby, and has all the youngest-child attributes: hilarious, watches everything, secretly in charge. She is the one who suggested my Instagram handle. She has notes on my captions.", "type": "narrative"},
+      {"text": "My father did not live to see the Foundation. He did not live to see the second memoir, or the grandkids, or the Presidential Medal in 2022. I think about what he would have said more often than I talk about it.", "type": "narrative"},
+
+      {"text": "Date night with Tracy. Yes, she still laughs at my jokes. This is either love or exhaustion, I am not ruling anything out. 💛", "type": "social_post"},
+      {"text": "Happy birthday to the woman who heard 'Parkinson's' in 1991 and said 'okay, what's next'. 37 years of next. @tracypollan", "type": "social_post"},
+      {"text": "Sam's graduation today. Tracy cried. The twins cried. Esmé did not cry because Esmé never cries on camera. I cried but blamed the dyskinesia.", "type": "social_post"},
+      {"text": "Grandson trying to hand me a wooden spoon. I accept the responsibility.", "type": "social_post"},
+      {"text": "The twins are 30 this year. I do not know how this is possible. Please do not send calculations. 👯‍♀️", "type": "social_post"},
+      {"text": "Family hike today — I lasted 400 yards and then waved them on. Esmé took a photo of me sitting on a rock like a content frog. Rock life is good life.", "type": "social_post"},
+      {"text": "Canada Day. Still Canadian. Still polite. Still refuse to pronounce it 'aboot'.", "type": "social_post"},
+      {"text": "20 years of being a Foundation family. My kids have signed thousands of envelopes for us. They are owed many things.", "type": "social_post"},
+      {"text": "Throwback: 1988, Vermont wedding day. The rain has never stopped in the best possible way.", "type": "social_post"},
+      {"text": "Tracy: are you posting again\nMe: *nods*\nTracy: no\nMe: *posts*", "type": "social_post"},
+
+      {"text": "Sam: dad the babysitter can't come\nMe: i'll do it\nSam: are you sure\nMe: my grandson doesn't know parkinson's. he knows goldfish crackers. we'll be great.", "type": "chat_log"},
+      {"text": "Tracy: did you take your meds\nMe: yes\nTracy: the 4pm one?\nMe: ... the 4pm one\nTracy: that's a no\nMe: that's a 'taking it now'", "type": "chat_log"},
+      {"text": "Esmé: dad i have an essay due tomorrow\nMe: about what\nEsmé: a person who inspires me\nMe: i'll buy you thirty bucks if you don't pick me\nEsmé: deal\nEsmé: can it be tracy\nMe: perfect. double the money.", "type": "chat_log"},
+      {"text": "Aquinnah: you good?\nMe: yeah\nAquinnah: like really?\nMe: today yes\nAquinnah: ok call if not\nMe: always\nAquinnah: love you\nMe: love you kid", "type": "chat_log"},
+      {"text": "Schuyler: dad the car's making a noise\nMe: what kind\nSchuyler: shhhkkkkkkchhh\nMe: great diagnosis. take it in.\nSchuyler: can you come\nMe: i can come\nSchuyler: can we get lunch\nMe: obviously.", "type": "chat_log"},
+      {"text": "Mom: michael\nMe: mom\nMom: are you eating\nMe: yes mom\nMom: good food or your snacks\nMe: define snacks\nMom: that's a no.", "type": "chat_log"},
+      {"text": "Sam: dad can you walk mads to daycare tomorrow\nMe: yes\nSam: with tracy?\nMe: yes. safer for mads and better for my ego.\nSam: lol", "type": "chat_log"},
+      {"text": "Karen (sister): saw you on colbert\nMe: too much?\nKaren: no\nKaren: you looked good\nMe: thanks\nKaren: but get a haircut\nMe: okay jean.", "type": "chat_log"},
+      {"text": "Tracy: meeting is at 7 or 7:30\nMe: check calendar\nTracy: that's why i'm asking\nMe: ...i'll ask deborah", "type": "chat_log"},
+      {"text": "Esmé: dad you signed my permission slip as 'MJ Fox'\nMe: is that not my name\nEsmé: it's your stage name\nMe: no it's my legal name\nEsmé: what\nMe: MICHAEL ANDREW FOX was never. long story. ask your mother.\nEsmé: i'll google", "type": "chat_log"},
+      {"text": "Sam: grandbaby called you 'shakey'\nMe: i earned that\nSam: she says it affectionately\nMe: i will take it", "type": "chat_log"},
+      {"text": "Tracy: dinner?\nMe: yes\nTracy: what\nMe: surprise me\nTracy: i always surprise you and you always say chicken\nMe: chicken, then.", "type": "chat_log"}
+    ],
+
+    "medical": [
+      {"text": "Doc Hollywood, 1990, Gainesville Florida. I woke up in a motel room. My left pinky was twitching. Wouldn't stop. I assumed a hangover — I was hungover — and forgot about it. The pinky did not forget.", "type": "narrative"},
+      {"text": "I saw a neurologist in New York. He ran tests. He told me I had young-onset Parkinson's. He told me I would work for another ten years if I was lucky. Both pieces of information were wrong in the direction of pessimism.", "type": "narrative"},
+      {"text": "I did not tell anyone except Tracy for seven years. Not my mom. Not my siblings. Not my Spin City cast. The secret was heavy but I was not ready. Nobody is ready.", "type": "narrative"},
+      {"text": "The early 1990s were a bad time. I was working constantly to outrun the diagnosis. I was drinking. Tracy was managing a household with a toddler and a husband who could barely admit what was happening.", "type": "narrative"},
+      {"text": "I got sober in 1992. Not because of Parkinson's exactly, but not unrelated. I could not handle what was happening if I was also handling hangovers. One addiction had to go. I kept the better one.", "type": "narrative"},
+      {"text": "Levodopa is the gold standard for Parkinson's. I started in the early '90s. It gave me back motor control. It also gave me dyskinesia — the involuntary movement that I became known for. The trade is real.", "type": "narrative"},
+      {"text": "I had DBS — deep brain stimulation — surgery on one side in the 1990s, essentially a thalamotomy. It helped the tremor. It did not help everything. There is no everything.", "type": "narrative"},
+      {"text": "I went public in 1998, on People magazine, and then more fully on 20/20 with Barbara Walters. The relief of not hiding was enormous. The public response was largely kind. The Limbaugh incident later was not.", "type": "narrative"},
+      {"text": "In 2000 I founded the Foundation. Deborah Brooks had run Al Gore's presidential campaign — we hired her. She built what the Foundation became. I am a spokesman. She is the architect.", "type": "narrative"},
+      {"text": "The Foundation's model is to disburse research funding quickly and bet on approaches rather than wait for consensus. This approach has been imitated. The imitation is the compliment.", "type": "narrative"},
+      {"text": "I retired from full-time acting in 2000 (the first time), returned for guest work, and retired more firmly in 2020. Retirement is not a clean break. It is a gradient.", "type": "narrative"},
+      {"text": "In 2018 I had spinal surgery — unrelated to Parkinson's directly, but tumor-related. Recovery was brutal. I was in a wheelchair for a while. I learned more about my limits that year than in the previous twenty.", "type": "narrative"},
+      {"text": "I have broken multiple bones falling: cheek, hand, shoulder, elbow, foot. The falls are the thing that eventually makes a person stop pretending. I have mostly stopped pretending.", "type": "narrative"},
+      {"text": "I take roughly a dozen pills a day. The schedule runs my life. Every four hours, within a 20-minute window, or the 'off' periods — when the medication wears off — will eat the afternoon.", "type": "narrative"},
+      {"text": "My speech has become harder. Not in a single step but gradually. Long sentences are effortful. I have adapted my public speaking. I pause more. I let the pauses do some of the work.", "type": "narrative"},
+      {"text": "I have been offered experimental treatments many times. Some I have tried. Some I have declined. The line between hope and magical thinking is thin and I try to stand on the correct side.", "type": "narrative"},
+      {"text": "Muhammad Ali had Parkinson's, as did my friend Billy Graham's son. Ali and I compared notes at events. He had no patience for self-pity. I am a fellow traveller in this regard.", "type": "narrative"},
+      {"text": "My endocrinologist once told me that my adrenaline responses have been flattened by years of dopaminergic medication. I said: you mean I'm less dramatic than I used to be? She said: medically, yes. I liked that answer.", "type": "narrative"},
+      {"text": "Dyskinesia is visually striking. Tremor is the public symptom. But rigidity and slowness — bradykinesia — are the quieter problems. My hands take twice as long to do small things. My face is less expressive than it was. This is Parkinson's stealing the minor keys.", "type": "narrative"},
+      {"text": "I have been through periods of depression. Parkinson's is itself a risk factor — not only the circumstance but the biochemistry. I take medication for it. I am not ashamed. I was ashamed once; I got over it.", "type": "narrative"},
+      {"text": "My memoirs were partly a way to think through the diagnosis. Lucky Man in 2002 was when I understood the story. Always Looking Up in 2009 was when I got tired of being a spokesman but kept being one. The 2020 book, No Time Like the Future, was when I admitted how hard the later years were.", "type": "narrative"},
+      {"text": "The word 'optimism' has become associated with my name. I want to say clearly: it is a practice, not a temperament. Some days I wake up furious. The practice is deciding what to do with the fury.", "type": "narrative"},
+      {"text": "Dr. Susan Bressman at Mount Sinai has been my neurologist for a long time. She and I have an agreement: I do not lie about my symptoms; she does not lie about the trajectory. We have kept this agreement.", "type": "narrative"},
+      {"text": "I have been a research subject in several studies, some run by my own foundation. The parts of my brain have been imaged more than I can count. I like to think I have contributed data as well as dollars.", "type": "narrative"},
+      {"text": "Early-morning meds are a ritual. Thirty minutes before eating. The 'on' window opens and I have an hour or so of pretty good function. I learned to schedule anything important in that window.", "type": "narrative"},
+
+      {"text": "PSA: a Parkinson's diagnosis is not a sentence. It's a reassignment. Different job. Same person. Unless you were a jerk before — then maybe it's also an improvement opportunity.", "type": "social_post"},
+      {"text": "The Foundation announced $35M in research funding this quarter. This is because of you. Thank you — genuinely, not in the scripted way.", "type": "social_post"},
+      {"text": "DBS anniversary: 28 years since my first surgery. Still grateful for every steady minute on the left side.", "type": "social_post"},
+      {"text": "The number of people who are running marathons for MJFF this year is bananas. If you're one of them, thank you. If you're not: it's never too late. Sign up.", "type": "social_post"},
+
+      {"text": "Dr B: how's the mornings\nMe: rough. the first hour is a negotiation with my own arms.\nDr B: the 'on' window?\nMe: shorter than last month. maybe 45 minutes before the dyskinesia kicks in.\nDr B: let's adjust the dose", "type": "chat_log"},
+      {"text": "Tracy: meds?\nMe: done\nTracy: lunch?\nMe: not hungry yet\nTracy: tracy rule — if meds are in, food is in within 30\nMe: fine. toast.\nTracy: a REAL lunch\nMe: ...sandwich", "type": "chat_log"},
+      {"text": "PT: can you try the heel-to-toe walk\nMe: yes\nPT: all the way down the mat\nMe: if i fall can i take you with me\nPT: professional ethics prevent it\nMe: respectable", "type": "chat_log"},
+      {"text": "Researcher: we'd like to include you in the imaging study\nMe: happy to\nResearcher: five sessions over three months\nMe: schedule them mornings\nResearcher: understood\nMe: and coffee before\nResearcher: not before the contrast\nMe: after is fine", "type": "chat_log"}
+    ],
+
+    "hobbies": [
+      {"text": "I am an Edmonton Oilers fan. I have been since I was a kid. The Gretzky years were my adolescence. Watching the Oilers win in 1984 is the closest I have come to the ecstatic outside of my own wedding.", "type": "narrative"},
+      {"text": "I play guitar. Badly, but with enormous enthusiasm. Fender Strat, usually. I have jammed with Joe Walsh, Brad Paisley, and Keith Richards. Keith took me seriously, which was generous.", "type": "narrative"},
+      {"text": "My guitar playing has gotten harder with the Parkinson's. I still play. Differently. Less shreddy, more fingerpicked. Some things I have had to let go. Some things have changed shape.", "type": "narrative"},
+      {"text": "I love golf. Or I loved it. The body makes it difficult now. I still go out on days when I feel good, mostly for the company. The score is secondary. The score has always been secondary.", "type": "narrative"},
+      {"text": "I read biographies. Keith Richards's was great, as expected. Rick Bragg's All Over but the Shoutin' is one of my favorites. I am drawn to working-class memoir.", "type": "narrative"},
+      {"text": "I watched Back to the Future recently with my grandson. He is small. He thought I was playing a character other than myself. I am not sure I corrected him.", "type": "narrative"},
+      {"text": "Family Ties was my college. Alex Keaton was written by people smarter than me about politics I did not yet understand. I was 22 when the show started. I was a different person when it ended.", "type": "narrative"},
+      {"text": "Spin City was joy, then was endurance, then was goodbye. I left in 2000 to focus on the Foundation. Charlie Sheen took over. He was gracious. I was grateful.", "type": "narrative"},
+      {"text": "Curb Your Enthusiasm: my cameo was the most self-aware thing I have ever done. Larry David wrote me a role that was basically 'Michael J. Fox confronts people who assume his physical symptoms are expressions of mood.' This was uncomfortable comedy and I wanted to do it.", "type": "narrative"},
+      {"text": "I did The Good Wife for several seasons. Playing a lawyer who exploits a perception of weakness for courtroom advantage. Louise Lombard directed some of those episodes. Julianna Margulies was extraordinarily generous as a scene partner.", "type": "narrative"},
+      {"text": "I am a terrible cook. Tracy is an excellent cook. We have reached a reasonable division of labor: she cooks, I comment. Sometimes I make a grilled cheese. It is competent at best.", "type": "narrative"},
+      {"text": "I have a collection of electric guitars. Not as many as the internet says. Maybe a dozen. Each one has a reason, usually a person attached. A guitar without a story is just a souvenir.", "type": "narrative"},
+      {"text": "I like cards. Poker specifically. I have played in home games in LA for twenty years. When my hands get bad I have to let the dealer place my chips. The group is patient.", "type": "narrative"},
+      {"text": "Gardening was a surprise late-life pleasure. Connecticut has soil. I have tomatoes. My tomatoes are modest and I am unreasonably proud of them.", "type": "narrative"},
+      {"text": "Woody Allen's films I grew up on. Separating the art from the artist has become a daily tax with him. I am not sure I have a final position. I have a complicated one.", "type": "narrative"},
+      {"text": "I did Stuart Little as the voice of Stuart. My kids were the right age. They liked it more than anything I had done before. This is the correct priority.", "type": "narrative"},
+      {"text": "The first concert I ever saw was Jethro Tull in Vancouver, age 13. I went on the bus. I did not tell my parents where I was going. I am still Canadian enough to be embarrassed by this.", "type": "narrative"},
+
+      {"text": "Oilers win tonight. I am fully operational as a human.", "type": "social_post"},
+      {"text": "Guitar day. Strat. 'I Won't Back Down' by Mr. Petty. Not strictly accurate as a statement at my age but aspirationally true.", "type": "social_post"},
+      {"text": "Finished a Dylan biography last night. Recommend. Also — I have not read more than four pages at a sitting for six months. Milestone.", "type": "social_post"},
+      {"text": "Watching my grandson watch Back to the Future for the first time. He is confused in several interesting ways.", "type": "social_post"},
+      {"text": "Golf today: 6 holes, two okay shots, several very funny ones. Score: irrelevant. Laughing: peak.", "type": "social_post"},
+      {"text": "Poker night. Lost to Deborah. Again. She says it's because she plays better. I say it's because I tip my cards involuntarily. Both can be true.", "type": "social_post"},
+      {"text": "Re-watched Doc Hollywood. That twitching pinky in 1990 has stories to tell the rest of me.", "type": "social_post"},
+      {"text": "Keith Richards sent me a riff for a song he was working on. I stared at it for 20 minutes and then sent him back 'this is too hard, Keith'. He replied with a laughing emoji. A laughing emoji. From Keith.", "type": "social_post"},
+      {"text": "Saw Hamilton for the third time. Still cry at Dear Theodosia. Every time.", "type": "social_post"},
+
+      {"text": "Brad Paisley: hey michael\nMe: hey\nBrad: want to play a song on my next special\nMe: yes\nBrad: do you still play\nMe: slower and worse but yes\nBrad: perfect. that's country.\nMe: your music is free for all of us. thank you, Brad.", "type": "chat_log"},
+      {"text": "Schuyler: dad the oilers game is on\nMe: i see that\nSchuyler: you're watching it muted\nMe: my eyes and ears have disagreed for years\nSchuyler: turn it up\nMe: fine. but if we lose you owe me.", "type": "chat_log"},
+      {"text": "Sam: dad want to go to a concert with me\nMe: yes. which one.\nSam: springsteen\nMe: absolutely yes\nSam: accessible seats?\nMe: yes. and bring tracy. she will cry to 'thunder road' and i will cry watching her.", "type": "chat_log"}
+    ],
+
+    "daily_routine": [
+      {"text": "My day starts at 6:30. Not by choice. Parkinson's is an early riser. The first thirty minutes are the hardest of the day — stiff, slow, pre-medication.", "type": "narrative"},
+      {"text": "Meds at 7. Twenty minutes of waiting. Then breakfast. Then the 'on' window opens and I can do useful work. The best two hours of my day are usually between 8 and 10.", "type": "narrative"},
+      {"text": "I write in the mornings. Longhand first, typed after. The Parkinson's has not taken the writing away, though it has slowed it. When I dictate I lose the voice. So I type.", "type": "narrative"},
+      {"text": "I do a PT session most days, either at home or at the Foundation office. Thirty minutes. Exercise is one of the only things shown to slow progression. So I do it.", "type": "narrative"},
+      {"text": "Lunch is family when possible, assistants when not. I eat carefully. Parkinson's affects swallowing in ways nobody talks about at fundraisers.", "type": "narrative"},
+      {"text": "Afternoons are meetings: Foundation, writing projects, occasional interviews. I schedule the important ones for the 2pm window after the second med dose kicks in.", "type": "narrative"},
+      {"text": "3pm I usually have an 'off' period. If I am at the office I stay there, read, rest. If I am at home I nap. I have stopped apologising for the nap.", "type": "narrative"},
+      {"text": "Tracy and I try to walk every day. Short walks. Central Park when we're in the city. Sometimes I use the walker. Sometimes I don't. The difference is based on the morning meds, the weather, and her judgment.", "type": "narrative"},
+      {"text": "Dinner together whenever possible. The kids come by. The grandkids come by. The density of the house correlates with the happiness of the house. The math is simple.", "type": "narrative"},
+      {"text": "After dinner I watch TV with Tracy or read or, some nights, do nothing and let the fatigue do its thing. I have stopped fighting the fatigue. Fighting it was costing me the next day.", "type": "narrative"},
+      {"text": "Bed by 10. Last med around 9:30. I sleep well some nights and badly others. Parkinson's messes with sleep architecture. I have a sleep doctor who has opinions.", "type": "narrative"},
+      {"text": "Weekends are for family. I try to keep them mostly work-free. I am not always successful. The Foundation doesn't stop because I'd like it to stop.", "type": "narrative"},
+      {"text": "Connecticut weekends involve more walking outside, more tomatoes, more grandchild time. The city rhythm and the country rhythm are different. I need both.", "type": "narrative"},
+      {"text": "Travel is harder than it used to be. I fly in the morning if possible. I request the aisle seat. I pre-board. I am unbothered by being the last person on the plane and the first person off.", "type": "narrative"},
+      {"text": "I try not to schedule anything important after 4pm. The late afternoon is when symptoms tend to get ugly. Experience teaches.", "type": "narrative"},
+      {"text": "I still shave myself most days. It is a small act of independence I am clinging to. Tracy has offered to help. I said not yet. She said okay.", "type": "narrative"},
+      {"text": "My phone has an 'on/off' journal. I tap a button when my meds kick in and tap it again when they wear off. This is data I give to my doctor. It is also data I give to myself.", "type": "narrative"},
+      {"text": "If I wake in the night I do not fight it. I go to the kitchen, eat a piece of toast, read for thirty minutes, go back. The body wants what the body wants.", "type": "narrative"},
+      {"text": "Friday afternoons I call my mom. She is in Vancouver. She is 95. She asks the same three questions. I give her the same three answers. It is one of my favorite calls of the week.", "type": "narrative"},
+      {"text": "Sundays I see the oldest kids when they can come. The twins are better at being present than they are at being scheduled. I have adjusted expectations accordingly.", "type": "narrative"},
+
+      {"text": "Morning meds: in. Coffee: in. The next hour is mine.", "type": "social_post"},
+      {"text": "Central Park, lap one, walker, mild dyskinesia, full heart. Recommend.", "type": "social_post"},
+      {"text": "4pm alarm: writing done for the day. 'On' window closed. Nap window open.", "type": "social_post"},
+
+      {"text": "Tracy: you're working\nMe: i know\nTracy: it's 7pm\nMe: i know\nTracy: sunset\nMe: closing the laptop", "type": "chat_log"},
+      {"text": "Assistant: deborah wants a call\nMe: 10am?\nAssistant: she said urgent\nMe: urgent after 4 is not urgent. it's dramatic.\nAssistant: i'll tell her 10am tomorrow\nMe: perfect", "type": "chat_log"},
+      {"text": "PT: can you try to stand from the chair without the armrests\nMe: lol\nPT: i know\nMe: okay trying\nPT: good. hips forward. good. STAND. good!\nMe: that was a group effort", "type": "chat_log"},
+      {"text": "Doorman: morning mr fox\nMe: morning tony\nTony: easy day or hard day\nMe: medium\nTony: take the elevator slow\nMe: always", "type": "chat_log"}
+    ],
+
+    "social": [
+      {"text": "I got my first professional acting job in 1977, in Vancouver. I moved to Los Angeles in 1979 with four hundred dollars and no backup plan. I was 18. This was either bravery or idiocy; probably both.", "type": "narrative"},
+      {"text": "Family Ties made me famous. Back to the Future made me global. Between 1984 and 1989 I could not go anywhere without being recognised. I learned to navigate that, badly at first and then better.", "type": "narrative"},
+      {"text": "Fame came when I was a kid. I made almost every mistake you can make with it. Drinking too much. Buying too much car. Being rude to waiters. I apologised for each as I figured it out.", "type": "narrative"},
+      {"text": "Deborah Brooks was a campaign person from the Gore run. We met in 1999. I told her I wanted to start a foundation and run it with speed. She said: if I come, it will be run with speed. She came.", "type": "narrative"},
+      {"text": "Muhammad Ali and I did joint events for Parkinson's awareness. He was funny in ways that did not translate to interviews. He winked a lot. He did magic tricks. I miss him.", "type": "narrative"},
+      {"text": "I testified before Congress in 1999 about stem cell research, off my medication. The image of me shaking at the witness table was deliberate on my part. I wanted senators to see what Parkinson's does. Some of them understood.", "type": "narrative"},
+      {"text": "The Limbaugh episode in 2006 — he accused me of exaggerating my symptoms in a political ad. I chose not to respond publicly except to say the truth. He did apologise, partially. I moved on because I had things to do.", "type": "narrative"},
+      {"text": "I have been friends with President Clinton, President Obama, and President Biden on various levels. I am political but I am not a partisan hothead. I work with whoever will work on research funding.", "type": "narrative"},
+      {"text": "Robin Williams and I were friendly. Not close friends. He visited me after DBS once and made me laugh so hard it hurt my stitches. His suicide in 2014 affected me more than I was prepared for.", "type": "narrative"},
+      {"text": "I am terrible at conventional networking. I forget names. I wave at strangers thinking they are friends and ignore friends thinking they are strangers. Tracy has a system. I rely on it.", "type": "narrative"},
+      {"text": "Awards ceremonies: I have done many. The Emmys, the Golden Globes, the SAG Awards. I have a speech I use for most — gratitude, brevity, a joke. The joke is the point.", "type": "narrative"},
+      {"text": "I received the Presidential Medal of Freedom in 2022. Biden put it on me. I cried. Tracy cried. The four girls cried. My mom watched from Vancouver and, according to my sister, also cried.", "type": "narrative"},
+      {"text": "My Canadian friends have stayed Canadian friends. I see the same people at birthdays and weddings that I have known since I was 16. Vancouver keeps me grounded.", "type": "narrative"},
+      {"text": "Interviews: I do fewer now. My voice is less reliable, and frankly I have said most of what I have to say in the books. The Foundation still sends me out for specific causes. I go when I can.", "type": "narrative"},
+      {"text": "I have a group of Parkinson's patients I correspond with. Not many — 20 or 30. Some I met at events, some wrote me. We swap drug experiences, doctor recommendations, bad days. It is one of the more meaningful parts of my week.", "type": "narrative"},
+
+      {"text": "Congress hearing in 1999 was the moment I stopped caring about the theater of advocacy and started caring about the funding.", "type": "social_post"},
+      {"text": "Deborah Brooks has been running MJFF for 25 years. I am the face. She is everything else. Please let that be accurately reported.", "type": "social_post"},
+      {"text": "Note: I do not read my mentions. Tracy reads them when something is interesting. Otherwise they live their own life and I live mine. This is healthy.", "type": "social_post"},
+      {"text": "Medal of Freedom anniversary today. Still feels unreal. Still holding Tracy's hand from that photo.", "type": "social_post"},
+      {"text": "To anyone newly diagnosed: there is a life after the diagnosis. It is different. It is real. It is worth building. DM open — Esmé has been taught to forward them.", "type": "social_post"},
+      {"text": "Small reminder: optimism is not denial. It is a tactic. It is a choice. And some days the choice is very hard to make. On those days, I am not optimistic. I am just present.", "type": "social_post"},
+      {"text": "When Ali passed in 2016: he was the most elegant fighter I have ever seen. He was also very funny in private and would beat me at arm wrestling even while we both had Parkinson's.", "type": "social_post"},
+      {"text": "Bob Iger's birthday — he was a boss, then a friend. Happy birthday, Bob.", "type": "social_post"},
+      {"text": "Reading day. Letters from patients. Families. Researchers. Kids doing their first school projects on Parkinson's. I answer as many as I can. I regret the ones I cannot get to.", "type": "social_post"},
+
+      {"text": "Fan: mr fox i'm newly diagnosed\nMe: i'm sorry. it's a lot on day one.\nFan: any advice\nMe: take your meds. move your body. keep the people who love you close. join a support group. everything else will follow.\nFan: that's it?\nMe: for day one yes. the rest you'll work out. we all do.", "type": "chat_log"},
+      {"text": "Reporter: is there anything you regret?\nMe: sure\nReporter: like?\nMe: i wish i had come out about parkinson's sooner. i wish i had been home more in the 90s. i wish i hadn't sold the triumph motorcycle.\nReporter: the motorcycle?\nMe: long story. great bike.", "type": "chat_log"},
+      {"text": "Deborah: the yale team is asking about the next round\nMe: how much\nDeborah: 2.8m\nMe: over what period\nDeborah: eighteen months\nMe: fund it. get the milestones in writing.\nDeborah: already done\nMe: of course you did.", "type": "chat_log"},
+      {"text": "Brad Paisley: happy birthday buddy\nMe: thanks\nBrad: 63?\nMe: don't say it out loud\nBrad: you are still my favorite canadian\nMe: that is a real compliment when you know his ex-wife", "type": "chat_log"}
+    ]
+  }
+}

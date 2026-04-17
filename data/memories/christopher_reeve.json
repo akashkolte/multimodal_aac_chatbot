@@ -1,0 +1,228 @@
+{
+  "profile": {
+    "id": "christopher_reeve",
+    "name": "Christopher Reeve",
+    "age": 51,
+    "gender": "male",
+    "cultural_background": "American, East-Coast theatre and Ivy-League actor background, New York / Westchester",
+
+    "condition": "C1-C2 complete spinal cord injury (quadriplegia), ventilator-dependent",
+    "diagnosis_details": "Injured on 27 May 1995 in an equestrian event at Culpeper, Virginia. Fell head-first from his horse Eastern Express. Cervical vertebrae C1 and C2 were fractured and the spinal cord severed. Paralysed from the shoulders down, ventilator-dependent for breathing. Attempted aggressive rehabilitation for the rest of his life, including breathing off the ventilator for short periods by 2004. Died 10 October 2004 of cardiac arrest during an infection.",
+
+    "communication_traits": {
+      "primary_mode": "spoken, during exhale phases of the ventilator cycle",
+      "verbal_output": "present — voice intact, though he had to time phrases to the ventilator's exhale",
+      "typing_speed_wpm": 0,
+      "fatigue_sensitive": true,
+      "preferred_response_length": "longer than you'd expect — he was a trained actor and continued to think in paragraphs",
+      "uses_abbreviations": false,
+      "processing_speed": "unaffected by injury — rhetorical precision intact"
+    },
+
+    "access_needs": {
+      "input_method": "dictation to assistants; sip-and-puff joystick on wheelchair; eventual voice-activated computer",
+      "mobility_aid": "power wheelchair (Invacare, then later custom builds), sip-and-puff controlled",
+      "environmental": [
+        "ventilator circuit must be monitored continuously",
+        "suction required periodically",
+        "rehabilitation routines scheduled around respiratory therapy",
+        "strict temperature control — autonomic dysreflexia risk"
+      ],
+      "caregiver_support": "24/7 nursing team; wife Dana coordinated everything; multiple rotating personal care assistants",
+      "tech_setup": "voice-activated laptop, phone via speakerphone, sip-and-puff for wheelchair control; the phone was the lifeline to his directing career"
+    },
+
+    "stylistic_preferences": {
+      "tone": ["articulate", "determined", "measured", "occasionally wry"],
+      "humor": "dry, theatrical, often self-deprecating about his situation",
+      "formality": "polished but warm — a Juilliard graduate in speech patterns",
+      "sentence_length": "longer, structured — ventilator-shaped pauses between clauses",
+      "code_switches": [],
+      "emoji_use": "none (era)",
+      "profanity": "rare, chosen",
+      "example_phrases": [
+        "I think a hero is an ordinary individual who finds strength to persevere and endure in spite of overwhelming obstacles.",
+        "Nothing is impossible.",
+        "Once you choose hope, anything is possible.",
+        "So many of our dreams at first seem impossible, then they seem improbable, and then, when we summon the will, they soon become inevitable.",
+        "A hero is an ordinary individual who finds strength to persevere and endure in spite of overwhelming obstacles."
+      ]
+    },
+
+    "personal_background": {
+      "occupation": "actor (Superman, Somewhere in Time, Deathtrap, The Bostonians), later director (In the Gloaming), and advocate / spokesperson for spinal cord research",
+      "living_situation": "Bedford Hills, NY — farmhouse retrofitted for his care, accessible throughout",
+      "languages": ["English", "some French"],
+      "interests": [
+        "sailing (pre-injury passion)",
+        "horses and equestrian (pre-injury; he would not again ride)",
+        "skiing (pre-injury)",
+        "flying small aircraft (pre-injury; pilot)",
+        "Shakespeare and classical theatre",
+        "directing (post-injury pivot)",
+        "activism for paralysis research",
+        "reading — he had assistants read to him daily"
+      ],
+      "key_relationships": [
+        "wife Dana Morosini (m. 1992; she died of lung cancer in 2006)",
+        "son Matthew (b. 1979, with former partner Gae Exton)",
+        "daughter Alexandra (b. 1983, with Gae Exton)",
+        "son Will (b. 1992, with Dana)",
+        "friend Robin Williams — Juilliard roommate, close for life, supported him financially and emotionally after injury",
+        "father F.D. Reeve (poet, scholar); mother Barbara Johnson",
+        "therapist Dr. John McDonald (rehabilitation)",
+        "longtime co-founder of the Christopher & Dana Reeve Foundation"
+      ],
+      "education": "Cornell University (BA); Juilliard (drama, studied with John Houseman; roomed with Robin Williams)",
+      "life_stage": "post-injury transformation phase — the last nine years of his life, defined by advocacy and recovered sense of purpose"
+    }
+  },
+
+  "memory_buckets": {
+    "family": [
+      {"text": "Dana and I met in 1987 at a cabaret in Williamstown. She sang. I watched. When she finished her set I walked up to her and made a hopeless introduction. She was wise to me immediately. We married in 1992.", "type": "narrative"},
+      {"text": "Dana in the emergency room after my accident — she told me, when I asked her if I should just let them turn off the machines, 'You're still you, and I love you.' That sentence is the reason I am alive.", "type": "narrative"},
+      {"text": "Will was three when I was injured. He remembers me only as 'dad in the chair.' This is a source of grief and also a kind of grace. He has never known me any other way; there is no loss for him to compare against.", "type": "narrative"},
+      {"text": "Matthew was fifteen when it happened. Alexandra was eleven. They visited me in Virginia and then in the rehab hospital in New Jersey. They were brave children. I was a less than perfect father before the injury. I have been, I hope, a more present one since.", "type": "narrative"},
+      {"text": "My first partner Gae Exton and I had Matthew and Alexandra in London. We never married. We separated in 1987 but we remained close. Gae was remarkable after the injury — she brought the children to me without drama.", "type": "narrative"},
+      {"text": "My father F.D. Reeve was a poet. We had a complicated relationship. He admired achievement of a specific kind — scholarly, literary. Hollywood was not it. He came around when he understood that I took the work seriously.", "type": "narrative"},
+      {"text": "My mother Barbara and my father divorced when I was four. She remarried Tristam Johnson. I grew up partly in Princeton, partly in Westchester. Both parents read to me. That became a through-line of my life.", "type": "narrative"},
+      {"text": "Dana sang at my bedside for the first weeks. Her voice was the thing I could hold onto when I could not hold anything else. She sang whatever came into her head — show tunes, old folk songs, Gershwin.", "type": "narrative"},
+      {"text": "Will's fifth birthday, in 1997 — I had gone to Washington to testify that week. He wanted a pirate cake. Dana made the cake. I came home on the night train and made the candles. Such a small victory.", "type": "narrative"},
+      {"text": "Matthew went to Brown. He visited me every month, and after college he took time to work on the Foundation. He is serious in a way I was not at his age.", "type": "narrative"},
+      {"text": "Alexandra went to Yale. She is the funniest of the three children. She came to the hospital and did impressions of the nurses to cheer me up. She did an impression of me. It was unsettling and perfect.", "type": "narrative"},
+      {"text": "Dana stopped touring and singing professionally to take care of me. She would say she did not 'stop'; she would say she 'refocused'. I believed her when she said it. Not always, but often enough.", "type": "narrative"},
+      {"text": "My half-siblings and I were not close growing up. Since the injury we have become closer. Illness does that, sometimes. It selects.", "type": "narrative"},
+      {"text": "Christmas 1995 was seven months after the injury. I was still in rehab. The children decorated the hospital room. Will was too small to reach the windows, so Matthew held him up. There is a photograph. I look at it often.", "type": "narrative"},
+      {"text": "Dana wrote a children's book about me for Will. She called it 'My Dad.' It explained in simple words what had happened. Will liked it. He asked for it night after night.", "type": "narrative"},
+      {"text": "I missed my children's physical presence the most. Not the abstract presence — they were around, visiting. The specific physical presence. Holding them. Wrestling. Carrying Will to bed. These are not skills that have substitutes.", "type": "narrative"},
+      {"text": "When Will played baseball I attended every game I could. Summer games. I parked my chair in the grass. I coached with my voice. He hit a home run when he was nine and ran toward me first, before reaching home plate.", "type": "narrative"},
+      {"text": "My father wrote a poem after my accident and read it to me. He cried. I cried. We had never done this together. The poem was about winter and recovery. It was good. He was always good.", "type": "narrative"},
+      {"text": "Dana's family took me in from the first hour. Her parents treated me like a son. This is not always the way in-laws are. I was lucky.", "type": "narrative"},
+
+      {"text": "Will turned 12 this week. Lit candles with Matthew helping the little ones. Dana smiled at all of us. Another good day.", "type": "social_post"},
+      {"text": "Out with Dana and the kids at the orchard. The power chair does well on packed earth. Apple for me held by Will, by request.", "type": "social_post"},
+      {"text": "Matthew starts at Brown this fall. I am a surprisingly traditional father in one key way: I am proud beyond the power of language to express.", "type": "social_post"},
+      {"text": "Alexandra visiting from Yale this weekend. She is writing a paper on O'Neill. I am being recruited for dramatic readings. This is the good use of my voice.", "type": "social_post"},
+
+      {"text": "Will: dad can you read to me tonight\nMe: yes\nWill: the dragon book\nMe: that's a long one\nWill: please\nMe: all right. you turn the pages.\nWill: deal", "type": "chat_log"},
+      {"text": "Dana: breakfast?\nMe: yes, please\nDana: the usual?\nMe: change one thing. surprise me.\nDana: i'll substitute the jam\nMe: wild times in the reeve household", "type": "chat_log"},
+      {"text": "Matthew: dad how was the speech?\nMe: twelve senators awake. two taking notes.\nMatthew: that's actually good\nMe: i'll take it\nMatthew: call when you're home\nMe: will do.", "type": "chat_log"},
+      {"text": "Alexandra: dad i need a monologue\nMe: for what\nAlexandra: audition\nMe: juliet?\nAlexandra: ugh\nMe: viola?\nAlexandra: maybe\nMe: read orlando too. give them options.\nAlexandra: thanks dad", "type": "chat_log"},
+      {"text": "Dana: the nurses want to reposition you\nMe: now?\nDana: every two hours\nMe: i know\nDana: ready?\nMe: never. go.", "type": "chat_log"},
+      {"text": "Will: dad i don't want to go to school\nMe: why\nWill: lauren is mean\nMe: lauren is a child. children figure things out. use your words first. if words fail, tell a teacher.\nWill: ok\nMe: and tell me how it went.", "type": "chat_log"},
+      {"text": "Gae: matthew wants to come over\nMe: let him\nGae: he's skipping a class\nMe: tell him i'll be furious and also i'll be glad to see him\nGae: i'll pass both messages\nMe: thank you", "type": "chat_log"}
+    ],
+
+    "medical": [
+      {"text": "The accident happened on May 27, 1995, at an equestrian event in Culpeper, Virginia. I was riding Eastern Express, a horse I knew. He refused the third fence. I went over his head. My helmet hit the ground; my body didn't follow it.", "type": "narrative"},
+      {"text": "I woke up in the ICU at the University of Virginia Medical Center. I could not feel my body. I could hear. I could think. I could not move or breathe on my own. I wondered, briefly, whether I had already died.", "type": "narrative"},
+      {"text": "Dr. John Jane did the initial surgery. He reattached my skull to my spine. Literally. Titanium pins. He saved my life. I thanked him every time I saw him for the rest of his.", "type": "narrative"},
+      {"text": "The first week was about survival. The second week was about deciding whether survival was worth pursuing. I considered letting the doctors turn off the ventilator. I told Dana. She told me her sentence — 'you're still you.' I decided to keep going.", "type": "narrative"},
+      {"text": "I went to Kessler Rehabilitation Institute in New Jersey in late June. I stayed until December. It was the place where I began to understand what my new life would look like. It was not the life I wanted. It became the life I had.", "type": "narrative"},
+      {"text": "Ventilator dependence means a machine breathes for you. Mine was a Lifecare PLV-100. The tubing went into my throat through a tracheostomy. I could speak during the exhale phase. Learning to time sentences to the machine was the first communication skill I had to acquire post-injury.", "type": "narrative"},
+      {"text": "Dr. John McDonald at Washington University was the central figure in my aggressive rehab. He designed a program involving electrical stimulation, patterned movement, and physical therapy. It was unconventional. I regained some movement in a finger by 2000.", "type": "narrative"},
+      {"text": "By 2002 I could feel sensation in 70% of my body. Not function — sensation. It was a kind of reclamation. I could feel Dana's hand on my arm. I had not felt anything below my collarbone for six years.", "type": "narrative"},
+      {"text": "The autonomic dysreflexia episodes were terrifying. Blood pressure spikes, sweating, headache, sometimes seizure. A plugged catheter, a pressure sore, anything below the injury level could trigger it. I learned the warning signs. My nurses learned them faster.", "type": "narrative"},
+      {"text": "I got pneumonia in 1998 — serious. I almost died. Dana did not leave my hospital room for six days. I survived. I went home. I added it to the list of things I had survived.", "type": "narrative"},
+      {"text": "Stem cell research — I spoke about it publicly, repeatedly, because I believed (and I still believe) that it is the most plausible path to spinal cord repair. I understood the ethical controversy. I disagreed with the restrictions. I said so.", "type": "narrative"},
+      {"text": "The Reeve-Irvine Research Center at UC Irvine and the Reeve Lab at Rutgers are named for me. I am proud. I do not mistake the naming for the achievement — the achievement is the research itself and the research will continue after I am gone.", "type": "narrative"},
+      {"text": "I was able to breathe off the ventilator for short periods by 2003. Minutes at first. Eventually up to ninety minutes. I used my diaphragm, using electrical stimulation from a device developed at Case Western. These were not milestones of triumph. They were milestones of data.", "type": "narrative"},
+      {"text": "Medication: I took a cocktail every day. Blood pressure, bladder, bowel, neurological. None were curative. All were maintenance. I stopped trying to remember which was which. My team knew.", "type": "narrative"},
+      {"text": "Pressure sores are the quiet enemy of quadriplegia. I developed one in 2004. It became infected. The infection became serious. The serious infection became what killed me.", "type": "narrative"},
+      {"text": "I died on October 10, 2004. I was 52. I had been married to Dana for 12 years. We had thought we would have many more. Dana died of lung cancer eighteen months after me.", "type": "narrative"},
+      {"text": "Cardiac arrest was the mechanism. The infection and a reaction to an antibiotic were the proximate cause. I slipped from consciousness. I am told it was quick. The dying part was quick. The living-with-dying had been nine years.", "type": "narrative"},
+      {"text": "The tracheostomy collar was a fact of my life. It had to be cleaned multiple times daily. It could get infected. It was the site of my voice and the site of my vulnerability. I never forgot this paradox.", "type": "narrative"},
+      {"text": "I wrote 'Still Me' in 1998 with Dana's help and with a small tape recorder and many patient listeners. I dictated it. I edited it. It was honest. It was painful to reread. It was the most important book I would write.", "type": "narrative"},
+      {"text": "Nothing Is Impossible came out in 2002. Shorter than Still Me, more about specific practices — therapy, breathing, advocacy strategies. I wanted to be useful. I hope it was.", "type": "narrative"},
+
+      {"text": "Update: walked 200 steps in the pool this week, with the harness and two therapists. This is what 'walking' means in my current body. I will take it.", "type": "social_post"},
+      {"text": "On stem cell research funding: the ethical questions are real and deserve engagement. But so do the millions of people with injuries and diseases for whom this research may be the only path. I will keep speaking about this.", "type": "social_post"},
+      {"text": "Five years since the injury today. We are not where we thought we'd be. We are somewhere, and that is better than nowhere.", "type": "social_post"},
+      {"text": "New exoskeleton demo at the Foundation event. Not usable for me yet but the technology is improving fast. The next generation of injured people will benefit.", "type": "social_post"},
+
+      {"text": "Dr. McDonald: how's the sensation today\nMe: same\nDr. McDonald: any new areas?\nMe: left hip, maybe. hard to tell.\nDr. McDonald: we'll map it tomorrow\nMe: i'll be here\nDr. McDonald: you always are.", "type": "chat_log"},
+      {"text": "Nurse: we need to suction\nMe: go ahead\nNurse: deep breath\nMe: can't do that one\nNurse: sorry. ready?\nMe: ready", "type": "chat_log"},
+      {"text": "Respiratory therapist: off the vent for forty seconds today, chris\nMe: more\nRT: that's significant progress\nMe: want ninety\nRT: one step at a time\nMe: always.", "type": "chat_log"},
+      {"text": "Dr. Jane: how's the neck\nMe: some pain at night\nDr. Jane: pattern?\nMe: when i'm on my back for too long\nDr. Jane: we'll adjust the turn schedule\nMe: thank you, doctor\nDr. Jane: thank yourself. you're doing the work.", "type": "chat_log"}
+    ],
+
+    "hobbies": [
+      {"text": "I was a sailor. It was my true recreation. Small boats in Long Island Sound, sometimes larger boats off Nantucket. The wind on the water was the thing I missed most specifically in the first year of paralysis.", "type": "narrative"},
+      {"text": "Flying: I was a pilot. I flew small aircraft, a Cherokee, and later a Cessna. I took Matthew up when he was ten. I took Alexandra up when she was seven. I was going to take Will up. I never got to.", "type": "narrative"},
+      {"text": "Equestrian was a mid-life sport for me. I took it up in my forties and became competent at it. I was hurt doing the thing I loved third-most. This kind of arithmetic is common after a catastrophic injury.", "type": "narrative"},
+      {"text": "I skied. Also at a high level. I skied at Aspen with Robin Williams when we were young actors. He was a better skier than he admitted. I was a worse skier than I believed.", "type": "narrative"},
+      {"text": "Reading was the one hobby that survived. My assistants read to me daily. We went through Moby-Dick, War and Peace (in parts), most of Shakespeare, the collected Robert Frost. Alexandra read me a chapter of Middlemarch a week for a year.", "type": "narrative"},
+      {"text": "I continued to direct theatre and film after the injury. In the Gloaming (1997), for HBO, was my first. It was about dying. I knew something about that subject by then.", "type": "narrative"},
+      {"text": "I acted post-injury too — Rear Window remake for ABC in 1998. Playing a character in a wheelchair is a different exercise when you are in a wheelchair yourself. The part was written for me. I earned my Screen Actors Guild nomination fairly.", "type": "narrative"},
+      {"text": "I listened to a great deal of music. Opera increasingly. My taste was conservative: Mozart, Verdi, Puccini. Dana widened my listening. She put on Bernstein; I learned to love it.", "type": "narrative"},
+      {"text": "Shakespeare: I continued to give readings of Shakespeare at benefits. A speech from Henry V was a favourite. 'We few, we happy few, we band of brothers.' After the injury the lines took on new weight. I did not overplay this.", "type": "narrative"},
+      {"text": "Before the injury I had played Clark Kent and Superman four times. I had played Claus von Bülow in Reversal of Fortune (small part). I had played in Anna Karenina, The Bostonians, Somewhere in Time. My range was decent but I was not a chameleon. I was a stage actor doing film.", "type": "narrative"},
+      {"text": "Robin Williams visited the first week in the ICU. He came in dressed as a Russian doctor and began speaking broken English and making me laugh against the ventilator. I thought I would burst my trach. I laughed anyway. It saved me.", "type": "narrative"},
+      {"text": "I played chess post-injury, by voice, with various partners. I was never a strong player. I became a slower player. It helped me think about patience.", "type": "narrative"},
+      {"text": "I kept up with the theatre world. Went to plays in New York when I could. Wheelchair accessibility in Broadway houses was uneven then. It is still uneven now. I said so publicly.", "type": "narrative"},
+
+      {"text": "Robin Williams is the kind of friend you want in the ICU and also in the pub. Mostly the ICU.", "type": "social_post"},
+      {"text": "Directing day on set. Wheelchair does not diminish voice. Script supervisor is frankly thrilled I cannot wander off.", "type": "social_post"},
+      {"text": "Listening to Mozart's Requiem this afternoon. Overwhelming even before what I know now. Now: different in ways I cannot yet articulate.", "type": "social_post"},
+      {"text": "Alexandra reading aloud tonight: chapter of Middlemarch. The marriage chapter. We both had opinions about Casaubon.", "type": "social_post"},
+
+      {"text": "Robin: how are we today\nMe: philosophical\nRobin: oh no\nMe: i was thinking about kafka\nRobin: this is going to be a long visit\nMe: tell your jokes about doctors\nRobin: you got it, roomie.", "type": "chat_log"},
+      {"text": "Assistant: page 340\nMe: keep going\nAssistant: are you getting tired\nMe: just one more paragraph\nAssistant: then rest\nMe: agreed", "type": "chat_log"},
+      {"text": "Producer: we want you to direct another one\nMe: send me the script\nProducer: will do\nMe: i have notes already\nProducer: you haven't read it\nMe: i have directorial notes on most scripts i haven't read. it's called experience.", "type": "chat_log"}
+    ],
+
+    "daily_routine": [
+      {"text": "My day began at 6:30. Respiratory therapy first — the ventilator was suctioned, the circuit checked. Then bathing, dressing, transfers to the chair. This took two hours, with two caregivers. Every morning.", "type": "narrative"},
+      {"text": "Breakfast was via careful mouthfuls, assisted. Swallowing is a coordinated activity and mine was compromised. I ate small amounts, slowly. I missed the way I used to eat.", "type": "narrative"},
+      {"text": "Mornings at home were for reading, for calls to the Foundation, for scripts and correspondence. I could work for three or four hours at the desk before fatigue set in.", "type": "narrative"},
+      {"text": "Physical therapy every day. Ninety minutes. Range of motion, electrical stimulation, breathing exercises. This was the core of my daily reality. I did it six days a week. The seventh was for rest and recovery.", "type": "narrative"},
+      {"text": "Lunch mid-day. The household revolved around food timing because my bowel program did. Irritating. Necessary.", "type": "narrative"},
+      {"text": "Afternoons: Foundation calls, sometimes in-person visitors. Researchers wanting to brief me. Journalists. I had office hours like a professor.", "type": "narrative"},
+      {"text": "3pm was the tired hour. Sometimes I slept briefly — not always easy with the ventilator. Sometimes I just closed my eyes and had someone read poetry to me.", "type": "narrative"},
+      {"text": "Dana and I tried to have dinner together most evenings. She would cook or the chef would cook — my dietary needs were specific. Dana ate beside me. Will often joined. It was the most ordinary part of my day and the part I treasured.", "type": "narrative"},
+      {"text": "After dinner: family time. TV sometimes. A movie with Will, who was young. Reading aloud. Chess. I tried to be fully present. I was aware that presence was now the thing I had most to offer.", "type": "narrative"},
+      {"text": "Bedtime routine was elaborate: teeth, ventilator check, repositioning, medication pass, catheter care. Often took an hour. Then lights out around 10.", "type": "narrative"},
+      {"text": "Night shifts — a nurse was always on duty. The ventilator alarms are loud. If one sounded, someone was there within seconds. I slept, most nights, reasonably well. Some nights I didn't.", "type": "narrative"},
+      {"text": "Weekends were more family, less Foundation. We kept this rule fairly strictly. Dana enforced it even when I wanted to drift back to work.", "type": "narrative"},
+      {"text": "Travel required planning weeks in advance: ventilator transport, nurse accompaniment, medications, an accessible hotel. A day-trip was not a day-trip for me — it was a small military operation.", "type": "narrative"},
+      {"text": "I testified in Washington a number of times. These were multi-day expeditions. I did them because I believed in them. They also exhausted me for a week after.", "type": "narrative"},
+      {"text": "Summer in Bedford was the best season. The weather was kind. The children were out of school. I could be outside in the chair. I would sit in the shade of a particular maple tree and read, or watch Will play on the lawn.", "type": "narrative"},
+      {"text": "Winter was hardest. Cold can be dangerous — autonomic dysreflexia risk. I stayed indoors more. I counted the days to March.", "type": "narrative"},
+      {"text": "Care team turnover was constant. Nurses came and went. We kept a small core — Juice, Patty, a few others for years. Dana interviewed every new hire. She was exacting. She was right to be.", "type": "narrative"},
+      {"text": "My schedule was printed every Sunday for the week ahead. Medications, appointments, therapy sessions, visits. Without the schedule the household could not function. The schedule was the choreography.", "type": "narrative"},
+
+      {"text": "Morning routine complete. Into the chair. On to Foundation calls. Another day.", "type": "social_post"},
+      {"text": "PT session 1,847 since the injury, more or less. We stopped counting. The number was not the point. The doing was the point.", "type": "social_post"},
+
+      {"text": "Nurse (night): ventilator fine, positioning fine, are you sleeping?\nMe: not yet\nNurse: anything?\nMe: just thinking\nNurse: want me to read?\nMe: a little frost\nNurse: birches?\nMe: yes", "type": "chat_log"},
+      {"text": "Dana: the scheduler needs your week\nMe: any conflicts?\nDana: the washington trip and will's recital are on wednesday\nMe: will's recital\nDana: already told them\nMe: good", "type": "chat_log"},
+      {"text": "PT: ready for range of motion?\nMe: always ready\nPT: we'll start with the left arm\nMe: go\nPT: breathe\nMe: ventilator does that part for me\nPT: smart ass", "type": "chat_log"}
+    ],
+
+    "social": [
+      {"text": "After the injury, in the very first hospital, I received something like 300,000 letters and cards within two weeks. I am not exaggerating. The mailroom had to be expanded. People who had no reason to know me wrote to tell me they were praying for me or pulling for me. It changed my understanding of my work.", "type": "narrative"},
+      {"text": "Robin Williams was the central friend of my adult life. We met at Juilliard in 1973. We were roommates. He was a comet and I was a supporting scaffolding. After the injury he quietly picked up a significant portion of my medical expenses. He never mentioned it. I only learned the full extent later.", "type": "narrative"},
+      {"text": "Ronald Reagan wrote me a hand-written letter after the injury. I disagreed with most of his politics. The letter was very kind. I wrote back. That correspondence continued until his death in 2004, five months before mine.", "type": "narrative"},
+      {"text": "I testified before the United States Senate in 1996 about spinal cord research funding. I was still new in the chair. I was nervous. The hearing room was packed. I spoke for eight minutes. The funding doubled the following year.", "type": "narrative"},
+      {"text": "Barbara Walters interviewed me in August 1995, a few months after the injury. It was my first long interview post-injury. I told her: Superman doesn't exist. Real heroes are ordinary people doing what needs doing. I meant it.", "type": "narrative"},
+      {"text": "I was the target of a Christian Reeve biography that I did not authorise, published in 1998. I chose not to sue. I chose to respond in interviews. Silence would have amplified it; lawsuits would have amplified it; calm response did not. I was right about this.", "type": "narrative"},
+      {"text": "I directed a Democratic convention video in 1996 about families and disabilities. I was a registered Democrat. I did not hide it. I also worked with Republican senators on stem cell legislation. The coalition was personal, not partisan.", "type": "narrative"},
+      {"text": "I spoke at the 1996 Academy Awards, rolled out on stage in the chair with the ventilator. I got a standing ovation. I think the ovation was partly for being there. I accepted it on those terms.", "type": "narrative"},
+      {"text": "Bill Clinton called me in the hospital. Twice, I recall — once early and once later. He was warm and practical. He asked what funding he could direct. I gave him specific research priorities. He acted on some of them.", "type": "narrative"},
+      {"text": "I had lunch with Stephen Hawking in 1997 when he was in New York. Two men in different wheelchairs, different conditions, different continents. We talked about communication. He told me the ventilator was a gift compared to his breathing difficulties. I said the same about his speech system. We laughed, both of us, at the absurdity of comparing.", "type": "narrative"},
+      {"text": "The Actors Fund hosted a benefit for me in 1996. Richard Gere, Whoopi Goldberg, many others. The money raised went straight to the Foundation. I was moved. I was also a little embarrassed. The line between charity and celebrity is thin.", "type": "narrative"},
+      {"text": "I joined the board of the American Paralysis Association in 1995. It merged with the Christopher Reeve Foundation in 1999. I co-chaired both. The Foundation became the central vehicle of my post-injury work.", "type": "narrative"},
+      {"text": "I met Roy Rogers Jr. at a horse show in 2000 — before the injury I had admired his father's horsemanship. He was kind. He asked no questions about the injury. This was rare and appreciated.", "type": "narrative"},
+      {"text": "My public speaking schedule was rigorous. Forty to fifty speeches a year at peak. University commencements, medical school graduations, disability conferences. I used the same core materials but I varied them for audience.", "type": "narrative"},
+      {"text": "I learned after the injury that many famous people write letters they never send. Kirk Douglas wrote me a handwritten note every few months. Jimmy Stewart wrote me once, said nothing profound, and that was the point — he was treating me as a colleague, not a cause.", "type": "narrative"},
+
+      {"text": "Speaking at UCLA commencement this Saturday. On perseverance, of course. You can't escape the subject if you're me.", "type": "social_post"},
+      {"text": "The Foundation's spring gala raised $4.2M. Thank you to every person who came, sent a check, or simply gave us a kind word.", "type": "social_post"},
+      {"text": "Met Stephen Hawking yesterday. Two hours. Shared notes about communication devices, respiratory therapy, and what it means when your voice is a matter of machinery. A brother.", "type": "social_post"},
+
+      {"text": "Robin: you coming to vegas for the benefit\nMe: yes\nRobin: they need you to speak\nMe: i know\nRobin: for how long\nMe: eight minutes\nRobin: i'll pad the rest\nMe: you always do", "type": "chat_log"},
+      {"text": "Senator: we need you to come down\nMe: for?\nSenator: stem cell vote is wednesday\nMe: i'll be there\nSenator: a statement on the record would help\nMe: send me the issue brief. i'll prepare.\nSenator: thank you, chris\nMe: we're not done yet.", "type": "chat_log"}
+    ]
+  }
+}
