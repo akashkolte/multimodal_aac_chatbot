@@ -33,6 +33,7 @@ def _log_to_jsonl(state: PipelineState, run_id: str) -> None:
 
     latency = state.get("latency_log") or {}
     affect = (state.get("affect") or {}).get("emotion", "UNKNOWN")
+    chunks = state.get("retrieved_chunks") or []
 
     entry = {
         "run_id": run_id,
@@ -43,7 +44,12 @@ def _log_to_jsonl(state: PipelineState, run_id: str) -> None:
         "retrieval_mode": state.get("retrieval_mode_used", "unknown"),
         "affect": affect,
         "guardrail_passed": state.get("guardrail_passed", True),
-        "num_chunks": len(state.get("retrieved_chunks") or []),
+        "num_chunks": len(chunks),
+        "num_personal": sum(
+            1 for c in chunks if c.get("source", "personal") == "personal"
+        ),
+        "num_contextual": sum(1 for c in chunks if c.get("source") == "contextual"),
+        "num_open_domain": sum(1 for c in chunks if c.get("source") == "open_domain"),
         "latency": {
             "t_sensing": latency.get("t_sensing", 0.0),
             "t_intent": latency.get("t_intent", 0.0),
@@ -60,11 +66,11 @@ def _log_to_jsonl(state: PipelineState, run_id: str) -> None:
 
 def _update_bucket_priors(state: PipelineState) -> dict[str, float]:
     chunks = state.get("retrieved_chunks") or []
-    if not chunks:
+    personal = [c for c in chunks if c.get("source", "personal") == "personal"]
+    if not personal:
         return state.get("bucket_priors") or {}
 
-    # Which bucket sourced the accepted response?
-    top_bucket = chunks[0].get("bucket")
+    top_bucket = personal[0].get("bucket")
     if not top_bucket:
         return state.get("bucket_priors") or {}
 

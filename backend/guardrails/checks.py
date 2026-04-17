@@ -14,6 +14,14 @@ PERSONA_BREAK_SIGNALS = [
     "as your assistant",
     "i was trained",
     "my training data",
+    # meta-narration / brief leakage
+    "the user wants me",
+    "the user is asking",
+    "roleplay as",
+    "role-play as",
+    "key characteristics",
+    "character sheet",
+    "reference only",
 ]
 
 OUT_OF_SCOPE_SIGNALS = [
