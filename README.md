@@ -230,6 +230,10 @@ Everything is a Pydantic setting in [backend/config/settings.py](backend/config/
 | `RERANK_LAMBDA` | `0.7` | MMR balance: `1.0` = pure cosine relevance, lower = more diversity. Drop to `0.5` if results look repetitive. |
 | `RERANK_QUERY_WEIGHT` | `0.7` | Weight on the current turn vs the mean of recent user turns when building the rerank query. Lower if follow-ups under-weight prior context. |
 | `LOGS_DIR` | `logs` | Where the per-turn JSONL goes. |
+| `SLO_TARGET_S` | `6.0` | Latency SLO used by the efficiency eval. |
+| `EVALS_ENABLED` | `true` | Toggle off to skip background eval scoring. |
+| `NLI_MODEL` | `cross-encoder/nli-deberta-v3-small` | NLI model used for the groundedness/hallucination scorer. |
+| `FAITHFULNESS_THRESHOLD` | `0.5` | Per-sentence entailment probability needed to count as grounded. |
 
 ---
 
@@ -272,6 +276,17 @@ curl -X POST http://localhost:8000/chat \
   -d '{"user_id": "stephen_hawking", "query": "What do you like to do on weekends?"}'
 ```
 
+### Offline eval aggregation
+
+After a few turns have been logged, print a per-persona report:
+
+```bash
+conda activate aac-chatbot
+python -m backend.evals.aggregate
+```
+
+Output covers latency quantiles + SLO pass rate, faithfulness (groundedness / hallucination), multimodal alignment, and the distribution of Likert ratings. Reads `logs/turns.jsonl`, `logs/evals.jsonl`, and `logs/ratings.jsonl`.
+
 ---
 
 ## Project Structure
@@ -295,6 +310,7 @@ multimodal_aac_chatbot/
 │   ├── sensing/labels.py          GESTURE_DIRECTIVES (sensing runs in browser)
 │   ├── retrieval/                 BGE embeddings (torch tensor) + bucket priors
 │   ├── generation/llm_client.py   2-tier Ollama Cloud LLM client (primary/fallback)
+│   ├── evals/                     faithfulness (NLI), efficiency, multimodal, aggregate CLI
 │   └── guardrails/checks.py      Input + output safety checks
 │
 ├── data/
@@ -401,21 +417,22 @@ Heads up: all camera/sensing stuff is in the frontend (MediaPipe JS). Backend ju
 
 ### Evals
 
-Live per-turn scores show up in the `EvalPanel`. State:
+Scoring runs out-of-band via FastAPI `BackgroundTasks` after `/chat` returns — the response path stays clean. Each scored turn is appended to `logs/evals.jsonl`, keyed by `run_id`, so it joins back to `logs/turns.jsonl` offline. Likert ratings from the UI go to `logs/ratings.jsonl`.
 
-| Metric | Status |
-|--------|--------|
-| Efficiency | works (SLO check on `t_total`) |
-| Faithfulness | stub, returns 0 |
-| Multimodal alignment | works — affect (sentiment lexicon), gesture (opener regex), gaze (bucket match) |
-| Authenticity | star rating in UI but not saved |
+| Metric | Status | Where |
+|--------|--------|-------|
+| Efficiency | per-turn SLO on `t_total`, aggregate p50/p95/p99 | [efficiency.py](backend/evals/efficiency.py), [aggregate.py](backend/evals/aggregate.py) |
+| Faithfulness | sentence-level NLI, `no_evidence` short-circuit | [faithfulness.py](backend/evals/faithfulness.py) |
+| Multimodal alignment | affect (sentiment lexicon), gesture (opener regex), gaze (bucket overlap) | [multimodal_alignment.py](backend/evals/multimodal_alignment.py) |
+| Authenticity | star rating under every assistant bubble → `POST /feedback/rating` → `logs/ratings.jsonl` | [EvalPanel.tsx](frontend/src/components/EvalPanel.tsx), [api/main.py](backend/api/main.py) |
 
-- [ ] **[Eval]** Faithfulness — actually check if the response is grounded in what we retrieved. NLI model, sentence-level. If we didn't retrieve anything, flag `no_evidence` instead of pretending we scored it
-- [ ] **[Eval]** Efficiency — per-turn SLO check is done, but for the writeup we need aggregate latency: p50/p95 across a fixed query set, broken out by LLM tier. Spec target is < 6s
-- [x] **[Eval]** Multimodal alignment — implemented in `backend/evals/multimodal_alignment.py`. Affect scored by positive/negative lexicon overlap vs. target sentiment, gesture by opener-phrase regex (THUMBS_UP/THUMBS_DOWN/WAVING), gaze by fraction of retrieved chunks matching the looked-at bucket. Returned on every turn as `multimodal_alignment` / `affect_alignment` / `gesture_alignment` / `gaze_alignment`
-- [ ] **[Eval]** Authenticity — the Likert stars are wired up in the UI but go nowhere. Save them, log them with the turn so we can actually look at them later
+**First-turn caveat:** the NLI model (`cross-encoder/nli-deberta-v3-small`, ~140MB) is lazy-loaded on the first background score after a server restart. Turn 1's score lands a few seconds after the response; every turn after that is fast.
+
+- [x] **[Eval]** Faithfulness — NLI scorer, sentence split, threshold on entailment prob. `no_evidence` flagged when nothing retrieved
+- [x] **[Eval]** Efficiency — per-turn SLO + aggregate latency (p50/p95/p99) via `aggregate.py`, grouped by `user_id × llm_tier`
+- [x] **[Eval]** Multimodal alignment — affect scored by positive/negative lexicon overlap vs. target sentiment, gesture by opener-phrase regex (THUMBS_UP/THUMBS_DOWN/WAVING), gaze by fraction of retrieved chunks matching the looked-at bucket
+- [x] **[Eval]** Authenticity — per-turn stars under each assistant bubble, POST to `/feedback/rating`, logged with `run_id + rater_id`
 - [ ] **[Eval]** For the live in-class eval: figure out the actual session — who rates (partners + experts per spec), how many turns each, what gets shown to them. The Likert form is the easy part; the protocol isn't written down anywhere
-- [ ] **[Eval]** Need an offline version of all three model-driven evals (faithfulness / alignment / efficiency). Aggregate numbers across a fixed query set per persona for the writeup
 
 ### Cleanup
 
