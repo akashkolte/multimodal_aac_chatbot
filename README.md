@@ -66,6 +66,8 @@ The pipeline runs as a **LangGraph stateful directed graph** with conditional ed
 
 ## Setup
 
+### Option A — Conda (recommended)
+
 ```bash
 git clone https://github.com/akashkolte/multimodal_aac_chatbot.git
 cd multimodal_aac_chatbot
@@ -79,6 +81,34 @@ The setup script handles:
 - FAISS index building (downloads BGE models on first run)
 - Ollama model pull
 - Frontend dependency installation (pnpm)
+
+### Option B — venv
+
+> **Note:** Python 3.12 or 3.11 recommended. Python 3.14+ may lack wheels for some ML libraries (FAISS, PyTorch).
+
+```bash
+git clone https://github.com/akashkolte/multimodal_aac_chatbot.git
+cd multimodal_aac_chatbot
+
+# Create and activate venv
+python3 -m venv .venv
+source .venv/bin/activate        # Windows: .venv\Scripts\activate
+
+# Install dependencies
+pip install -r requirements.txt
+
+# Copy env template
+cp .env.example .env             # then edit .env as needed
+
+# Build FAISS indexes (downloads BGE models on first run)
+python -m backend.retrieval.vector_store
+
+# Pull Ollama model (if using local LLM tier)
+ollama pull qwen3:8b
+
+# Install frontend dependencies
+pnpm --dir frontend install
+```
 
 ---
 
