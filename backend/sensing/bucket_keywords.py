@@ -1,9 +1,26 @@
 _BUCKET_KEYWORDS: list[tuple[str, tuple[str, ...]]] = [
-    ("medical", ("medication", "medicine", "doctor", "health", "allergic", "therapy")),
+    # AAC air-writing templates (help/water/stop/done/more) are mapped here too —
+    # when a partner/user signals one of these, retrieval pulls from the matching bucket.
+    (
+        "medical",
+        (
+            "medication",
+            "medicine",
+            "doctor",
+            "health",
+            "allergic",
+            "therapy",
+            "help",
+            "stop",
+        ),
+    ),
     ("family", ("family", "mom", "dad", "brother", "sister", "parents")),
     ("hobbies", ("hobby", "like to do", "enjoy", "weekend", "fun")),
-    ("daily_routine", ("routine", "morning", "wake", "sleep", "daily")),
-    ("social", ("friend", "social", "people", "party", "community")),
+    (
+        "daily_routine",
+        ("routine", "morning", "wake", "sleep", "daily", "water", "done", "more"),
+    ),
+    ("social", ("friend", "social", "people", "party", "community", "hi")),
 ]
 
 

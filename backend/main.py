@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import argparse
+import copy
 import json
 import os
 import sys
@@ -10,6 +11,7 @@ import time
 from backend.config.settings import settings
 from backend.guardrails.checks import check_input
 from backend.pipeline.graph import run_pipeline
+from backend.pipeline.nodes.intent import _AFFECT_CONFIG
 from backend.pipeline.state import GenerationConfig, PipelineState
 from backend.retrieval.bucket_priors import uniform_priors
 from backend.retrieval.vector_store import _get_embedder
@@ -49,6 +51,7 @@ def _keyword_intent(query: str) -> tuple[dict, GenerationConfig]:
         else "PERSONAL"
     )
 
+    # `style_constraints` is vestigial — planner reads `generation_config` (below) as the source of truth.
     route = {
         "sub_intents": [
             {
@@ -66,12 +69,8 @@ def _keyword_intent(query: str) -> tuple[dict, GenerationConfig]:
         },
         "affect": "NEUTRAL",
     }
-    gen_config: GenerationConfig = {
-        "max_tokens": settings.max_tokens_neutral,
-        "tone_tag": "[TONE:DEFAULT]",
-        "retrieval_mode": "full",
-        "persona_mod": "baseline",
-    }
+    # Deep-copy: callers may mutate gen_config downstream; never hand them the shared constant.
+    gen_config: GenerationConfig = copy.deepcopy(_AFFECT_CONFIG["NEUTRAL"])
     return route, gen_config
 
 

@@ -13,6 +13,7 @@ import {
   AirWriter,
   HeadPoseTracker,
 } from "../lib/sensing";
+import { DEFAULT_AIR_TEMPLATES } from "../lib/airTemplates";
 
 const EMA_ALPHA = 0.3;
 
@@ -20,11 +21,12 @@ export function useSensing() {
   const faceLandmarkerRef = useRef<FaceLandmarker | null>(null);
   const handLandmarkerRef = useRef<HandLandmarker | null>(null);
   const gazeTrackerRef = useRef(new GazeTracker());
-  const airWriterRef = useRef(new AirWriter());
+  const airWriterRef = useRef(new AirWriter(DEFAULT_AIR_TEMPLATES));
   const headTrackerRef = useRef(new HeadPoseTracker());
   const calibratePendingRef = useRef(false);
   const headDebugRef = useRef({ dx: 0, dy: 0, maxAbsDx: 0, maxAbsDy: 0, crossings: 0 });
   const neutralLCPRef = useRef<number | null>(null);
+  const calibBufferRef = useRef<number[]>([]);
   const smoothedRef = useRef({ MAR: 0, EAR: 0.3, BRI: -0.3, LCP: 0 });
   const initingRef = useRef(false);
   const [ready, setReady] = useState(false);
@@ -108,9 +110,18 @@ export function useSensing() {
       if (faceResult.faceLandmarks && faceResult.faceLandmarks.length > 0) {
         const landmarks = faceResult.faceLandmarks[0];
 
+        // Average the raw LCP (vertical corner pull, pre-offset) over ~30 frames
+        // of the user's face before locking neutral. Single-frame calibration is
+        // too noisy and tended to bake in a momentary smile as "neutral".
+        // During calibration, affect stays null but gaze/head/gesture still flow.
         if (neutralLCPRef.current === null) {
-          neutralLCPRef.current =
-            (landmarks[61].x + landmarks[291].x) / 2;
+          const raw0 = computeAffectVector(landmarks, 0);
+          calibBufferRef.current.push(raw0.LCP);
+          if (calibBufferRef.current.length >= 30) {
+            const sum = calibBufferRef.current.reduce((a, b) => a + b, 0);
+            neutralLCPRef.current = sum / calibBufferRef.current.length;
+            calibBufferRef.current = [];
+          }
         }
 
         if (calibratePendingRef.current) {
@@ -118,18 +129,21 @@ export function useSensing() {
           calibratePendingRef.current = false;
         }
 
-        const raw = computeAffectVector(landmarks, neutralLCPRef.current);
+        if (neutralLCPRef.current !== null) {
+          const raw = computeAffectVector(landmarks, neutralLCPRef.current);
 
-        const prev = smoothedRef.current;
-        const smoothed = {
-          MAR: EMA_ALPHA * raw.MAR + (1 - EMA_ALPHA) * prev.MAR,
-          EAR: EMA_ALPHA * raw.EAR + (1 - EMA_ALPHA) * prev.EAR,
-          BRI: EMA_ALPHA * raw.BRI + (1 - EMA_ALPHA) * prev.BRI,
-          LCP: EMA_ALPHA * raw.LCP + (1 - EMA_ALPHA) * prev.LCP,
-        };
-        smoothedRef.current = smoothed;
+          const prev = smoothedRef.current;
+          const smoothed = {
+            MAR: EMA_ALPHA * raw.MAR + (1 - EMA_ALPHA) * prev.MAR,
+            EAR: EMA_ALPHA * raw.EAR + (1 - EMA_ALPHA) * prev.EAR,
+            BRI: EMA_ALPHA * raw.BRI + (1 - EMA_ALPHA) * prev.BRI,
+            LCP: EMA_ALPHA * raw.LCP + (1 - EMA_ALPHA) * prev.LCP,
+          };
+          smoothedRef.current = smoothed;
 
-        affect = classifyAffect(smoothed);
+          affect = classifyAffect(smoothed);
+        }
+
         gazeBucket = gazeTrackerRef.current.process(landmarks);
         headSignal = headTrackerRef.current.process(landmarks);
         headDebugRef.current = headTrackerRef.current.debug;
@@ -182,6 +196,7 @@ export function useSensing() {
 
   const resetCalibration = useCallback(() => {
     neutralLCPRef.current = null;
+    calibBufferRef.current = [];
     smoothedRef.current = { MAR: 0, EAR: 0.3, BRI: -0.3, LCP: 0 };
     gazeTrackerRef.current.reset();
     headTrackerRef.current.reset();

@@ -11,12 +11,16 @@ interface AffectVector {
 
 export function classifyAffect(v: AffectVector): Affect {
   // BRI is relative (browMid.y - eyeCenter.y) / interOcular — more negative = brows raised higher
-  // LCP is relative to calibrated neutral — positive = corners pulled up (smile)
+  // LCP is vertical offset of lip corners from mouth center, normalised by inter-ocular,
+  //   relative to calibrated neutral — positive = corners pulled UP (smile), negative = DOWN (frown)
   // MAR is absolute ratio — higher = mouth more open
-  // EAR is absolute ratio — lower = eyes more closed
+  // EAR is absolute ratio — lower = eyes more closed / squinting
   if (v.BRI < -0.35 && v.MAR > 0.4) return "SURPRISED";
-  if (v.EAR < 0.12 && v.LCP < -0.005) return "FRUSTRATED";
-  if (v.LCP > 0.005) return "HAPPY";
+  // FRUSTRATED: a clear frown, OR brows lowered + squinting — either signals displeasure
+  if (v.LCP < -0.015) return "FRUSTRATED";
+  if (v.BRI > -0.2 && v.EAR < 0.18) return "FRUSTRATED";
+  // HAPPY: meaningful upward pull of lip corners (tighter than the old 0.005)
+  if (v.LCP > 0.015) return "HAPPY";
   return "NEUTRAL";
 }
 
@@ -55,8 +59,14 @@ export function computeAffectVector(
   // Raising brows moves them toward y=0, making this value more negative.
   const BRI = (browMid.y - eyeCenter.y) / (interOcular + 1e-6);
 
-  const LCP =
-    (landmarks[CORNER_LEFT].x + landmarks[CORNER_RIGHT].x) / 2 - neutralLCP;
+  // Lip-corner pull: average y of the two corners vs. mouth vertical centre,
+  // normalised by inter-ocular distance, relative to calibrated neutral.
+  // MediaPipe y increases downward, so corners rising above the mouth centre → negative raw,
+  // which we flip so smile = positive. Subtracting the calibrated neutral removes per-face bias.
+  const mouthCentreY = (landmarks[MOUTH_TOP].y + landmarks[MOUTH_BOTTOM].y) / 2;
+  const cornerAvgY = (landmarks[CORNER_LEFT].y + landmarks[CORNER_RIGHT].y) / 2;
+  const rawLCP = (mouthCentreY - cornerAvgY) / (interOcular + 1e-6);
+  const LCP = rawLCP - neutralLCP;
 
   return { MAR, EAR, BRI, LCP };
 }
@@ -524,7 +534,13 @@ export class AirWriter {
   }
 
   private recognise(trajectory: [number, number][]): string | null {
-    if (trajectory.length < 5 || this.templates.size === 0) return null;
+    if (trajectory.length < 5) {
+      return null;
+    }
+    if (this.templates.size === 0) {
+      console.debug("[AirWriter] stroke completed but template bank is empty");
+      return null;
+    }
     const query = normaliseTrajectory(trajectory);
     let bestChar: string | null = null;
     let bestDist = Infinity;
@@ -534,6 +550,15 @@ export class AirWriter {
         bestDist = d;
         bestChar = char;
       }
+    }
+    // Reject poor matches so we don't pass garbage to the LLM.
+    // Threshold is empirical — tune once real users test this.
+    const MATCH_THRESHOLD = 8.0;
+    if (bestDist > MATCH_THRESHOLD) {
+      console.debug(
+        `[AirWriter] no template matched (best='${bestChar}', dist=${bestDist.toFixed(2)})`
+      );
+      return null;
     }
     return bestChar;
   }

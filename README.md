@@ -288,7 +288,7 @@ multimodal_aac_chatbot/
 │   │   ├── graph.py               run_pipeline() — plain function chain
 │   │   ├── state.py               PipelineState TypedDict
 │   │   └── nodes/                 intent, retrieval, planner, feedback
-│   ├── sensing/labels.py          GESTURE_TO_TAG (sensing runs in browser)
+│   ├── sensing/labels.py          GESTURE_DIRECTIVES (sensing runs in browser)
 │   ├── retrieval/                 BGE embeddings (torch tensor) + bucket priors
 │   ├── generation/llm_client.py   2-tier Ollama Cloud LLM client (primary/fallback)
 │   └── guardrails/checks.py      Input + output safety checks
@@ -340,7 +340,7 @@ Adding a new persona: drop a JSON file into `data/memories/` following the schem
 
 From the spec (pages 10–11). Tags: **[Core]** = must do, **[Bonus]** = nice to have, **[Eval]** = for the grade.
 
-Heads up: all camera/sensing stuff is in the frontend (MediaPipe JS). Backend just gets the labels (`affect`, `gesture_tag`, `gaze_bucket`). The `backend/sensing/` python modules are dead code.
+Heads up: all camera/sensing stuff is in the frontend (MediaPipe JS). Backend just gets the labels (`affect`, `gesture_tag`, `gaze_bucket`). Only `backend/sensing/labels.py` (`GESTURE_DIRECTIVES`) lives on the backend.
 
 ### Dataset
 
@@ -359,10 +359,13 @@ Heads up: all camera/sensing stuff is in the frontend (MediaPipe JS). Backend ju
   - [x] intent-aware turnaround: PERSONAL re-retrieves excluding the rejected bucket *and* exact rejected chunk texts (with `turnaround_min_score` floor — falls back to original chunks rather than degrading); PRESENT_STATE flips emotional read or admits uncertainty
   - [x] UI: rejected bubble gets strikethrough + "rephrased" badge, new bubble appended with "↻ turnaround" badge — both visible (you can't unsay something to a partner). Manual "↻ Not quite right" button as fallback
   - [x] guards: `turnaroundConsumedTurnRef` prevents self-retrigger loops; backend `turn_id` returned in `ChatResponse` so frontend doesn't desync on persona switch; stale-turn 409
-- [ ] **[Core]** Smile / positive affect should actually change the wording (more positive lexicon), not just be metadata. Right now it's annotated in the prompt but we never checked if the LLM is doing anything with it — probably need a stronger constraint or example in the prompt
-- [ ] **[Core]** Air-writing is treated as raw text appended to the query. Spec wants it as a stylistic constraint too — should it bias tone, or stay query-only? Decide and document
+- [x] **[Core]** Smile / positive affect actually changes wording now. Affect compiles into a `StyleDirective` (register + prefer/avoid words + exemplar + opener hint) rendered as explicit instructions in the turn-specific user message — see `_AFFECT_CONFIG` in [backend/pipeline/nodes/intent.py](backend/pipeline/nodes/intent.py) and `_build_user` in [backend/pipeline/nodes/planner.py](backend/pipeline/nodes/planner.py). The persona's own `stylistic_preferences` (from the memory JSONs) carry the stable baseline in the cached system message; the affect directive is how that baseline shifts per turn. Measured by `compute_multimodal_alignment` (positive/negative lexicon).
+  - Fixed a long-standing bug where LCP (lip-corner pull) was accidentally the *x-coordinate* of the mouth centre, so it drifted on head turns and almost never fired FRUSTRATED. Now measured as vertical pull of the corners relative to mouth centre, normalised by inter-ocular distance. HAPPY/FRUSTRATED thresholds retuned to the new scale; FRUSTRATED also triggers on brows-lowered + squinting as a second path. See `computeAffectVector` and `classifyAffect` in [frontend/src/lib/sensing.ts](frontend/src/lib/sensing.ts).
+  - Calibration is now averaged over the first 30 frames (~1s of neutral face) instead of a single-frame snapshot — a brief smile at startup used to lock in a biased baseline. Affect stays null during calibration; gaze/head/gesture/air-writing still flow.
+- [x] **[Core]** Gestures (`THUMBS_UP` / `THUMBS_DOWN` / `POINTING` / `WAVING`) now carry an `opener_hint` via `GESTURE_DIRECTIVES` in [backend/sensing/labels.py](backend/sensing/labels.py). A detected thumbs-up overrides the affect opener and tells the LLM to lead with an affirmation.
+- [x] **[Core]** Air-writing carries a default template bank ([frontend/src/lib/airTemplates.ts](frontend/src/lib/airTemplates.ts): `yes` / `?` / `hi` / `help` / `done` / `more` / `water` / `stop`) — all single-stroke shapes so DTW can match reliably. On match, the word flows through the pipeline three ways: (1) retrieval picks up the word as an extra `PERSONAL` sub-intent with a bucket hint (see `infer_bucket` in [backend/sensing/bucket_keywords.py](backend/sensing/bucket_keywords.py) — e.g. `help` → medical, `water` → daily_routine), (2) the planner includes an explicit "the user air-wrote X — incorporate verbatim if appropriate" instruction in the user message, and (3) the word appears in `logs/turns.jsonl` for debugging. The recognizer has a `MATCH_THRESHOLD` reject gate and `console.debug`s on empty-bank / no-match so unrecognised strokes never reach the backend. To add more templates, append entries to `DEFAULT_AIR_TEMPLATES` as 32-point normalised single-stroke trajectories.
 - [ ] **[Bonus]** Voice + air-writing conflict resolution. Capture short voice (Web Speech API), compare to air-written intent, send a `resolved_intent`
-- [ ] thumbs-up only changes the prompt today — should also boost affirmative candidates in the reranker
+- [ ] Thumbs-up currently biases the opener via the prompt. Once generation emits N candidates, move this to candidate reranking for a stronger signal.
 
 ### Intent decomposition
 
@@ -386,6 +389,7 @@ Heads up: all camera/sensing stuff is in the frontend (MediaPipe JS). Backend ju
 - [ ] **[Core]** API returns one response. Should return multiple candidates so the user can pick (and so the next item works)
 - [ ] **[Core]** Frontend needs a candidate picker — show all the options, let the user click one, send the selection back
 - [ ] **[Bonus]** When user picks a candidate, save the `(query, picked)` pair to a side vector index and check it first next turn
+- [x] LLM temperature bumped from 0.4 → 0.8 in [backend/pipeline/nodes/planner.py](backend/pipeline/nodes/planner.py). The old setting produced near-identical responses across turns even when affect/gesture changed, which made the sensing→output link hard to see. 0.8 gives meaningful lexical variation while staying in the persona's voice.
 
 ### Evals
 
@@ -395,20 +399,21 @@ Live per-turn scores show up in the `EvalPanel`. State:
 |--------|--------|
 | Efficiency | works (SLO check on `t_total`) |
 | Faithfulness | stub, returns 0 |
-| Multimodal alignment | stub, returns 0 |
+| Multimodal alignment | works — affect (sentiment lexicon), gesture (opener regex), gaze (bucket match) |
 | Authenticity | star rating in UI but not saved |
 
 - [ ] **[Eval]** Faithfulness — actually check if the response is grounded in what we retrieved. NLI model, sentence-level. If we didn't retrieve anything, flag `no_evidence` instead of pretending we scored it
 - [ ] **[Eval]** Efficiency — per-turn SLO check is done, but for the writeup we need aggregate latency: p50/p95 across a fixed query set, broken out by LLM tier. Spec target is < 6s
-- [ ] **[Eval]** Multimodal alignment — does the response actually reflect the gesture/affect/gaze? Don't need a model for this, just reuse the word maps the planner already has. Gaze one is trickier — check whether the chunks we ended up using came from the bucket the user was looking at
+- [x] **[Eval]** Multimodal alignment — implemented in `backend/evals/multimodal_alignment.py`. Affect scored by positive/negative lexicon overlap vs. target sentiment, gesture by opener-phrase regex (THUMBS_UP/THUMBS_DOWN/WAVING), gaze by fraction of retrieved chunks matching the looked-at bucket. Returned on every turn as `multimodal_alignment` / `affect_alignment` / `gesture_alignment` / `gaze_alignment`
 - [ ] **[Eval]** Authenticity — the Likert stars are wired up in the UI but go nowhere. Save them, log them with the turn so we can actually look at them later
 - [ ] **[Eval]** For the live in-class eval: figure out the actual session — who rates (partners + experts per spec), how many turns each, what gets shown to them. The Likert form is the easy part; the protocol isn't written down anywhere
 - [ ] **[Eval]** Need an offline version of all three model-driven evals (faithfulness / alignment / efficiency). Aggregate numbers across a fixed query set per persona for the writeup
 
 ### Cleanup
 
-- [ ] move the affect→tone / persona override dicts out of code into a yaml
+- [ ] move the affect → `StyleDirective` config (`_AFFECT_CONFIG` in [intent.py](backend/pipeline/nodes/intent.py)) and the gesture directives ([labels.py](backend/sensing/labels.py)) out of code into a yaml
 - [x] delete `backend/sensing/` (dead code, sensing is in frontend) — done, only `labels.py` remains
+- [x] per-persona affect overrides (`_PERSONA_TONE_OVERRIDES`) deleted — redundant with `stylistic_preferences` in the new persona JSONs
 
 ---
 
