@@ -67,6 +67,11 @@ class Settings(BaseSettings):
 
     # ── Evaluation ────────────────────────────────────────────────────────────
     slo_target_s: float = 6.0  # max acceptable response latency (seconds)
+    evals_enabled: bool = True
+    nli_model: str = "cross-encoder/nli-deberta-v3-small"
+    faithfulness_threshold: float = (
+        0.5  # entailment prob for a sentence to count as grounded
+    )
 
 
 settings = Settings()

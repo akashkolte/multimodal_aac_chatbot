@@ -44,6 +44,21 @@ export async function resetSession(userId: string): Promise<void> {
   if (!res.ok) throw new Error(`API error: ${res.status}`);
 }
 
+export async function submitRating(args: {
+  run_id: string;
+  user_id: string;
+  authenticity: number;
+  rater_id?: string;
+  notes?: string;
+}): Promise<void> {
+  const res = await fetch(`${API_BASE}/feedback/rating`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(args),
+  });
+  if (!res.ok) throw new Error(`API error: ${res.status}`);
+}
+
 export async function checkHealth(): Promise<boolean> {
   try {
     const res = await fetch(`${API_BASE}/health`);

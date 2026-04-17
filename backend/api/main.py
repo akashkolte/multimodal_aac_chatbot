@@ -3,10 +3,13 @@ from __future__ import annotations
 
 import json
 import logging
+import re
+import time
+from pathlib import Path
 
-from fastapi import FastAPI, HTTPException
+from fastapi import BackgroundTasks, FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 from backend.config.settings import settings
 from backend.evals import compute_evals
@@ -38,6 +41,8 @@ app.add_middleware(
 
 _log = logging.getLogger(__name__)
 _models_ready = False
+_RUN_ID_RE = re.compile(r"^[0-9a-f]{32}$")
+_ID_PATTERN = r"^[a-zA-Z0-9_-]+$"
 
 
 @app.on_event("startup")
@@ -78,20 +83,6 @@ class TurnaroundRequest(BaseModel):
     head_signal: str | None = None
 
 
-class EvalScoresResponse(BaseModel):
-    groundedness: float
-    hallucination_rate: float
-    no_evidence: bool
-    t_total_s: float
-    slo_target_s: float
-    slo_passed: bool
-    slo_margin_s: float
-    multimodal_alignment: float
-    affect_alignment: float
-    gesture_alignment: float
-    gaze_alignment: float
-
-
 class ChatResponse(BaseModel):
     user_id: str
     query: str
@@ -102,8 +93,16 @@ class ChatResponse(BaseModel):
     retrieval_mode: str
     latency: dict
     guardrail_passed: bool
-    eval_scores: EvalScoresResponse | None = None
+    run_id: str | None = None
     turn_id: int
+
+
+class RatingRequest(BaseModel):
+    run_id: str = Field(min_length=1, max_length=64, pattern=_ID_PATTERN)
+    user_id: str = Field(min_length=1, max_length=64, pattern=_ID_PATTERN)
+    authenticity: int = Field(ge=1, le=5)
+    rater_id: str = Field(default="anonymous", max_length=64, pattern=_ID_PATTERN)
+    notes: str | None = Field(default=None, max_length=500)
 
 
 # ── Helpers ────────────────────────────────────────────────────────────────────
@@ -275,8 +274,44 @@ def reset_session(user_id: str):
     return {"status": "reset", "user_id": user_id}
 
 
+def _score_and_persist(
+    run_id: str,
+    user_id: str,
+    turn_id: int,
+    response: str,
+    chunks: list[dict],
+    latency_log: dict,
+    affect: str,
+    gesture_tag: str | None,
+    gaze_bucket: str | None,
+) -> None:
+    try:
+        scores = compute_evals(
+            response=response,
+            chunks=chunks,
+            latency_log=latency_log,
+            affect=affect,
+            gesture_tag=gesture_tag,
+            gaze_bucket=gaze_bucket,
+            slo_target=settings.slo_target_s,
+        )
+        entry = {
+            "run_id": run_id,
+            "ts": time.time(),
+            "user_id": user_id,
+            "turn_id": turn_id,
+            **scores,
+        }
+        logs_dir = Path(settings.logs_dir)
+        logs_dir.mkdir(parents=True, exist_ok=True)
+        with open(logs_dir / "evals.jsonl", "a", encoding="utf-8") as f:
+            f.write(json.dumps(entry, ensure_ascii=False) + "\n")
+    except Exception:
+        _log.exception("evals background scoring failed for run %s", run_id)
+
+
 @app.post("/chat", response_model=ChatResponse)
-def chat(req: ChatRequest):
+def chat(req: ChatRequest, background_tasks: BackgroundTasks):
     guard = check_input(req.query)
     if not guard["allowed"]:
         return ChatResponse(
@@ -297,22 +332,26 @@ def chat(req: ChatRequest):
 
     result: PipelineState = run_pipeline(initial_state)
 
-    # Persist updated session state
     session["session_history"] = result["session_history"]
     session["bucket_priors"] = result["bucket_priors"]
     session["last_state"] = result
 
-    # Compute evaluation metrics
     affect_emotion = (result.get("affect") or {}).get("emotion", "NEUTRAL")
-    eval_scores = compute_evals(
-        response=result["selected_response"] or "",
-        chunks=result.get("retrieved_chunks") or [],
-        latency_log=result.get("latency_log") or {},
-        affect=affect_emotion,
-        gesture_tag=req.gesture_tag,
-        gaze_bucket=req.gaze_bucket,
-        slo_target=settings.slo_target_s,
-    )
+    run_id = result.get("run_id")
+
+    if settings.evals_enabled and run_id:
+        background_tasks.add_task(
+            _score_and_persist,
+            run_id=run_id,
+            user_id=req.user_id,
+            turn_id=result["turn_id"],
+            response=result["selected_response"] or "",
+            chunks=list(result.get("retrieved_chunks") or []),
+            latency_log=dict(result.get("latency_log") or {}),
+            affect=affect_emotion,
+            gesture_tag=req.gesture_tag,
+            gaze_bucket=req.gaze_bucket,
+        )
 
     return ChatResponse(
         user_id=req.user_id,
@@ -324,13 +363,13 @@ def chat(req: ChatRequest):
         retrieval_mode=result.get("retrieval_mode_used", "unknown"),
         latency=result.get("latency_log") or {},
         guardrail_passed=result.get("guardrail_passed", True),
-        eval_scores=eval_scores,
+        run_id=run_id,
         turn_id=result["turn_id"],
     )
 
 
 @app.post("/chat/turnaround", response_model=ChatResponse)
-def chat_turnaround(req: TurnaroundRequest):
+def chat_turnaround(req: TurnaroundRequest, background_tasks: BackgroundTasks):
     if req.user_id not in _sessions:
         raise HTTPException(status_code=404, detail="no active session")
 
@@ -400,15 +439,21 @@ def chat_turnaround(req: TurnaroundRequest):
     session["last_state"] = replan_state
 
     affect_emotion = (replan_state.get("affect") or {}).get("emotion", "NEUTRAL")
-    eval_scores = compute_evals(
-        response=replan_state["selected_response"] or "",
-        chunks=replan_state.get("retrieved_chunks") or [],
-        latency_log=replan_state.get("latency_log") or {},
-        affect=affect_emotion,
-        gesture_tag=replan_state.get("gesture_tag"),
-        gaze_bucket=replan_state.get("gaze_bucket"),
-        slo_target=settings.slo_target_s,
-    )
+    run_id = replan_state.get("run_id")
+
+    if settings.evals_enabled and run_id:
+        background_tasks.add_task(
+            _score_and_persist,
+            run_id=run_id,
+            user_id=req.user_id,
+            turn_id=replan_state["turn_id"],
+            response=replan_state["selected_response"] or "",
+            chunks=list(replan_state.get("retrieved_chunks") or []),
+            latency_log=dict(replan_state.get("latency_log") or {}),
+            affect=affect_emotion,
+            gesture_tag=replan_state.get("gesture_tag"),
+            gaze_bucket=replan_state.get("gaze_bucket"),
+        )
 
     return ChatResponse(
         user_id=req.user_id,
@@ -420,6 +465,25 @@ def chat_turnaround(req: TurnaroundRequest):
         retrieval_mode=replan_state.get("retrieval_mode_used", "unknown"),
         latency=replan_state.get("latency_log") or {},
         guardrail_passed=replan_state.get("guardrail_passed", True),
-        eval_scores=eval_scores,
+        run_id=run_id,
         turn_id=replan_state["turn_id"],
     )
+
+
+@app.post("/feedback/rating")
+def submit_rating(req: RatingRequest):
+    if not _RUN_ID_RE.match(req.run_id):
+        raise HTTPException(status_code=400, detail="invalid run_id")
+    logs_dir = Path(settings.logs_dir)
+    logs_dir.mkdir(parents=True, exist_ok=True)
+    entry = {
+        "ts": time.time(),
+        "run_id": req.run_id,
+        "user_id": req.user_id,
+        "authenticity": req.authenticity,
+        "rater_id": req.rater_id,
+        "notes": req.notes,
+    }
+    with open(logs_dir / "ratings.jsonl", "a", encoding="utf-8") as f:
+        f.write(json.dumps(entry, ensure_ascii=False) + "\n")
+    return {"status": "ok"}

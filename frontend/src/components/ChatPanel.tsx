@@ -85,7 +85,7 @@ export function ChatPanel({
             content: res.response,
             latency: res.latency,
             affect: res.affect,
-            evalScores: res.eval_scores,
+            runId: res.run_id,
             turnId: res.turn_id,
             isTurnaround: true,
           });
@@ -174,7 +174,7 @@ export function ChatPanel({
           content: res.response,
           latency: res.latency,
           affect: res.affect,
-          evalScores: res.eval_scores,
+          runId: res.run_id,
           turnId: res.turn_id,
         },
       ]);
@@ -224,8 +224,12 @@ export function ChatPanel({
               )}
             </span>
             <p>{msg.content}</p>
-            {msg.role === "aac_user" && msg.evalScores && (
-              <EvalPanel evalScores={msg.evalScores} />
+            {msg.role === "aac_user" && msg.runId && userId && (
+              <EvalPanel
+                runId={msg.runId}
+                userId={userId}
+                latencyTotal={msg.latency?.t_total ?? 0}
+              />
             )}
           </div>
         ))}
