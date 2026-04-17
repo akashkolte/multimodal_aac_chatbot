@@ -20,6 +20,10 @@ class Settings(BaseSettings):
     retrieval_top_k: int = 5
     retrieval_rerank_k: int = 3
     retrieval_fast_k: int = 2  # used when affect == FRUSTRATED
+    # Minimum cosine score for a chunk to be used in turnaround re-retrieval.
+    # Below this, we'd rather fall back to original chunks than serve clearly
+    # off-topic memories just to "look different."
+    turnaround_min_score: float = 0.45
 
     # LLM tiers — both hit Ollama Cloud via OpenAI-compatible endpoint.
     # Same model on both tiers for now; swap one when a larger cloud model

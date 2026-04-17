@@ -31,7 +31,7 @@ class RetrievedChunk(TypedDict):
 
 
 class SubIntent(TypedDict):
-    type: str  # "PERSONAL" | "CONTEXTUAL" | "OPEN_DOMAIN"
+    type: str  # "PERSONAL" | "CONTEXTUAL" | "PRESENT_STATE" | "OPEN_DOMAIN"
     query: str
     bucket_hint: str | None
     priority: str  # "fast" | "normal"
@@ -47,9 +47,10 @@ class GenerationConfig(TypedDict):
     max_tokens: int
     tone_tag: str  # e.g. "[TONE:WITTY_SARCASTIC]"
     retrieval_mode: str  # "fast" | "full"
-    persona_mod: (
-        str  # "amplify_quirks" | "suppress_humor" | "baseline" | "add_confirmation"
-    )
+    persona_mod: str
+    # persona_mod values:
+    #   "amplify_quirks" | "suppress_humor" | "baseline"
+    #   | "add_confirmation" | "turnaround"
 
 
 class LatencyLog(TypedDict):
@@ -75,6 +76,8 @@ class PipelineState(TypedDict):
     gesture_tag: str | None  # e.g. "THUMBS_UP"
     gaze_bucket: str | None  # bucket hinted by gaze fixation
     air_written_text: str | None  # concatenated air-written chars
+    head_signal: str | None  # "HEAD_SHAKE" | "HEAD_NOD_DISSATISFIED"
+    turnaround_triggered: bool  # true when re-planned from dissatisfaction signal
 
     # ── L2: Intent decomposition outputs ─────────────────────────────────────
     raw_query: str  # partner's typed/spoken query

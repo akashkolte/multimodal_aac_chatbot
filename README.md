@@ -353,9 +353,12 @@ Heads up: all camera/sensing stuff is in the frontend (MediaPipe JS). Backend ju
 
 ### Sensing (frontend)
 
-- [ ] **[Core]** Head-nod / sharp tilt = "I don't like that". Different from frustrated affect.
-  - [ ] send a `dissatisfaction_signal` flag with the chat request
-  - [ ] when set, planner returns a "did you mean X or Y?" instead of an answer (the spec's "Turnaround Option")
+- [x] **[Core]** Head-nod / sharp tilt / head-shake = "I don't like that". Different from frustrated affect.
+  - [x] frontend `HeadPoseTracker` (deadband-filtered shake + sharp-nod-with-recovery), explicit calibrate button, live Δx/Δy debug readout in sidebar
+  - [x] dedicated `POST /chat/turnaround` endpoint reuses cached last-state — one extra LLM call, no full pipeline re-run
+  - [x] intent-aware turnaround: PERSONAL re-retrieves excluding the rejected bucket *and* exact rejected chunk texts (with `turnaround_min_score` floor — falls back to original chunks rather than degrading); PRESENT_STATE flips emotional read or admits uncertainty
+  - [x] UI: rejected bubble gets strikethrough + "rephrased" badge, new bubble appended with "↻ turnaround" badge — both visible (you can't unsay something to a partner). Manual "↻ Not quite right" button as fallback
+  - [x] guards: `turnaroundConsumedTurnRef` prevents self-retrigger loops; backend `turn_id` returned in `ChatResponse` so frontend doesn't desync on persona switch; stale-turn 409
 - [ ] **[Core]** Smile / positive affect should actually change the wording (more positive lexicon), not just be metadata. Right now it's annotated in the prompt but we never checked if the LLM is doing anything with it — probably need a stronger constraint or example in the prompt
 - [ ] **[Core]** Air-writing is treated as raw text appended to the query. Spec wants it as a stylistic constraint too — should it bias tone, or stay query-only? Decide and document
 - [ ] **[Bonus]** Voice + air-writing conflict resolution. Capture short voice (Web Speech API), compare to air-written intent, send a `resolved_intent`
@@ -363,10 +366,11 @@ Heads up: all camera/sensing stuff is in the frontend (MediaPipe JS). Backend ju
 
 ### Intent decomposition
 
-> Current state: regex-splits the partner query on conjunctions/punctuation into fragments, then runs each fragment through a BGE zero-shot classifier (cosine vs. 5 seed exemplars per class). No LLM call, no retries. Runs in ~10–30ms per turn. Bucket hints for `PERSONAL` fragments come from a shared keyword helper in [backend/sensing/bucket_keywords.py](backend/sensing/bucket_keywords.py). Earlier versions used an LLM with Pydantic validation + 3 retries, which cost ~100s per turn on Ollama Cloud when the model emitted bad JSON.
+> Current state: regex-splits the partner query on conjunctions/punctuation into fragments, then runs each fragment through a BGE zero-shot classifier (cosine vs. seed exemplars per class). No LLM call, no retries. Runs in ~10–30ms per turn. Bucket hints for `PERSONAL` fragments come from a shared keyword helper in [backend/sensing/bucket_keywords.py](backend/sensing/bucket_keywords.py). Earlier versions used an LLM with Pydantic validation + 3 retries, which cost ~100s per turn on Ollama Cloud when the model emitted bad JSON.
 
 - [x] **[Core]** Personal / Contextual / Open-domain dispatch to distinct pools (personal → BGE vector store; contextual → persona memory + relevant in-session turns layered on top; open-domain → stub chunk, LLM answers from its own general knowledge — web search is intentionally out of scope).
 - [x] intent node latency — split + BGE zero-shot classifier replaces the LLM router. Parallelising sub-query retrieval is still open.
+- [x] **[Core]** `PRESENT_STATE` intent class — questions about right-now state ("how are you feeling?", "are you tired?") used to fabricate confident answers from autobiographical memory (wrong by category, not just by wording). Now they skip retrieval entirely and the planner uses an affect-grounded prompt branch with explicit fallback to "I'm not sure" when the read is ambiguous. Margin guard demotes narrow PRESENT_STATE wins to PERSONAL (better to over-retrieve than to silently drop persona memories). Air-written supplements are classified the same way as a normal fragment — a present-tense supplement on a PRESENT_STATE query no longer flips the route to PERSONAL.
 
 ### Retrieval
 

@@ -32,8 +32,17 @@ function App() {
     return () => clearInterval(healthPoll.current);
   }, []);
 
-  const { sensing, ready, initError, init, processFrame, clearAirWrittenText, resetCalibration } =
-    useSensing();
+  const {
+    sensing,
+    ready,
+    initError,
+    init,
+    processFrame,
+    clearAirWrittenText,
+    clearHeadSignal,
+    calibrateHeadPose,
+    resetCalibration,
+  } = useSensing();
 
   const onFrame = useCallback(
     (video: HTMLVideoElement, timestamp: number) => {
@@ -89,6 +98,16 @@ function App() {
           </label>
           <WebcamSensing videoRef={videoRef} active={active} error={error || initError} />
           <SensingStatus sensing={sensing} webcamActive={active} />
+          <button
+            type="button"
+            className="calibrate-btn"
+            disabled={!active}
+            onClick={() => calibrateHeadPose()}
+          >
+            {sensing.headCalibrated
+              ? "Re-calibrate head pose"
+              : "Calibrate head pose"}
+          </button>
         </div>
 
         <div className="sidebar-section">
@@ -120,6 +139,7 @@ function App() {
           sensing={sensing}
           affectOverride={affectOverride}
           onAirTextConsumed={clearAirWrittenText}
+          onHeadSignalConsumed={clearHeadSignal}
           messages={messages}
           setMessages={setMessages}
           onLatency={setLatency}

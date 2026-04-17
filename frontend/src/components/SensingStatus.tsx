@@ -38,6 +38,26 @@ export function SensingStatus({ sensing, webcamActive }: Props) {
           {sensing.gazeBucket ?? "none"}
         </span>
       </div>
+      <div className="sensing-row">
+        <span className="sensing-label">Head</span>
+        <span className="sensing-value">
+          {sensing.headCalibrated
+            ? sensing.headSignal ?? "steady"
+            : "not calibrated"}
+        </span>
+      </div>
+      {sensing.headCalibrated && (
+        <div className="sensing-row sensing-debug">
+          <span className="sensing-label">  ↳ Δx/Δy</span>
+          <span className="sensing-value">
+            {sensing.headDebug.dx.toFixed(3)} / {sensing.headDebug.dy.toFixed(3)}
+            {"  "}
+            (peak {sensing.headDebug.maxAbsDx.toFixed(3)}/
+            {sensing.headDebug.maxAbsDy.toFixed(3)},{" "}
+            x{sensing.headDebug.crossings})
+          </span>
+        </div>
+      )}
       {sensing.airWrittenText && (
         <div className="sensing-row">
           <span className="sensing-label">Air-written</span>

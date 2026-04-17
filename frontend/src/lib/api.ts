@@ -1,4 +1,9 @@
-import type { ChatRequest, ChatResponse, Persona } from "../types";
+import type {
+  ChatRequest,
+  ChatResponse,
+  Persona,
+  TurnaroundRequest,
+} from "../types";
 
 const API_BASE = "";
 
@@ -11,6 +16,18 @@ export async function fetchUsers(): Promise<Persona[]> {
 
 export async function sendChat(req: ChatRequest): Promise<ChatResponse> {
   const res = await fetch(`${API_BASE}/chat`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(req),
+  });
+  if (!res.ok) throw new Error(`API error: ${res.status}`);
+  return res.json();
+}
+
+export async function sendTurnaround(
+  req: TurnaroundRequest
+): Promise<ChatResponse> {
+  const res = await fetch(`${API_BASE}/chat/turnaround`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(req),
