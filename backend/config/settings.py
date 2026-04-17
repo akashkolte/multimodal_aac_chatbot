@@ -25,6 +25,13 @@ class Settings(BaseSettings):
     # off-topic memories just to "look different."
     turnaround_min_score: float = 0.45
 
+    rerank_enabled: bool = True
+    rerank_pool_k: int = 12  # wider pre-rerank fetch per personal sub-intent
+    rerank_fast_pool_k: int = 8  # smaller pool on the FRUSTRATED fast path
+    rerank_lambda: float = 0.7  # MMR: relevance vs diversity (1.0 = pure cosine)
+    rerank_history_turns: int = 2  # last-N user turns folded into context vector
+    rerank_query_weight: float = 0.7  # current query weight vs history mean
+
     # LLM tiers — both hit Ollama Cloud via OpenAI-compatible endpoint.
     # Same model on both tiers for now; swap one when a larger cloud model
     # is provisioned and the latency-fallback should branch.
