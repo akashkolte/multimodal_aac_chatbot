@@ -46,11 +46,11 @@ def run_fallback(state: PipelineState) -> dict:
     return _run(state, tier="fallback")
 
 
-def route_by_latency(state: PipelineState) -> str:
-    """Conditional edge after retrieval nodes."""
-    log = state.get("latency_log") or {}
-    elapsed = log.get("t_intent", 0.0) + log.get("t_retrieval", 0.0)
-    return "fallback" if elapsed > settings.fallback_latency_threshold else "primary"
+# def route_by_latency(state: PipelineState) -> str:
+#     """Conditional edge after retrieval nodes."""
+#     log = state.get("latency_log") or {}
+#     elapsed = log.get("t_intent", 0.0) + log.get("t_retrieval", 0.0)
+#     return "fallback" if elapsed > settings.fallback_latency_threshold else "primary"
 
 
 # ── Core implementation ────────────────────────────────────────────────────────

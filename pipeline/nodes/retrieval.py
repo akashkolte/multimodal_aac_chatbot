@@ -58,10 +58,10 @@ def run_full(state: PipelineState) -> dict:
     return _build_return(state, chunks, "full", t0)
 
 
-def route_by_affect(state: PipelineState) -> str:
-    """Conditional edge function — called by graph.py after the intent node."""
-    emotion = (state.get("affect") or {}).get("emotion", "NEUTRAL")
-    return "fast" if emotion == "FRUSTRATED" else "full"
+# def route_by_affect(state: PipelineState) -> str:
+#     """Conditional edge function — called by graph.py after the intent node."""
+#     emotion = (state.get("affect") or {}).get("emotion", "NEUTRAL")
+#     return "fast" if emotion == "FRUSTRATED" else "full"
 
 
 # ── Helpers ───────────────────────────────────────────────────────────────────
