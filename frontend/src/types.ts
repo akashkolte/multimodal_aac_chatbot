@@ -52,6 +52,20 @@ export interface LatencyLog {
   t_total: number;
 }
 
+export interface EvalScores {
+  groundedness: number;
+  hallucination_rate: number;
+  no_evidence: boolean;
+  t_total_s: number;
+  slo_target_s: number;
+  slo_passed: boolean;
+  slo_margin_s: number;
+  multimodal_alignment: number;
+  affect_alignment: number;
+  gesture_alignment: number;
+  gaze_alignment: number;
+}
+
 export interface ChatResponse {
   user_id: string;
   query: string;
@@ -63,6 +77,7 @@ export interface ChatResponse {
   guardrail_passed: boolean;
   run_id: string | null;
   turn_id: number;
+  eval_scores?: EvalScores | null;
 }
 
 export interface ChatMessage {
@@ -74,4 +89,5 @@ export interface ChatMessage {
   turnId?: number;
   rephrased?: boolean;
   isTurnaround?: boolean;
+  evalScores?: EvalScores | null;
 }

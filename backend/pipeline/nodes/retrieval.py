@@ -96,15 +96,11 @@ def _dispatch_all(
 def _retrieve_personal(
     sub: SubIntent, state: PipelineState, k: int
 ) -> list[tuple[RetrievedChunk, torch.Tensor | None]]:
-    priors = state["bucket_priors"]
-    prior_vals = list(priors.values()) if priors else []
-    priors_uniform = prior_vals and (max(prior_vals) - min(prior_vals)) < 0.05
-
-    bucket_hint = (
-        state.get("gaze_bucket")
-        or sub.get("bucket_hint")
-        or (_top_prior_bucket(priors) if not priors_uniform else None)
-    )
+    # Gaze fixation is an explicit user signal — hard filter. Session priors
+    # (bucket + type) are applied as soft weights inside vector_store.retrieve().
+    hard_filter = state.get("gaze_bucket")
+    bucket_priors = state.get("bucket_priors")
+    type_priors = state.get("type_priors")
 
     if not settings.rerank_enabled:
         chunks = retrieve(
@@ -112,7 +108,9 @@ def _retrieve_personal(
             user_id=state["user_id"],
             top_k=k,
             rerank_k=k,
-            bucket_filter=bucket_hint,
+            bucket_filter=hard_filter,
+            bucket_priors=bucket_priors,
+            type_priors=type_priors,
         )
         return [(c, None) for c in chunks]
 
@@ -121,7 +119,9 @@ def _retrieve_personal(
         user_id=state["user_id"],
         top_k=k,
         rerank_k=k,
-        bucket_filter=bucket_hint,
+        bucket_filter=hard_filter,
+        bucket_priors=bucket_priors,
+        type_priors=type_priors,
         return_vectors=True,
     )
     return [(chunks[i], vecs[i]) for i in range(len(chunks))]
@@ -206,12 +206,6 @@ def _rerank_merged(
         top_k=final_k,
         lambda_=settings.rerank_lambda,
     )
-
-
-def _top_prior_bucket(priors: dict[str, float]) -> str | None:
-    if not priors:
-        return None
-    return max(priors, key=priors.get)
 
 
 def _build_return(

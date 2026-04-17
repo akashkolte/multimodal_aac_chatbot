@@ -13,7 +13,7 @@ from backend.guardrails.checks import check_input
 from backend.pipeline.graph import run_pipeline
 from backend.pipeline.nodes.intent import _AFFECT_CONFIG
 from backend.pipeline.state import GenerationConfig, PipelineState
-from backend.retrieval.bucket_priors import uniform_priors
+from backend.retrieval.priors import BUCKETS, CHUNK_TYPES, uniform
 from backend.retrieval.vector_store import _get_embedder
 from backend.sensing.bucket_keywords import infer_bucket
 
@@ -128,7 +128,8 @@ def main() -> None:
     print("ready.\n")
 
     session_history: list[dict] = []
-    bucket_priors = uniform_priors()
+    bucket_priors = uniform(BUCKETS)
+    type_priors = uniform(CHUNK_TYPES)
     turn_id = 0
 
     print(f"Chatting as {profile['name']}. Type 'quit' to exit.\n")
@@ -175,6 +176,7 @@ def main() -> None:
             generation_config=pre_gen_config,
             retrieved_chunks=[],
             bucket_priors=bucket_priors,
+            type_priors=type_priors,
             retrieval_mode_used="",
             augmented_prompt=None,
             candidates=[],
@@ -197,6 +199,7 @@ def main() -> None:
 
         session_history = result["session_history"]
         bucket_priors = result["bucket_priors"]
+        type_priors = result["type_priors"]
 
         if args.debug:
             print_latency(result.get("latency_log") or {}, turn_id)

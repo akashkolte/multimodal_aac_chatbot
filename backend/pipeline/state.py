@@ -97,7 +97,8 @@ class PipelineState(TypedDict):
 
     # ── L3: Retrieval outputs ─────────────────────────────────────────────────
     retrieved_chunks: list[RetrievedChunk]
-    bucket_priors: dict[str, float]  # session-level Bayesian priors
+    bucket_priors: dict[str, float]  # P(bucket) — family/medical/hobbies/...
+    type_priors: dict[str, float]  # P(type) — narrative/social_post/chat_log
     retrieval_mode_used: str  # "fast" | "full"
 
     # ── L4: Generation outputs ────────────────────────────────────────────────
