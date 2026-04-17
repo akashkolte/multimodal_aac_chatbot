@@ -1,6 +1,7 @@
 # Intent decomposition node — regex-split fragments + BGE zero-shot classifier.
 from __future__ import annotations
 
+import copy
 import re
 import time
 from functools import lru_cache
@@ -88,24 +89,65 @@ _AFFECT_CONFIG: dict[str, GenerationConfig] = {
         "tone_tag": "[TONE:WARM]",
         "retrieval_mode": "full",
         "persona_mod": "amplify_quirks",
+        "style": {
+            "tone_tag": "[TONE:WARM]",
+            "register": "warm, upbeat, affectionate",
+            "prefer_words": [
+                "glad",
+                "love",
+                "lucky",
+                "happy",
+                "great",
+                "grateful",
+                "fun",
+            ],
+            "avoid_words": ["unfortunately", "frankly", "tired", "hard", "sorry"],
+            "opener_hint": None,
+            "exemplar": "Yeah — honestly, that made my week.",
+        },
     },
     "FRUSTRATED": {
         "max_tokens": settings.max_tokens_frustrated,
         "tone_tag": "[TONE:DIRECT_EMPATHETIC]",
         "retrieval_mode": "fast",
         "persona_mod": "suppress_humor",
+        "style": {
+            "tone_tag": "[TONE:DIRECT_EMPATHETIC]",
+            "register": "direct, short, validating — no jokes",
+            "prefer_words": ["okay", "yes", "right", "i hear you", "fair"],
+            "avoid_words": ["hilarious", "ha", "lol", "cheerful", "delightful"],
+            "opener_hint": "Acknowledge the feeling in 3-5 words before the answer.",
+            "exemplar": "Yeah. That's a lot. Short answer: yes.",
+        },
     },
     "NEUTRAL": {
         "max_tokens": settings.max_tokens_neutral,
         "tone_tag": "[TONE:DEFAULT]",
         "retrieval_mode": "full",
         "persona_mod": "baseline",
+        "style": {
+            "tone_tag": "[TONE:DEFAULT]",
+            "register": "natural, conversational",
+            "prefer_words": [],
+            "avoid_words": [],
+            "opener_hint": None,
+            # Empty on purpose — let the persona's own example_phrases carry the register.
+            "exemplar": "",
+        },
     },
     "SURPRISED": {
         "max_tokens": settings.max_tokens_surprised,
         "tone_tag": "[TONE:CLARIFYING]",
         "retrieval_mode": "full",
         "persona_mod": "add_confirmation",
+        "style": {
+            "tone_tag": "[TONE:CLARIFYING]",
+            "register": "curious, clarifying",
+            "prefer_words": ["really", "wait", "huh", "oh"],
+            "avoid_words": [],
+            "opener_hint": "Mirror surprise briefly, then ask a clarifying question.",
+            "exemplar": "Oh — wait, really? Did you mean the Friday one?",
+        },
     },
 }
 
@@ -185,7 +227,8 @@ def run(state: PipelineState) -> dict:
     affect_state = state.get("affect") or {}
     emotion: str = affect_state.get("emotion", "NEUTRAL")
     query: str = state["raw_query"]
-    gen_config = _AFFECT_CONFIG.get(emotion, _AFFECT_CONFIG["NEUTRAL"])
+    # Deep-copy: callers may mutate gen_config downstream; never hand them the shared constant.
+    gen_config = copy.deepcopy(_AFFECT_CONFIG.get(emotion, _AFFECT_CONFIG["NEUTRAL"]))
 
     fragments = _split_query(query)
     priority = "fast" if emotion == "FRUSTRATED" else "normal"

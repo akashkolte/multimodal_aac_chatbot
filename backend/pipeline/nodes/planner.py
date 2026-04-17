@@ -1,30 +1,35 @@
-# Planner node — prompt building, candidate generation, composite ranking.
-from __future__ import annotations
-
 import time
 
 from backend.config.settings import settings
 from backend.generation.llm_client import active_model, chat_complete
 from backend.guardrails.checks import check_output
 from backend.pipeline.intent_kind import classify_intent_kind
-from backend.pipeline.state import PipelineState
-from backend.sensing.labels import GESTURE_TO_TAG
+from backend.pipeline.state import PipelineState, StyleDirective
+from backend.sensing.labels import GESTURE_DIRECTIVES
 
-# ── Persona-specific tone tags (applied on top of affect base tag) ─────────────
-
-_PERSONA_TONE_OVERRIDES: dict[str, dict[str, str]] = {
-    "mia_chen": {
-        "HAPPY": "[TONE:WITTY_SARCASTIC]",
-        "FRUSTRATED": "[TONE:DIRECT_EMPATHETIC]",
-    },
-    "gerald_okafor": {
-        "HAPPY": "[TONE:WARM_FORMAL]",
-        "FRUSTRATED": "[TONE:MEASURED_EMPATHETIC]",
-    },
-    "arjun_mehta": {
-        "HAPPY": "[TONE:DIRECT_WARM]",
-        "FRUSTRATED": "[TONE:MINIMAL_DIRECT]",
-    },
+_PERSONA_MOD_INSTRUCTIONS = {
+    "amplify_quirks": "Amplify your characteristic style and personality.",
+    "suppress_humor": "Be direct and supportive. Suppress humor.",
+    "baseline": "Use your natural communication style.",
+    "add_confirmation": "Add a clarifying question or confirmation at the end.",
+    "turnaround": (
+        "Your previous reply missed what you actually meant. Rephrase "
+        "more directly — change the wording meaningfully, not just "
+        "surface tweaks — and end with a one-sentence clarifying "
+        "question to confirm you're on the right track."
+    ),
+    "reverse_stance": (
+        "Your previous reply was substantively wrong — not poorly worded, "
+        "but the wrong content. Take a meaningfully different stance using "
+        "the available memories or, if none fit, honestly say you don't "
+        "know. Do NOT just reword the previous reply."
+    ),
+    "present_state_retry": (
+        "Your previous reply was wrong about your current state. The "
+        "affect signal probably misled you. Either flip the emotional "
+        "read (if you said 'good', try 'not great') or honestly admit "
+        "you're not sure how you feel right now. Do NOT invent details."
+    ),
 }
 
 
@@ -36,22 +41,16 @@ def run_fallback(state: PipelineState) -> dict:
     return _run(state, tier="fallback")
 
 
-# ── Core implementation ────────────────────────────────────────────────────────
-
-
 def _run(state: PipelineState, tier: str) -> dict:
     t0 = time.perf_counter()
 
     profile = state["persona_profile"]
-    user_id = state["user_id"]
     affect = (state.get("affect") or {}).get("emotion", "NEUTRAL")
     gen_cfg = state.get("generation_config") or {}
     chunks = state.get("retrieved_chunks") or []
     history = (state.get("session_history") or [])[-20:]
 
-    tone_tag = _resolve_tone_tag(
-        user_id, affect, gen_cfg.get("tone_tag", "[TONE:DEFAULT]")
-    )
+    style: StyleDirective = gen_cfg["style"]
     gesture_tag = state.get("gesture_tag")
     air_written_text = state.get("air_written_text")
     turnaround_triggered = state.get("turnaround_triggered", False)
@@ -64,7 +63,7 @@ def _run(state: PipelineState, tier: str) -> dict:
         chunks,
         history,
         state["raw_query"],
-        tone_tag,
+        style,
         gen_cfg,
         gesture_tag=gesture_tag,
         air_written_text=air_written_text,
@@ -76,7 +75,7 @@ def _run(state: PipelineState, tier: str) -> dict:
     selected = chat_complete(
         messages=messages,
         max_tokens=gen_cfg.get("max_tokens", settings.max_tokens_neutral),
-        temperature=0.4,
+        temperature=0.8,
         tier=tier,
     )
 
@@ -95,7 +94,7 @@ def _run(state: PipelineState, tier: str) -> dict:
         4,
     )
 
-    augmented_prompt = "\n\n".join(m["content"] for m in messages)
+    augmented_prompt = "\n\n".join(f"[{m['role']}] {m['content']}" for m in messages)
     return {
         "augmented_prompt": augmented_prompt,
         "candidates": [selected],
@@ -107,8 +106,8 @@ def _run(state: PipelineState, tier: str) -> dict:
     }
 
 
-def _resolve_tone_tag(user_id: str, affect: str, default_tag: str) -> str:
-    return _PERSONA_TONE_OVERRIDES.get(user_id, {}).get(affect, default_tag)
+def _format_word_list(words: list[str]) -> str:
+    return ", ".join(words) if words else "(no constraint)"
 
 
 _AFFECT_HINTS = {
@@ -124,7 +123,7 @@ def _build_messages(
     chunks: list[dict],
     history: list[dict],
     query: str,
-    tone_tag: str,
+    style: StyleDirective,
     gen_cfg: dict,
     gesture_tag: str | None = None,
     air_written_text: str | None = None,
@@ -141,7 +140,7 @@ def _build_messages(
         chunks,
         history,
         query,
-        tone_tag,
+        style,
         gen_cfg,
         gesture_tag,
         air_written_text,
@@ -196,37 +195,11 @@ Answering rules:
 --- end character sheet ---"""
 
 
-_PERSONA_MOD_INSTRUCTIONS = {
-    "amplify_quirks": "Amplify your characteristic style and personality.",
-    "suppress_humor": "Be direct and supportive. Suppress humor.",
-    "baseline": "Use your natural communication style.",
-    "add_confirmation": "Add a clarifying question or confirmation at the end.",
-    "turnaround": (
-        "Your previous reply missed what you actually meant. Rephrase "
-        "more directly — change the wording meaningfully, not just "
-        "surface tweaks — and end with a one-sentence clarifying "
-        "question to confirm you're on the right track."
-    ),
-    "reverse_stance": (
-        "Your previous reply was substantively wrong — not poorly worded, "
-        "but the wrong content. Take a meaningfully different stance using "
-        "the available memories or, if none fit, honestly say you don't "
-        "know. Do NOT just reword the previous reply."
-    ),
-    "present_state_retry": (
-        "Your previous reply was wrong about your current state. The "
-        "affect signal probably misled you. Either flip the emotional "
-        "read (if you said 'good', try 'not great') or honestly admit "
-        "you're not sure how you feel right now. Do NOT invent details."
-    ),
-}
-
-
 def _build_user(
     chunks: list[dict],
     history: list[dict],
     query: str,
-    tone_tag: str,
+    style: StyleDirective,
     gen_cfg: dict,
     gesture_tag: str | None,
     air_written_text: str | None,
@@ -262,19 +235,40 @@ def _build_user(
         or "  (start of session)"
     )
 
-    gesture_line = ""
+    merged_opener = style.get("opener_hint")
     if gesture_tag:
-        g_tag = GESTURE_TO_TAG.get(gesture_tag, f"[GESTURE:{gesture_tag}]")
-        gesture_line = f"\nActive gesture signal: {g_tag}"
+        directive = GESTURE_DIRECTIVES.get(gesture_tag)
+        if directive:
+            # Gesture opener wins over affect opener — a deliberate thumbs-up is a stronger signal than inferred affect.
+            merged_opener = directive["opener_hint"]
 
-    air_writing_line = ""
+    air_writing_block = ""
     if air_written_text:
-        air_writing_line = f'\nThe user air-wrote: "{air_written_text}" — treat as supplementary intent.'
+        air_writing_block = (
+            f'\nThe user air-wrote: "{air_written_text}". '
+            "If this looks like a name, noun, or short phrase, "
+            "incorporate it verbatim into your response; "
+            "otherwise use it as a hint about what they're trying to say."
+        )
 
-    persona_instruction = _PERSONA_MOD_INSTRUCTIONS.get(
-        gen_cfg.get("persona_mod", "baseline"),
-        _PERSONA_MOD_INSTRUCTIONS["baseline"],
+    persona_mod = gen_cfg.get("persona_mod", "baseline")
+    persona_instruction_line = (
+        f"\n{_PERSONA_MOD_INSTRUCTIONS[persona_mod]}"
+        if persona_mod in _PERSONA_MOD_INSTRUCTIONS and persona_mod != "baseline"
+        else ""
     )
+
+    directive_lines = [
+        f"- Register: {style['register']}",
+        f"- Prefer words like: {_format_word_list(style['prefer_words'])}",
+        f"- Avoid words like: {_format_word_list(style['avoid_words'])}",
+        f"- Opener: {merged_opener or 'no constraint'}",
+    ]
+    if style.get("exemplar"):
+        directive_lines.append(
+            f'- In this register, a sentence sounds like: "{style["exemplar"]}"'
+        )
+    directive_block = "Style directive:\n" + "\n".join(directive_lines)
 
     turnaround_line = ""
     if rejected_response:
@@ -287,8 +281,7 @@ def _build_user(
     if intent_kind == "present_state":
         affect_hint = _AFFECT_HINTS.get(affect, _AFFECT_HINTS["NEUTRAL"])
         return f"""\
-{tone_tag}{gesture_line}{air_writing_line}{turnaround_line}
-{persona_instruction}
+{directive_block}{air_writing_block}{turnaround_line}{persona_instruction_line}
 
 The partner is asking about your present state (right now, today).
 Your autobiographical memories do NOT contain this — do not fabricate details from them.
@@ -307,8 +300,7 @@ Reply as {persona_name} in 1–2 sentences, first person.
 - Do NOT use autobiographical facts (job, family, hobbies) unless the partner asked."""
 
     return f"""\
-{tone_tag}{gesture_line}{air_writing_line}{turnaround_line}
-{persona_instruction}
+{directive_block}{air_writing_block}{turnaround_line}{persona_instruction_line}
 
 Personal memories:
 {memory_block}

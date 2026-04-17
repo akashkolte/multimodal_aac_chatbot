@@ -43,14 +43,25 @@ class IntentRoute(TypedDict):
     affect: str
 
 
+class StyleDirective(TypedDict):
+    tone_tag: str  # e.g. "[TONE:WARM]" — kept for logging + eval
+    register: str  # short register phrase, e.g. "warm, upbeat, affectionate"
+    prefer_words: list[str]  # lexical bias — words to steer toward
+    avoid_words: list[str]  # anti-patterns — words to steer away from
+    opener_hint: str | None  # structural hint for the opening clause
+    exemplar: str  # one short sentence in the target register
+
+
 class GenerationConfig(TypedDict):
     max_tokens: int
-    tone_tag: str  # e.g. "[TONE:WITTY_SARCASTIC]"
+    tone_tag: str  # legacy tag (kept in sync with style["tone_tag"] for existing log consumers)
     retrieval_mode: str  # "fast" | "full"
     persona_mod: str
     # persona_mod values:
     #   "amplify_quirks" | "suppress_humor" | "baseline"
     #   | "add_confirmation" | "turnaround"
+    #   | "reverse_stance" | "present_state_retry"
+    style: StyleDirective
 
 
 class LatencyLog(TypedDict):
