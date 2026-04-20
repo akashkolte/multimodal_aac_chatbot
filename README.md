@@ -386,7 +386,6 @@ Heads up: all camera/sensing stuff is in the frontend (MediaPipe JS). Backend ju
 ### Dataset
 
 - [x] **[Core]** Memories carry three chunk types per persona — `narrative`, `social_post`, `chat_log` — each with a `bucket` label. Type is preserved through the vector-store metadata and feeds the P(type) session prior.
-- [ ] **[Core]** Write down the data schema somewhere so evals can reuse it
 
 ### Sensing (frontend)
 
@@ -427,10 +426,10 @@ Heads up: all camera/sensing stuff is in the frontend (MediaPipe JS). Backend ju
 
 ### Generation
 
-- [ ] **[Core]** API returns one response. Should return multiple candidates so the user can pick (and so the next item works)
-- [ ] **[Core]** Frontend needs a candidate picker — show all the options, let the user click one, send the selection back
-- [ ] **[Bonus]** When user picks a candidate, save the `(query, picked)` pair to a side vector index and check it first next turn
-- [x] LLM temperature bumped from 0.4 → 0.8 in [backend/pipeline/nodes/planner.py](backend/pipeline/nodes/planner.py). The old setting produced near-identical responses across turns even when affect/gesture changed, which made the sensing→output link hard to see. 0.8 gives meaningful lexical variation while staying in the persona's voice.
+- [x] **[Core]** API returns 3 candidates (plus an optional side-index hit) on `/chat` — see `candidates` in [backend/api/main.py](backend/api/main.py) `ChatResponse`. Planner fans out three grounding strategies in parallel threads and dedupes identical outputs: **broad** (all retrieved personal chunks), **focused** (top chunk only), and **serendipitous** (random non-top chunks) — see `_pick_strategy_chunks` in [backend/pipeline/nodes/planner.py](backend/pipeline/nodes/planner.py). Turnaround/present-state retries skip the fan-out and regenerate a single response.
+- [x] **[Core]** Frontend picker shows stacked candidate cards with a strategy label under each; click to commit, which strikes the rest, locks the AAC bubble to the chosen text, and fires `POST /chat/pick`. One-candidate responses render as a normal bubble. See `handlePick` + `.candidate-list` in [frontend/src/components/ChatPanel.tsx](frontend/src/components/ChatPanel.tsx).
+- [x] **[Bonus]** Side-index at `data/pick_index/<uid>/` stores `(query embedding → picked text, strategy, picked_buckets)` after every pick. Two feedback loops into generation: (1) the retrieval node injects the previously-picked text as a `source: "prior_pick"` chunk rendered in a "you answered like this before" block — the three LLM candidates all see it and riff on it; (2) retrieval blends cumulative `bucket_pick_counts` into this turn's `bucket_priors` at weight 0.3 (transient — doesn't persist across turns), so users who historically pick family memories bias retrieval toward family without overriding the session prior. The raw picked text is also still surfaced as a standalone `side_index` candidate. See [backend/retrieval/pick_index.py](backend/retrieval/pick_index.py), `_blend_pick_history_into_priors` + `_prepend_prior_pick` in [backend/pipeline/nodes/retrieval.py](backend/pipeline/nodes/retrieval.py), and the prior-pick block in `_build_user` in [backend/pipeline/nodes/planner.py](backend/pipeline/nodes/planner.py).
+- [x] LLM temperature bumped from 0.4 → 0.8, then pulled back to 0.7 once chunk-variation became the primary diversity axis. With three different grounding strategies feeding three parallel calls, sampling noise matters less than which memories are in the context window.
 
 ### Evals
 
@@ -450,10 +449,15 @@ Scoring runs synchronously on the `/chat` response path and the `eval_scores` di
 - [x] **[Eval]** Multimodal alignment — affect scored by positive/negative lexicon overlap vs. target sentiment, gesture by opener-phrase regex (THUMBS_UP/THUMBS_DOWN/WAVING), gaze by fraction of retrieved chunks matching the looked-at bucket
 - [x] **[Eval]** Authenticity — per-turn stars under each assistant bubble, POST to `/feedback/rating`, logged with `run_id + rater_id`
 - [ ] **[Eval]** For the live in-class eval: figure out the actual session — who rates (partners + experts per spec), how many turns each, what gets shown to them. The Likert form is the easy part; the protocol isn't written down anywhere
+- [ ] **[Eval]** Relevance score — one NLI call per turn asking "does the response address the partner's query?" Fills the biggest current gap: a perfectly grounded but off-topic reply scores 100% grounded today and we'd never catch it
+- [ ] **[Eval]** Candidate diversity — mean pairwise cosine distance among the 3 candidates in a picker round. Low diversity = picker showing three paraphrases of the same answer (the "aloha" problem), which is a signal that retrieval or temperature needs tuning for that query
+- [ ] **[Eval]** Picker-aware metrics from `turns.jsonl` + `picks.jsonl`: which strategy wins most (`broad` vs `focused` vs `serendipitous` vs `side_index`), pick rate (% of turns where user clicked a card), regenerate rate (% of turns where user clicked "try again"). All computable offline, no runtime cost
+- [ ] **[Eval]** Score alternate candidates too, not just the selected one. Right now `compute_evals` only scores `selected_response`; scoring all 3 would let us measure whether the picker actually improves quality over taking candidate 0 blindly
+- [ ] **[Eval]** UI coverage gap: `compute_evals` returns 12 fields but `EvalPanel` renders only 5 pills (latency, grounded, affect, gesture, gaze). Hallucination rate, overall multimodal_alignment, SLO target/margin are computed and logged but never surfaced in the bubble. Decide what belongs as a pill vs a tooltip-only number vs an offline-only log field
+- [ ] **[Eval]** On pill hover, tooltip should explain *how* the number was computed, not just what it means. Today the `title` attributes say "Groundedness: fraction of response sentences supported by retrieved memories" — which is the definition but not the math. Want: "5/8 sentences had NLI entailment prob ≥ 0.5 against the retrieved chunks" for groundedness; "3/4 positive-lexicon words matched HAPPY target" for affect; raw scorer inputs + thresholds exposed inline so the number isn't a black box
 
 ### Cleanup
 
-- [ ] move the affect → `StyleDirective` config (`_AFFECT_CONFIG` in [intent.py](backend/pipeline/nodes/intent.py)) and the gesture directives ([labels.py](backend/sensing/labels.py)) out of code into a yaml
 - [x] delete `backend/sensing/` (dead code, sensing is in frontend) — done, only `labels.py` remains
 - [x] per-persona affect overrides (`_PERSONA_TONE_OVERRIDES`) deleted — redundant with `stylistic_preferences` in the new persona JSONs
 

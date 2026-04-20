@@ -180,6 +180,7 @@ def main() -> None:
             retrieval_mode_used="",
             augmented_prompt=None,
             candidates=[],
+            rejected_candidates=[],
             selected_response=None,
             llm_tier_used="",
             latency_log={

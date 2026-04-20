@@ -410,6 +410,110 @@ input[type="text"]:hover {
   color: #ffffff;
 }
 
+.badge-picker {
+  background: rgba(0, 0, 0, 0.08);
+  color: var(--text);
+}
+
+.badge-picked {
+  background: rgba(46, 160, 67, 0.18);
+  color: #2ea043;
+}
+
+.chat-bubble.picker {
+  background: transparent;
+  padding: 4px 0 0 0;
+  max-width: 85%;
+}
+
+.candidate-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 6px;
+}
+
+.candidate-card {
+  text-align: left;
+  background: var(--surface);
+  color: var(--text);
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  border-radius: 10px;
+  padding: 10px 12px;
+  cursor: pointer;
+  transition: border-color 120ms ease, background 120ms ease, transform 80ms ease;
+}
+
+.candidate-card:hover {
+  border-color: var(--accent);
+  background: rgba(59, 130, 246, 0.05);
+}
+
+.candidate-card:active {
+  transform: scale(0.995);
+}
+
+.candidate-strategy {
+  font-size: 11px;
+  color: rgba(0, 0, 0, 0.55);
+  margin-bottom: 4px;
+  text-transform: lowercase;
+  letter-spacing: 0.02em;
+}
+
+.candidate-text {
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+.candidate-list.rejected-round {
+  opacity: 0.55;
+  margin-bottom: 4px;
+}
+
+.rejected-round-label {
+  font-size: 10px;
+  color: rgba(0, 0, 0, 0.45);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 2px;
+}
+
+.candidate-card.rejected {
+  cursor: default;
+  background: rgba(0, 0, 0, 0.03);
+  border-color: rgba(0, 0, 0, 0.08);
+}
+
+.candidate-card.rejected .candidate-text {
+  text-decoration: line-through;
+  color: rgba(0, 0, 0, 0.55);
+}
+
+.candidate-card.rejected:hover {
+  border-color: rgba(0, 0, 0, 0.08);
+  background: rgba(0, 0, 0, 0.03);
+}
+
+.candidate-card.try-again {
+  border-style: dashed;
+  border-color: var(--accent);
+  background: rgba(59, 130, 246, 0.03);
+}
+
+.candidate-card.try-again .candidate-strategy {
+  color: var(--accent);
+}
+
+.candidate-card.try-again:hover:not(:disabled) {
+  background: rgba(59, 130, 246, 0.09);
+}
+
+.candidate-card:disabled {
+  opacity: 0.5;
+  cursor: wait;
+}
+
 .turnaround-btn {
   background: transparent !important;
   color: var(--accent) !important;

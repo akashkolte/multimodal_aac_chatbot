@@ -1,5 +1,6 @@
 # Two-tier LLM client — primary / fallback, both Ollama Cloud over OpenAI-compatible HTTP.
 import re
+from collections.abc import Iterator
 from functools import lru_cache
 from typing import Any
 
@@ -85,6 +86,56 @@ def chat_complete(
             f"[llm_client] WARNING: empty response after strip. finish_reason={resp.choices[0].finish_reason if resp.choices else 'none'}"
         )
     return stripped
+
+
+def chat_complete_stream(
+    messages: list[dict],
+    max_tokens: int,
+    tier: str | None = None,
+    temperature: float = 0.7,
+    **kwargs: Any,
+) -> Iterator[str]:
+    """Yield token deltas as they arrive. Thinking-mode stripping is applied
+    post-hoc on the buffered text by the caller — streaming <think>…</think>
+    into the UI would confuse the picker anyway.
+    """
+    resolved_tier = tier or settings.active_llm_tier
+    model = active_model(resolved_tier)
+    client = get_client(resolved_tier)
+
+    patched_messages = messages
+    extra_body: dict[str, Any] = kwargs.pop("extra_body", {})
+
+    if settings.thinking_mode == "suppress":
+        patched_messages = _apply_no_think(messages)
+
+    effective_max_tokens = max_tokens
+    if settings.thinking_mode in ("strip", "full"):
+        effective_max_tokens = max_tokens + settings.thinking_token_budget
+
+    stream = client.chat.completions.create(
+        model=model,
+        messages=patched_messages,
+        max_tokens=effective_max_tokens,
+        temperature=temperature,
+        stream=True,
+        extra_body=extra_body or None,
+        **kwargs,
+    )
+    for chunk in stream:
+        if not chunk.choices:
+            continue
+        delta = chunk.choices[0].delta
+        piece = getattr(delta, "content", None) or ""
+        if piece:
+            yield piece
+
+
+def finalize_streamed(text: str) -> str:
+    """Apply the same post-processing chat_complete does once a stream is done."""
+    if settings.thinking_mode in ("off", "strip"):
+        text = _strip_think_tags(text)
+    return text.strip()
 
 
 def warmup(tier: str | None = None) -> None:
