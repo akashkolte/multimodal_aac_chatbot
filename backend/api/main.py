@@ -98,6 +98,13 @@ def _reserve_eval_slot(run_id: str) -> None:
 # ── Request / response schemas ─────────────────────────────────────────────────
 
 
+class ResolvedIntent(BaseModel):
+    text: str
+    source: str  # voice_only | air_only | agree | conflict_air | conflict_voice | none
+    voice_text: str | None = None
+    air_text: str | None = None
+
+
 class ChatRequest(BaseModel):
     user_id: str
     query: str
@@ -106,6 +113,8 @@ class ChatRequest(BaseModel):
     gaze_bucket: str | None = None
     air_written_text: str | None = None
     head_signal: str | None = None  # "HEAD_SHAKE"|"HEAD_NOD_DISSATISFIED"
+    voice_text: str | None = None
+    resolved_intent: ResolvedIntent | None = None
 
 
 class TurnaroundRequest(BaseModel):
@@ -210,6 +219,10 @@ def _build_initial_state(req: ChatRequest, session: dict) -> PipelineState:
         gaze_bucket=req.gaze_bucket,
         air_written_text=req.air_written_text,
         head_signal=req.head_signal,
+        voice_text=req.voice_text,
+        resolved_intent=(
+            req.resolved_intent.model_dump() if req.resolved_intent else None
+        ),
         turnaround_triggered=False,
         raw_query=req.query,
         intent_route=None,

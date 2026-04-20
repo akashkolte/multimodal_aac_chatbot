@@ -28,6 +28,21 @@ export interface Persona {
   style: string;
 }
 
+export type ResolvedSource =
+  | "voice_only"
+  | "air_only"
+  | "agree"
+  | "conflict_air"
+  | "conflict_voice"
+  | "none";
+
+export interface ResolvedIntent {
+  text: string;
+  source: ResolvedSource;
+  voice_text: string | null;
+  air_text: string | null;
+}
+
 export interface ChatRequest {
   user_id: string;
   query: string;
@@ -36,6 +51,8 @@ export interface ChatRequest {
   gaze_bucket: MemoryBucket | null;
   air_written_text: string | null;
   head_signal?: HeadSignal | null;
+  voice_text?: string | null;
+  resolved_intent?: ResolvedIntent | null;
 }
 
 export interface TurnaroundRequest {

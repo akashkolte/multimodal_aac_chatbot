@@ -95,6 +95,7 @@ def _run_stream(state: PipelineState, tier: str) -> Iterator[dict]:
     style: StyleDirective = gen_cfg["style"]
     gesture_tag = state.get("gesture_tag")
     air_written_text = state.get("air_written_text")
+    resolved_intent = state.get("resolved_intent")
     turnaround_triggered = state.get("turnaround_triggered", False)
     rejected_response: str | None = None
     if turnaround_triggered:
@@ -195,6 +196,7 @@ def _run_stream(state: PipelineState, tier: str) -> Iterator[dict]:
             gen_cfg,
             gesture_tag=gesture_tag,
             air_written_text=air_written_text,
+            resolved_intent=resolved_intent,
             rejected_response=rejected_response,
             rejected_candidates=rejected_candidates,
             intent_kind=intent_kind,
@@ -367,6 +369,7 @@ def _run(state: PipelineState, tier: str) -> dict:
     style: StyleDirective = gen_cfg["style"]
     gesture_tag = state.get("gesture_tag")
     air_written_text = state.get("air_written_text")
+    resolved_intent = state.get("resolved_intent")
     turnaround_triggered = state.get("turnaround_triggered", False)
     rejected_response: str | None = None
     if turnaround_triggered:
@@ -409,6 +412,7 @@ def _run(state: PipelineState, tier: str) -> dict:
             gen_cfg,
             gesture_tag=gesture_tag,
             air_written_text=air_written_text,
+            resolved_intent=resolved_intent,
             rejected_response=rejected_response,
             rejected_candidates=rejected_candidates,
             intent_kind=intent_kind,
@@ -502,6 +506,7 @@ def _run(state: PipelineState, tier: str) -> dict:
         gen_cfg,
         gesture_tag=gesture_tag,
         air_written_text=air_written_text,
+        resolved_intent=resolved_intent,
         rejected_response=rejected_response,
         intent_kind=intent_kind,
         affect=affect,
@@ -541,6 +546,7 @@ def _build_messages(
     gen_cfg: dict,
     gesture_tag: str | None = None,
     air_written_text: str | None = None,
+    resolved_intent: dict | None = None,
     rejected_response: str | None = None,
     rejected_candidates: list[str] | None = None,
     intent_kind: str = "memory",
@@ -560,6 +566,7 @@ def _build_messages(
         gesture_tag,
         air_written_text,
         profile["name"],
+        resolved_intent=resolved_intent,
         rejected_response=rejected_response,
         rejected_candidates=rejected_candidates,
         intent_kind=intent_kind,
@@ -611,6 +618,69 @@ Answering rules:
 --- end character sheet ---"""
 
 
+def _safe_user_text(s: str) -> str:
+    # voice_text / air_text arrive from untrusted channels (Web Speech,
+    # air-writing DTW). They're f-stringed into LLM messages wrapped in
+    # double-quotes — a transcript containing `"` or newlines would break out
+    # of the quoted region and could inject instructions. Strip those and cap
+    # length. Same pattern as `safe_rejected` for `rejected_response`.
+    return s.replace('"', "'").replace("\n", " ").replace("\r", " ")[:200]
+
+
+def _format_multimodal_intent(
+    resolved: dict | None, air_written_text: str | None
+) -> str:
+    # Branch on resolved_intent.source so the model sees voice⇄air-writing
+    # disagreements explicitly instead of getting a single text without context.
+    if resolved:
+        source = resolved.get("source") or "none"
+        voice_t = _safe_user_text((resolved.get("voice_text") or "").strip())
+        air_t = _safe_user_text((resolved.get("air_text") or "").strip())
+        text = _safe_user_text((resolved.get("text") or "").strip())
+
+        if source == "voice_only" and voice_t:
+            return (
+                f'\nThe user spoke aloud: "{voice_t}". '
+                "Treat this as a supplement to the partner's question — "
+                "a hint or clarification about what they want."
+            )
+        if source == "air_only" and air_t:
+            return (
+                f'\nThe user air-wrote: "{air_t}". '
+                "If this looks like a name, noun, or short phrase, "
+                "incorporate it verbatim into your response; "
+                "otherwise use it as a hint about what they're trying to say."
+            )
+        if source == "agree" and text:
+            return (
+                f'\nThe user spoke and air-wrote the same thing: "{text}". '
+                "This is a strong signal — lean into it when shaping your reply."
+            )
+        if source == "conflict_air" and air_t:
+            return (
+                f'\nThe user spoke "{voice_t}" but also air-wrote "{air_t}". '
+                "The air-written token is a canonical AAC signal "
+                "(help/stop/water/done/more) — prioritise it over the spoken "
+                "words, which may have been misheard."
+            )
+        if source == "conflict_voice" and voice_t:
+            return (
+                f'\nThe user spoke "{voice_t}" but air-wrote "{air_t}" — '
+                "these don't match. The spoken form is richer; treat it as "
+                "the real intent and gently acknowledge the air-writing "
+                "may have been a mis-stroke."
+            )
+
+    if air_written_text:
+        return (
+            f'\nThe user air-wrote: "{_safe_user_text(air_written_text)}". '
+            "If this looks like a name, noun, or short phrase, "
+            "incorporate it verbatim into your response; "
+            "otherwise use it as a hint about what they're trying to say."
+        )
+    return ""
+
+
 def _build_user(
     chunks: list[dict],
     history: list[dict],
@@ -621,6 +691,7 @@ def _build_user(
     air_written_text: str | None,
     persona_name: str,
     *,
+    resolved_intent: dict | None = None,
     rejected_response: str | None = None,
     rejected_candidates: list[str] | None = None,
     intent_kind: str = "memory",
@@ -665,14 +736,7 @@ def _build_user(
             # Gesture opener wins over affect opener — a deliberate thumbs-up is a stronger signal than inferred affect.
             merged_opener = directive["opener_hint"]
 
-    air_writing_block = ""
-    if air_written_text:
-        air_writing_block = (
-            f'\nThe user air-wrote: "{air_written_text}". '
-            "If this looks like a name, noun, or short phrase, "
-            "incorporate it verbatim into your response; "
-            "otherwise use it as a hint about what they're trying to say."
-        )
+    air_writing_block = _format_multimodal_intent(resolved_intent, air_written_text)
 
     persona_mod = gen_cfg.get("persona_mod", "baseline")
     persona_instruction_line = (
