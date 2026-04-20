@@ -7,6 +7,7 @@ import type {
   SensingState,
 } from "../types";
 import {
+  pollEvals,
   sendPick,
   sendTurnaround,
   streamChat,
@@ -141,6 +142,7 @@ export function ChatPanel({
   // against the new turnaround bubble's own head-signal re-firing turnaround
   // on itself.
   const turnaroundConsumedTurnRef = useRef<number | null>(null);
+  const evalPollAbortsRef = useRef<Set<AbortController>>(new Set());
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -152,7 +154,38 @@ export function ChatPanel({
     lastTurnIdRef.current = null;
     turnaroundConsumedTurnRef.current = null;
     lastResponseTsRef.current = 0;
+    evalPollAbortsRef.current.forEach((ac) => ac.abort());
+    evalPollAbortsRef.current.clear();
   }, [userId]);
+
+  useEffect(() => {
+    const active = evalPollAbortsRef.current;
+    return () => {
+      active.forEach((ac) => ac.abort());
+      active.clear();
+    };
+  }, []);
+
+  const startEvalPolling = useCallback(
+    (runId: string | null | undefined) => {
+      if (!runId) return;
+      const ac = new AbortController();
+      evalPollAbortsRef.current.add(ac);
+      void pollEvals(runId, { signal: ac.signal })
+        .then((scores) => {
+          if (ac.signal.aborted || !scores) return;
+          setMessages((prev) =>
+            prev.map((m) =>
+              m.runId === runId ? { ...m, evalScores: scores } : m
+            )
+          );
+        })
+        .finally(() => {
+          evalPollAbortsRef.current.delete(ac);
+        });
+    },
+    [setMessages]
+  );
 
   const handleTurnaround = useCallback(
     async (reason: "head" | "manual") => {
@@ -188,7 +221,7 @@ export function ChatPanel({
             affect: res.affect,
             runId: res.run_id,
             turnId: res.turn_id,
-            evalScores: res.eval_scores ?? null,
+            evalScores: null,
             isTurnaround: true,
             candidates: res.candidates ?? [],
             picked: true,
@@ -196,6 +229,7 @@ export function ChatPanel({
           return next;
         });
         onLatency(res.latency);
+        startEvalPolling(res.run_id);
         // Do NOT advance lastResponseTsRef — keep the original turn's window so
         // the user can't head-shake the turnaround itself into another loop.
       } catch (e) {
@@ -223,6 +257,7 @@ export function ChatPanel({
       setMessages,
       onLatency,
       onHeadSignalConsumed,
+      startEvalPolling,
     ]
   );
 
@@ -312,11 +347,12 @@ export function ChatPanel({
                 affect: res.affect,
                 runId: res.run_id,
                 turnId: res.turn_id,
-                evalScores: res.eval_scores ?? null,
+                evalScores: null,
                 candidates: res.candidates ?? m.candidates ?? [],
                 picked: false,
               }));
               onLatency(res.latency);
+              startEvalPolling(res.run_id);
             }
           },
         );
@@ -337,6 +373,7 @@ export function ChatPanel({
       queueToken,
       flushNow,
       onLatency,
+      startEvalPolling,
     ]
   );
 
@@ -476,12 +513,13 @@ export function ChatPanel({
               affect: res.affect,
               runId: res.run_id,
               turnId: res.turn_id,
-              evalScores: res.eval_scores ?? null,
+              evalScores: null,
               candidates: res.candidates ?? m.candidates ?? [],
               picked: (res.candidates ?? []).length <= 1,
             }));
             onLatency(res.latency);
             lastResponseTsRef.current = performance.now();
+            startEvalPolling(res.run_id);
           }
         },
       );

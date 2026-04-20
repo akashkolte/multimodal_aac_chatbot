@@ -4,10 +4,12 @@ from __future__ import annotations
 import json
 import logging
 import re
+import threading
 import time
+from collections import OrderedDict
 from pathlib import Path
 
-from fastapi import FastAPI, HTTPException
+from fastapi import BackgroundTasks, FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel, Field
@@ -64,6 +66,33 @@ def _warmup():
 
 # ── In-memory session store (replace with Redis for multi-worker deployments) ──
 _sessions: dict[str, dict] = {}
+
+# Eval scores keyed by run_id, filled by a BackgroundTask after /chat returns
+# so the UI can render the response immediately and poll GET /evals/{run_id}.
+# Multi-worker deploys should swap this (and _sessions) for Redis.
+_EVAL_FAILED: dict = {"_failed": True}
+_eval_results: OrderedDict[str, dict] = OrderedDict()
+_eval_lock = threading.Lock()
+_EVAL_RESULTS_MAX = 200
+
+
+def _remember_eval(run_id: str, scores: dict | None) -> None:
+    value = scores if scores else _EVAL_FAILED
+    with _eval_lock:
+        _eval_results[run_id] = value
+        _eval_results.move_to_end(run_id)
+        while len(_eval_results) > _EVAL_RESULTS_MAX:
+            _eval_results.popitem(last=False)
+
+
+def _reserve_eval_slot(run_id: str) -> None:
+    """Mark a run_id as in-flight so /evals can report 'pending' vs 'unknown'."""
+    with _eval_lock:
+        if run_id not in _eval_results:
+            _eval_results[run_id] = {}  # empty dict = pending
+            _eval_results.move_to_end(run_id)
+            while len(_eval_results) > _EVAL_RESULTS_MAX:
+                _eval_results.popitem(last=False)
 
 
 # ── Request / response schemas ─────────────────────────────────────────────────
@@ -324,7 +353,10 @@ def _compute_and_persist_evals(
         )
     except Exception:
         _log.exception("evals scoring failed for run %s", run_id)
+        _remember_eval(run_id, None)
         return None
+
+    _remember_eval(run_id, scores)
 
     try:
         entry = {
@@ -345,7 +377,7 @@ def _compute_and_persist_evals(
 
 
 @app.post("/chat", response_model=ChatResponse)
-def chat(req: ChatRequest):
+def chat(req: ChatRequest, background_tasks: BackgroundTasks):
     guard = check_input(req.query)
     if not guard["allowed"]:
         return ChatResponse(
@@ -375,17 +407,21 @@ def chat(req: ChatRequest):
     affect_emotion = (result.get("affect") or {}).get("emotion", "NEUTRAL")
     run_id = result.get("run_id")
 
-    eval_scores = _compute_and_persist_evals(
-        run_id=run_id,
-        user_id=req.user_id,
-        turn_id=result["turn_id"],
-        response=result["selected_response"] or "",
-        chunks=list(result.get("retrieved_chunks") or []),
-        latency_log=dict(result.get("latency_log") or {}),
-        affect=affect_emotion,
-        gesture_tag=req.gesture_tag,
-        gaze_bucket=req.gaze_bucket,
-    )
+    # Evals (NLI cross-encoder) run off the response path; UI polls /evals.
+    if run_id and settings.evals_enabled:
+        _reserve_eval_slot(run_id)
+        background_tasks.add_task(
+            _compute_and_persist_evals,
+            run_id=run_id,
+            user_id=req.user_id,
+            turn_id=result["turn_id"],
+            response=result["selected_response"] or "",
+            chunks=list(result.get("retrieved_chunks") or []),
+            latency_log=dict(result.get("latency_log") or {}),
+            affect=affect_emotion,
+            gesture_tag=req.gesture_tag,
+            gaze_bucket=req.gaze_bucket,
+        )
 
     return ChatResponse(
         user_id=req.user_id,
@@ -400,7 +436,7 @@ def chat(req: ChatRequest):
         guardrail_passed=result.get("guardrail_passed", True),
         run_id=run_id,
         turn_id=result["turn_id"],
-        eval_scores=eval_scores,
+        eval_scores=None,
     )
 
 
@@ -412,7 +448,6 @@ def chat_stream(req: ChatRequest):
     """
     guard = check_input(req.query)
     if not guard["allowed"]:
-        # Mirror the non-stream /chat early-exit.
         payload = {
             "user_id": req.user_id,
             "query": req.query,
@@ -463,17 +498,24 @@ def chat_stream(req: ChatRequest):
         affect_emotion = (state.get("affect") or {}).get("emotion", "NEUTRAL")
         run_id = state.get("run_id")
 
-        eval_scores = _compute_and_persist_evals(
-            run_id=run_id,
-            user_id=req.user_id,
-            turn_id=state["turn_id"],
-            response=state["selected_response"] or "",
-            chunks=list(state.get("retrieved_chunks") or []),
-            latency_log=dict(state.get("latency_log") or {}),
-            affect=affect_emotion,
-            gesture_tag=req.gesture_tag,
-            gaze_bucket=req.gaze_bucket,
-        )
+        # Evals run off the response path; UI polls GET /evals/{run_id}.
+        if run_id and settings.evals_enabled:
+            _reserve_eval_slot(run_id)
+            threading.Thread(
+                target=_compute_and_persist_evals,
+                kwargs=dict(
+                    run_id=run_id,
+                    user_id=req.user_id,
+                    turn_id=state["turn_id"],
+                    response=state["selected_response"] or "",
+                    chunks=list(state.get("retrieved_chunks") or []),
+                    latency_log=dict(state.get("latency_log") or {}),
+                    affect=affect_emotion,
+                    gesture_tag=req.gesture_tag,
+                    gaze_bucket=req.gaze_bucket,
+                ),
+                daemon=True,
+            ).start()
 
         final = {
             "user_id": req.user_id,
@@ -488,7 +530,7 @@ def chat_stream(req: ChatRequest):
             "guardrail_passed": state.get("guardrail_passed", True),
             "run_id": run_id,
             "turn_id": state["turn_id"],
-            "eval_scores": eval_scores,
+            "eval_scores": None,
         }
         yield _sse({"type": "complete", "response": final})
 
@@ -503,8 +545,23 @@ def _sse(data: dict) -> str:
     return f"data: {json.dumps(data, ensure_ascii=False)}\n\n"
 
 
+@app.get("/evals/{run_id}")
+def get_evals(run_id: str):
+    if not _RUN_ID_RE.match(run_id):
+        raise HTTPException(status_code=400, detail="invalid run_id")
+    with _eval_lock:
+        entry = _eval_results.get(run_id)
+    if entry is None:
+        return {"status": "unknown", "run_id": run_id, "eval_scores": None}
+    if entry is _EVAL_FAILED:
+        return {"status": "failed", "run_id": run_id, "eval_scores": None}
+    if not entry:
+        return {"status": "pending", "run_id": run_id, "eval_scores": None}
+    return {"status": "ready", "run_id": run_id, "eval_scores": entry}
+
+
 @app.post("/chat/turnaround", response_model=ChatResponse)
-def chat_turnaround(req: TurnaroundRequest):
+def chat_turnaround(req: TurnaroundRequest, background_tasks: BackgroundTasks):
     if req.user_id not in _sessions:
         raise HTTPException(status_code=404, detail="no active session")
 
@@ -577,17 +634,20 @@ def chat_turnaround(req: TurnaroundRequest):
     affect_emotion = (replan_state.get("affect") or {}).get("emotion", "NEUTRAL")
     run_id = replan_state.get("run_id")
 
-    eval_scores = _compute_and_persist_evals(
-        run_id=run_id,
-        user_id=req.user_id,
-        turn_id=replan_state["turn_id"],
-        response=replan_state["selected_response"] or "",
-        chunks=list(replan_state.get("retrieved_chunks") or []),
-        latency_log=dict(replan_state.get("latency_log") or {}),
-        affect=affect_emotion,
-        gesture_tag=replan_state.get("gesture_tag"),
-        gaze_bucket=replan_state.get("gaze_bucket"),
-    )
+    if run_id and settings.evals_enabled:
+        _reserve_eval_slot(run_id)
+        background_tasks.add_task(
+            _compute_and_persist_evals,
+            run_id=run_id,
+            user_id=req.user_id,
+            turn_id=replan_state["turn_id"],
+            response=replan_state["selected_response"] or "",
+            chunks=list(replan_state.get("retrieved_chunks") or []),
+            latency_log=dict(replan_state.get("latency_log") or {}),
+            affect=affect_emotion,
+            gesture_tag=replan_state.get("gesture_tag"),
+            gaze_bucket=replan_state.get("gaze_bucket"),
+        )
 
     return ChatResponse(
         user_id=req.user_id,
@@ -884,7 +944,7 @@ def chat_regenerate(req: RegenerateRequest):
         guardrail_passed=replan_state.get("guardrail_passed", True),
         run_id=run_id,
         turn_id=replan_state["turn_id"],
-        eval_scores=eval_scores,
+        eval_scores=None,
     )
 
 

@@ -1,6 +1,7 @@
 import type {
   ChatRequest,
   ChatResponse,
+  EvalScores,
   Persona,
   TurnaroundRequest,
 } from "../types";
@@ -138,6 +139,56 @@ export async function sendPick(args: {
     body: JSON.stringify(args),
   });
   if (!res.ok) throw new Error(`API error: ${res.status}`);
+}
+
+export type EvalsStatus = "pending" | "ready" | "failed" | "unknown";
+export interface EvalsFetchResult {
+  status: EvalsStatus;
+  run_id: string;
+  eval_scores: EvalScores | null;
+}
+
+export async function fetchEvals(runId: string): Promise<EvalsFetchResult> {
+  const res = await fetch(`${API_BASE}/evals/${encodeURIComponent(runId)}`);
+  if (!res.ok) throw new Error(`API error: ${res.status}`);
+  return res.json();
+}
+
+export async function pollEvals(
+  runId: string,
+  opts: {
+    initialDelayMs?: number;
+    maxDelayMs?: number;
+    timeoutMs?: number;
+    signal?: AbortSignal;
+  } = {}
+): Promise<EvalScores | null> {
+  const maxDelayMs = opts.maxDelayMs ?? 2000;
+  const timeoutMs = opts.timeoutMs ?? 20000;
+  let delay = opts.initialDelayMs ?? 300;
+  const start = performance.now();
+  // Track consecutive "unknown" responses so transient race conditions (poll
+  // racing the server picking up the new run_id) don't immediately give up.
+  let unknownStreak = 0;
+  while (performance.now() - start < timeoutMs) {
+    if (opts.signal?.aborted) return null;
+    try {
+      const r = await fetchEvals(runId);
+      if (r.status === "ready") return r.eval_scores;
+      if (r.status === "failed") return null;
+      if (r.status === "unknown") {
+        unknownStreak += 1;
+        if (unknownStreak >= 3) return null;
+      } else {
+        unknownStreak = 0;
+      }
+    } catch (e) {
+      console.warn("pollEvals: transient error", e);
+    }
+    await new Promise((res) => setTimeout(res, delay));
+    delay = Math.min(delay * 2, maxDelayMs);
+  }
+  return null;
 }
 
 export async function submitRating(args: {
