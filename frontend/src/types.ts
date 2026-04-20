@@ -66,10 +66,23 @@ export interface EvalScores {
   gaze_alignment: number;
 }
 
+export type CandidateStrategy =
+  | "broad"
+  | "focused"
+  | "serendipitous"
+  | "side_index";
+
+export interface Candidate {
+  text: string;
+  strategy: CandidateStrategy | string;
+  grounded_buckets: string[];
+}
+
 export interface ChatResponse {
   user_id: string;
   query: string;
   response: string;
+  candidates: Candidate[];
   affect: string;
   llm_tier: string;
   retrieval_mode: string;
@@ -90,4 +103,10 @@ export interface ChatMessage {
   rephrased?: boolean;
   isTurnaround?: boolean;
   evalScores?: EvalScores | null;
+  candidates?: Candidate[];
+  // picked becomes true after the user clicks one — also locks in `content` to the picked text
+  picked?: boolean;
+  pickedIdx?: number;
+  // Candidates from prior regeneration rounds — rendered struck-through above the active picker
+  rejectedRounds?: Candidate[][];
 }

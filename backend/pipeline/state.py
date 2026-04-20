@@ -75,6 +75,13 @@ class LatencyLog(TypedDict):
 # ── Main pipeline state ────────────────────────────────────────────────────────
 
 
+class Candidate(TypedDict):
+    text: str
+    strategy: str  # "broad" | "focused" | "serendipitous" | "side_index"
+    # chunks fed as the primary grounding for this candidate (bucket/type only)
+    grounded_buckets: list[str]
+
+
 class PipelineState(TypedDict):
     # ── Session context (set at turn start, stable across nodes) ──────────────
     user_id: str
@@ -103,7 +110,8 @@ class PipelineState(TypedDict):
 
     # ── L4: Generation outputs ────────────────────────────────────────────────
     augmented_prompt: str | None
-    candidates: list[str]  # 2-3 candidate responses
+    candidates: list[Candidate]  # 2-3 candidate responses w/ strategy metadata
+    rejected_candidates: list[str]  # texts the user already dismissed this turn
     selected_response: str | None
     llm_tier_used: str  # "primary" | "fallback"
     llm_model_used: str  # actual model name (e.g. "gemma4:31b-cloud")

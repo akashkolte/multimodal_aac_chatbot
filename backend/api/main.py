@@ -9,6 +9,7 @@ from pathlib import Path
 
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import StreamingResponse
 from pydantic import BaseModel, Field
 
 from backend.config.settings import settings
@@ -18,11 +19,12 @@ from backend.generation.llm_client import (  # active_model used by /debug/confi
     get_client,
 )
 from backend.guardrails.checks import check_input
-from backend.pipeline.graph import run_pipeline
+from backend.pipeline.graph import choose_planner_tier, run_pipeline, run_until_planner
 from backend.pipeline.intent_kind import classify_intent_kind
 from backend.pipeline.nodes import feedback as feedback_node
 from backend.pipeline.nodes import planner as planner_node
 from backend.pipeline.state import PipelineState
+from backend.retrieval import pick_index
 from backend.retrieval.priors import BUCKETS, CHUNK_TYPES, uniform
 from backend.retrieval.vector_store import _get_embedder, retrieve
 
@@ -83,10 +85,17 @@ class TurnaroundRequest(BaseModel):
     head_signal: str | None = None
 
 
+class CandidateOut(BaseModel):
+    text: str
+    strategy: str
+    grounded_buckets: list[str] = []
+
+
 class ChatResponse(BaseModel):
     user_id: str
     query: str
     response: str
+    candidates: list[CandidateOut] = []
     affect: str
     llm_tier: str
     llm_model: str
@@ -96,6 +105,18 @@ class ChatResponse(BaseModel):
     run_id: str | None = None
     turn_id: int
     eval_scores: dict | None = None
+
+
+class PickRequest(BaseModel):
+    run_id: str = Field(min_length=1, max_length=64, pattern=_ID_PATTERN)
+    user_id: str = Field(min_length=1, max_length=64, pattern=_ID_PATTERN)
+    picked_idx: int = Field(ge=0, le=10)
+
+
+class RegenerateRequest(BaseModel):
+    user_id: str
+    turn_id: int | None = None
+    rejected_texts: list[str] = Field(default_factory=list, max_length=20)
 
 
 class RatingRequest(BaseModel):
@@ -170,6 +191,7 @@ def _build_initial_state(req: ChatRequest, session: dict) -> PipelineState:
         retrieval_mode_used="",
         augmented_prompt=None,
         candidates=[],
+        rejected_candidates=[],
         selected_response=None,
         llm_tier_used="",
         llm_model_used="",
@@ -330,6 +352,7 @@ def chat(req: ChatRequest):
             user_id=req.user_id,
             query=req.query,
             response=guard["fallback"],
+            candidates=[],
             affect="NEUTRAL",
             llm_tier="none",
             llm_model="none",
@@ -368,6 +391,7 @@ def chat(req: ChatRequest):
         user_id=req.user_id,
         query=req.query,
         response=result["selected_response"] or "",
+        candidates=[CandidateOut(**c) for c in result.get("candidates") or []],
         affect=affect_emotion,
         llm_tier=result.get("llm_tier_used", "unknown"),
         llm_model=result.get("llm_model_used", "unknown"),
@@ -378,6 +402,105 @@ def chat(req: ChatRequest):
         turn_id=result["turn_id"],
         eval_scores=eval_scores,
     )
+
+
+@app.post("/chat/stream")
+def chat_stream(req: ChatRequest):
+    """Server-Sent Events version of /chat. Runs intent + retrieval synchronously,
+    then streams planner candidate tokens as they arrive. Final event carries the
+    full ChatResponse-shaped payload.
+    """
+    guard = check_input(req.query)
+    if not guard["allowed"]:
+        # Mirror the non-stream /chat early-exit.
+        payload = {
+            "user_id": req.user_id,
+            "query": req.query,
+            "response": guard["fallback"],
+            "candidates": [],
+            "affect": "NEUTRAL",
+            "llm_tier": "none",
+            "llm_model": "none",
+            "retrieval_mode": "none",
+            "latency": {},
+            "guardrail_passed": False,
+            "turn_id": 0,
+            "run_id": None,
+            "eval_scores": None,
+        }
+
+        def _one_event():
+            yield _sse({"type": "complete", "response": payload})
+
+        return StreamingResponse(_one_event(), media_type="text/event-stream")
+
+    session = _get_or_init_session(req.user_id)
+    initial_state = _build_initial_state(req, session)
+
+    def _gen():
+        state = run_until_planner(initial_state)
+        tier = choose_planner_tier(state)
+
+        completion: dict | None = None
+        for evt in planner_node._run_stream(state, tier=tier):
+            if evt["type"] == "complete":
+                completion = evt["planner_update"]
+                break
+            yield _sse(evt)
+
+        if completion is None:
+            yield _sse({"type": "error", "message": "planner produced no completion"})
+            return
+
+        state.update(completion)  # type: ignore[typeddict-item]
+        state.update(feedback_node.run(state))  # type: ignore[typeddict-item]
+
+        session["session_history"] = state["session_history"]
+        session["bucket_priors"] = state["bucket_priors"]
+        session["type_priors"] = state["type_priors"]
+        session["last_state"] = state
+
+        affect_emotion = (state.get("affect") or {}).get("emotion", "NEUTRAL")
+        run_id = state.get("run_id")
+
+        eval_scores = _compute_and_persist_evals(
+            run_id=run_id,
+            user_id=req.user_id,
+            turn_id=state["turn_id"],
+            response=state["selected_response"] or "",
+            chunks=list(state.get("retrieved_chunks") or []),
+            latency_log=dict(state.get("latency_log") or {}),
+            affect=affect_emotion,
+            gesture_tag=req.gesture_tag,
+            gaze_bucket=req.gaze_bucket,
+        )
+
+        final = {
+            "user_id": req.user_id,
+            "query": req.query,
+            "response": state["selected_response"] or "",
+            "candidates": [dict(c) for c in state.get("candidates") or []],
+            "affect": affect_emotion,
+            "llm_tier": state.get("llm_tier_used", "unknown"),
+            "llm_model": state.get("llm_model_used", "unknown"),
+            "retrieval_mode": state.get("retrieval_mode_used", "unknown"),
+            "latency": state.get("latency_log") or {},
+            "guardrail_passed": state.get("guardrail_passed", True),
+            "run_id": run_id,
+            "turn_id": state["turn_id"],
+            "eval_scores": eval_scores,
+        }
+        yield _sse({"type": "complete", "response": final})
+
+    return StreamingResponse(
+        _gen(),
+        media_type="text/event-stream",
+        headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"},
+    )
+
+
+def _sse(data: dict) -> str:
+    return f"data: {json.dumps(data, ensure_ascii=False)}\n\n"
 
 
 @app.post("/chat/turnaround", response_model=ChatResponse)
@@ -470,6 +593,289 @@ def chat_turnaround(req: TurnaroundRequest):
         user_id=req.user_id,
         query=replan_state["raw_query"],
         response=replan_state["selected_response"] or "",
+        candidates=[CandidateOut(**c) for c in replan_state.get("candidates") or []],
+        affect=affect_emotion,
+        llm_tier=replan_state.get("llm_tier_used", "unknown"),
+        llm_model=replan_state.get("llm_model_used", "unknown"),
+        retrieval_mode=replan_state.get("retrieval_mode_used", "unknown"),
+        latency=replan_state.get("latency_log") or {},
+        guardrail_passed=replan_state.get("guardrail_passed", True),
+        run_id=run_id,
+        turn_id=replan_state["turn_id"],
+        eval_scores=eval_scores,
+    )
+
+
+def _find_turn_from_jsonl(run_id: str) -> dict | None:
+    """Scan turns.jsonl from the end for a matching run_id. Used as fallback
+    when the session's last_state has already moved on."""
+    path = Path(settings.logs_dir) / "turns.jsonl"
+    if not path.exists():
+        return None
+    try:
+        with open(path, encoding="utf-8") as f:
+            lines = f.readlines()
+    except OSError:
+        return None
+    for line in reversed(lines[-500:]):  # bounded tail scan
+        try:
+            row = json.loads(line)
+        except json.JSONDecodeError:
+            continue
+        if row.get("run_id") == run_id:
+            return row
+    return None
+
+
+@app.post("/chat/pick")
+def pick_candidate(req: PickRequest):
+    if not _RUN_ID_RE.match(req.run_id):
+        raise HTTPException(status_code=400, detail="invalid run_id")
+
+    session = _sessions.get(req.user_id) or {}
+    last = session.get("last_state") or {}
+    candidates = last.get("candidates") or []
+    query_text = last.get("raw_query") or ""
+
+    # Fallback: last_state already advanced past this run_id — read from JSONL
+    if last.get("run_id") != req.run_id or not candidates:
+        row = _find_turn_from_jsonl(req.run_id)
+        if not row:
+            raise HTTPException(status_code=404, detail="turn not found")
+        candidates = row.get("candidates") or []
+        query_text = row.get("query") or query_text
+
+    if req.picked_idx >= len(candidates):
+        raise HTTPException(status_code=400, detail="picked_idx out of range")
+
+    picked = candidates[req.picked_idx]
+    picked_text = picked.get("text", "")
+    strategy = picked.get("strategy", "unknown")
+    picked_buckets = [
+        b for b in (picked.get("grounded_buckets") or []) if b and b != "open_domain"
+    ]
+
+    if query_text and picked_text:
+        try:
+            pick_index.add(
+                query=query_text,
+                user_id=req.user_id,
+                strategy=strategy,
+                picked_text=picked_text,
+                picked_buckets=picked_buckets,
+            )
+        except Exception as exc:
+            _log.warning("pick_index add failed: %r", exc)
+
+    logs_dir = Path(settings.logs_dir)
+    logs_dir.mkdir(parents=True, exist_ok=True)
+    entry = {
+        "ts": time.time(),
+        "run_id": req.run_id,
+        "user_id": req.user_id,
+        "picked_idx": req.picked_idx,
+        "strategy": strategy,
+        "picked_text": picked_text,
+        "query": query_text,
+    }
+    with open(logs_dir / "picks.jsonl", "a", encoding="utf-8") as f:
+        f.write(json.dumps(entry, ensure_ascii=False) + "\n")
+
+    return {"status": "ok", "strategy": strategy}
+
+
+@app.post("/chat/regenerate/stream")
+def chat_regenerate_stream(req: RegenerateRequest):
+    """Streaming regenerate — same as /chat/stream but reuses last_state and
+    marks all prior candidates as rejected."""
+    if req.user_id not in _sessions:
+        raise HTTPException(status_code=404, detail="no active session")
+    session = _sessions[req.user_id]
+    last: PipelineState | None = session.get("last_state")
+    if last is None:
+        raise HTTPException(status_code=409, detail="no prior turn to regenerate")
+    if req.turn_id is not None and req.turn_id != last["turn_id"]:
+        raise HTTPException(status_code=409, detail="stale turn_id")
+
+    gen_cfg = dict(last.get("generation_config") or {})
+    gen_cfg["persona_mod"] = "all_rejected"
+    gen_cfg.setdefault("tone_tag", "[TONE:TRY_DIFFERENT_ANGLE]")
+
+    prior_rejected = [c.get("text", "") for c in (last.get("candidates") or [])]
+    merged = (
+        list(last.get("rejected_candidates") or [])
+        + [t for t in prior_rejected if t]
+        + [t for t in req.rejected_texts if t]
+    )
+    seen: set[str] = set()
+    rejected: list[str] = []
+    for t in merged:
+        key = t.strip().lower()
+        if key and key not in seen:
+            seen.add(key)
+            rejected.append(t)
+
+    trimmed_history = list(last.get("session_history") or [])
+    if trimmed_history and trimmed_history[-1].get("role") == "aac_user":
+        trimmed_history.pop()
+    if trimmed_history and trimmed_history[-1].get("role") == "partner":
+        trimmed_history.pop()
+
+    replan_state: PipelineState = dict(last)  # type: ignore[assignment]
+    replan_state["session_history"] = trimmed_history
+    replan_state["generation_config"] = gen_cfg
+    replan_state["rejected_candidates"] = rejected
+    replan_state["turnaround_triggered"] = False
+    replan_state["latency_log"] = {
+        "t_sensing": 0.0,
+        "t_intent": 0.0,
+        "t_retrieval": 0.0,
+        "t_generation": 0.0,
+        "t_total": 0.0,
+    }
+
+    def _gen():
+        completion: dict | None = None
+        for evt in planner_node._run_stream(replan_state, tier="primary"):
+            if evt["type"] == "complete":
+                completion = evt["planner_update"]
+                break
+            yield _sse(evt)
+        if completion is None:
+            yield _sse({"type": "error", "message": "planner produced no completion"})
+            return
+        replan_state.update(completion)  # type: ignore[typeddict-item]
+        replan_state.update(feedback_node.run(replan_state))  # type: ignore[typeddict-item]
+
+        session["session_history"] = replan_state["session_history"]
+        session["bucket_priors"] = replan_state["bucket_priors"]
+        session["type_priors"] = replan_state["type_priors"]
+        session["last_state"] = replan_state
+
+        affect_emotion = (replan_state.get("affect") or {}).get("emotion", "NEUTRAL")
+        run_id = replan_state.get("run_id")
+        eval_scores = _compute_and_persist_evals(
+            run_id=run_id,
+            user_id=req.user_id,
+            turn_id=replan_state["turn_id"],
+            response=replan_state["selected_response"] or "",
+            chunks=list(replan_state.get("retrieved_chunks") or []),
+            latency_log=dict(replan_state.get("latency_log") or {}),
+            affect=affect_emotion,
+            gesture_tag=replan_state.get("gesture_tag"),
+            gaze_bucket=replan_state.get("gaze_bucket"),
+        )
+        final = {
+            "user_id": req.user_id,
+            "query": replan_state["raw_query"],
+            "response": replan_state["selected_response"] or "",
+            "candidates": [dict(c) for c in replan_state.get("candidates") or []],
+            "affect": affect_emotion,
+            "llm_tier": replan_state.get("llm_tier_used", "unknown"),
+            "llm_model": replan_state.get("llm_model_used", "unknown"),
+            "retrieval_mode": replan_state.get("retrieval_mode_used", "unknown"),
+            "latency": replan_state.get("latency_log") or {},
+            "guardrail_passed": replan_state.get("guardrail_passed", True),
+            "run_id": run_id,
+            "turn_id": replan_state["turn_id"],
+            "eval_scores": eval_scores,
+        }
+        yield _sse({"type": "complete", "response": final})
+
+    return StreamingResponse(
+        _gen(),
+        media_type="text/event-stream",
+        headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"},
+    )
+
+
+@app.post("/chat/regenerate", response_model=ChatResponse)
+def chat_regenerate(req: RegenerateRequest):
+    """Re-run the planner for the same turn with all prior candidates marked rejected.
+    Does NOT advance turn_id — same partner query, fresh fan-out of candidates.
+    """
+    if req.user_id not in _sessions:
+        raise HTTPException(status_code=404, detail="no active session")
+    session = _sessions[req.user_id]
+    last: PipelineState | None = session.get("last_state")
+    if last is None:
+        raise HTTPException(status_code=409, detail="no prior turn to regenerate")
+    if req.turn_id is not None and req.turn_id != last["turn_id"]:
+        raise HTTPException(status_code=409, detail="stale turn_id")
+
+    gen_cfg = dict(last.get("generation_config") or {})
+    gen_cfg["persona_mod"] = "all_rejected"
+    gen_cfg.setdefault("tone_tag", "[TONE:TRY_DIFFERENT_ANGLE]")
+
+    prior_rejected = [c.get("text", "") for c in (last.get("candidates") or [])]
+    merged_rejected = (
+        list(last.get("rejected_candidates") or [])
+        + [t for t in prior_rejected if t]
+        + [t for t in req.rejected_texts if t]
+    )
+    # Dedupe while preserving order.
+    seen: set[str] = set()
+    rejected: list[str] = []
+    for t in merged_rejected:
+        key = t.strip().lower()
+        if key and key not in seen:
+            seen.add(key)
+            rejected.append(t)
+
+    # Strip the tail (partner, aac_user) so feedback doesn't stack duplicate
+    # history entries on every regenerate — the user hasn't committed yet.
+    trimmed_history = list(last.get("session_history") or [])
+    if trimmed_history and trimmed_history[-1].get("role") == "aac_user":
+        trimmed_history.pop()
+    if trimmed_history and trimmed_history[-1].get("role") == "partner":
+        trimmed_history.pop()
+
+    replan_state: PipelineState = dict(last)  # type: ignore[assignment]
+    replan_state["session_history"] = trimmed_history
+    replan_state["generation_config"] = gen_cfg
+    replan_state["rejected_candidates"] = rejected
+    replan_state["turnaround_triggered"] = False  # keep multi-shot
+    replan_state["latency_log"] = {
+        "t_sensing": 0.0,
+        "t_intent": 0.0,
+        "t_retrieval": 0.0,
+        "t_generation": 0.0,
+        "t_total": 0.0,
+    }
+
+    planner_update = planner_node.run_primary(replan_state)
+    replan_state.update(planner_update)  # type: ignore[typeddict-item]
+
+    # Feedback node rewrites history + assigns a new run_id. Each regenerate
+    # is its own row in turns.jsonl for the eval record.
+    feedback_update = feedback_node.run(replan_state)
+    replan_state.update(feedback_update)  # type: ignore[typeddict-item]
+
+    session["session_history"] = replan_state["session_history"]
+    session["bucket_priors"] = replan_state["bucket_priors"]
+    session["type_priors"] = replan_state["type_priors"]
+    session["last_state"] = replan_state
+
+    affect_emotion = (replan_state.get("affect") or {}).get("emotion", "NEUTRAL")
+    run_id = replan_state.get("run_id")
+
+    eval_scores = _compute_and_persist_evals(
+        run_id=run_id,
+        user_id=req.user_id,
+        turn_id=replan_state["turn_id"],
+        response=replan_state["selected_response"] or "",
+        chunks=list(replan_state.get("retrieved_chunks") or []),
+        latency_log=dict(replan_state.get("latency_log") or {}),
+        affect=affect_emotion,
+        gesture_tag=replan_state.get("gesture_tag"),
+        gaze_bucket=replan_state.get("gaze_bucket"),
+    )
+
+    return ChatResponse(
+        user_id=req.user_id,
+        query=replan_state["raw_query"],
+        response=replan_state["selected_response"] or "",
+        candidates=[CandidateOut(**c) for c in replan_state.get("candidates") or []],
         affect=affect_emotion,
         llm_tier=replan_state.get("llm_tier_used", "unknown"),
         llm_model=replan_state.get("llm_model_used", "unknown"),

@@ -39,12 +39,14 @@ def _log_to_jsonl(
     latency = state.get("latency_log") or {}
     affect = (state.get("affect") or {}).get("emotion", "UNKNOWN")
     chunks = state.get("retrieved_chunks") or []
+    candidates = state.get("candidates") or []
 
     entry = {
         "run_id": run_id,
         "ts": time.time(),
         "user_id": state["user_id"],
         "turn_id": state["turn_id"],
+        "query": state["raw_query"],
         "llm_tier": state.get("llm_tier_used", "unknown"),
         "retrieval_mode": state.get("retrieval_mode_used", "unknown"),
         "affect": affect,
@@ -57,6 +59,7 @@ def _log_to_jsonl(
         ),
         "num_contextual": sum(1 for c in chunks if c.get("source") == "contextual"),
         "num_open_domain": sum(1 for c in chunks if c.get("source") == "open_domain"),
+        "num_prior_pick": sum(1 for c in chunks if c.get("source") == "prior_pick"),
         "latency": {
             "t_sensing": latency.get("t_sensing", 0.0),
             "t_intent": latency.get("t_intent", 0.0),
@@ -65,6 +68,8 @@ def _log_to_jsonl(
             "t_total": latency.get("t_total", 0.0),
         },
         "response": state.get("selected_response") or "",
+        "candidates": [dict(c) for c in candidates],
+        "n_candidates": len(candidates),
         "bucket_priors_after": bucket_priors_after,
         "type_priors_after": type_priors_after,
     }

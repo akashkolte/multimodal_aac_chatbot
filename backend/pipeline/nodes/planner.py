@@ -1,11 +1,31 @@
+import concurrent.futures
+import queue
+import random
+import threading
 import time
+from collections.abc import Iterator
 
 from backend.config.settings import settings
-from backend.generation.llm_client import active_model, chat_complete
+from backend.generation.llm_client import (
+    active_model,
+    chat_complete,
+    chat_complete_stream,
+    finalize_streamed,
+)
 from backend.guardrails.checks import check_output
 from backend.pipeline.intent_kind import classify_intent_kind
-from backend.pipeline.state import PipelineState, StyleDirective
+from backend.pipeline.state import Candidate, PipelineState, StyleDirective
+from backend.retrieval import pick_index
 from backend.sensing.labels import GESTURE_DIRECTIVES
+
+# For present-state fan-out: three fixed emotional reads the persona can
+# project, so the user can pick among "good / fine / not great" rather than
+# three paraphrases of one mood.
+_PRESENT_STATE_STRATEGIES = [
+    ("present_good", "HAPPY"),
+    ("present_fine", "NEUTRAL"),
+    ("present_rough", "FRUSTRATED"),
+]
 
 _PERSONA_MOD_INSTRUCTIONS = {
     "amplify_quirks": "Amplify your characteristic style and personality.",
@@ -30,6 +50,12 @@ _PERSONA_MOD_INSTRUCTIONS = {
         "read (if you said 'good', try 'not great') or honestly admit "
         "you're not sure how you feel right now. Do NOT invent details."
     ),
+    "all_rejected": (
+        "The user rejected every option you gave last time. Try a "
+        "meaningfully different angle — different memory focus, different "
+        "emotional register, or admit you don't have a clean answer. Do "
+        "NOT re-use wording from the rejected options."
+    ),
 }
 
 
@@ -39,6 +65,294 @@ def run_primary(state: PipelineState) -> dict:
 
 def run_fallback(state: PipelineState) -> dict:
     return _run(state, tier="fallback")
+
+
+def run_primary_stream(state: PipelineState) -> Iterator[dict]:
+    """Token-level streaming variant of the planner.
+
+    Yields events as tokens arrive across all concurrent candidate streams:
+      {"type": "candidate_start", "idx": 0, "strategy": "broad", "grounded_buckets": [...]}
+      {"type": "token", "idx": 0, "delta": "Hello"}
+      {"type": "candidate_done", "idx": 0, "text": "Hello world."}
+      {"type": "side_index", "text": "..."}   (optional, at start if there's a hit)
+      {"type": "complete", "candidates": [...], "selected_response": "...", ... final state dict}
+    """
+    yield from _run_stream(state, tier="primary")
+
+
+_STREAM_SENTINEL = object()
+
+
+def _run_stream(state: PipelineState, tier: str) -> Iterator[dict]:
+    t0 = time.perf_counter()
+
+    profile = state["persona_profile"]
+    affect = (state.get("affect") or {}).get("emotion", "NEUTRAL")
+    gen_cfg = state.get("generation_config") or {}
+    chunks = state.get("retrieved_chunks") or []
+    history = (state.get("session_history") or [])[-20:]
+
+    style: StyleDirective = gen_cfg["style"]
+    gesture_tag = state.get("gesture_tag")
+    air_written_text = state.get("air_written_text")
+    turnaround_triggered = state.get("turnaround_triggered", False)
+    rejected_response: str | None = None
+    if turnaround_triggered:
+        rejected_response = state.get("selected_response")
+    rejected_candidates: list[str] = list(state.get("rejected_candidates") or [])
+    intent_kind = classify_intent_kind(state.get("intent_route"))
+    max_tokens = gen_cfg.get("max_tokens", settings.max_tokens_neutral)
+
+    # Turnaround rephrases are single-shot; everything else fans out.
+    # Present-state varies affect (good/fine/rough), memory questions vary
+    # which chunks are primary (broad/focused/serendipitous).
+    single_shot = turnaround_triggered
+    is_present_state = intent_kind == "present_state"
+    if single_shot:
+        strategies: list[tuple[str, str | None]] = [("focused", None)]
+    elif is_present_state:
+        strategies = list(_PRESENT_STATE_STRATEGIES)
+    else:
+        strategies = [
+            ("broad", None),
+            ("focused", None),
+            ("serendipitous", None),
+        ]
+    # Higher temp on regenerate; also bump for present-state since three
+    # strategies share the same (empty) grounding and need sampling noise.
+    base_temp = 1.0 if (rejected_candidates or is_present_state) else 0.7
+
+    # Optional side-index hit — surface as an extra card right away, not generated.
+    side_index_candidate: Candidate | None = None
+    if not single_shot and not is_present_state:
+        try:
+            hit = pick_index.lookup(
+                query=state["raw_query"],
+                user_id=state["user_id"],
+                threshold=0.85,
+            )
+        except Exception as exc:
+            print(f"[planner] pick_index lookup failed: {exc!r}")
+            hit = None
+        if hit:
+            text = (hit.get("picked_text") or "").strip()
+            if text:
+                side_index_candidate = Candidate(
+                    text=text,
+                    strategy="side_index",
+                    grounded_buckets=[],
+                )
+
+    # Pre-announce each candidate slot so the UI can draw empty cards immediately.
+    cards: list[dict] = []
+    if side_index_candidate:
+        cards.append({"strategy": "side_index", "grounded_buckets": []})
+    for strategy_name, _affect_override in strategies:
+        if is_present_state:
+            card_buckets: list[str] = []
+        else:
+            strategy_chunks = _pick_strategy_chunks(list(chunks), strategy_name)
+            card_buckets = [c.get("bucket", "") for c in strategy_chunks]
+        cards.append(
+            {
+                "strategy": strategy_name,
+                "grounded_buckets": card_buckets,
+            }
+        )
+    for idx, card in enumerate(cards):
+        yield {
+            "type": "candidate_start",
+            "idx": idx,
+            "strategy": card["strategy"],
+            "grounded_buckets": card["grounded_buckets"],
+        }
+    if side_index_candidate is not None:
+        yield {
+            "type": "candidate_done",
+            "idx": 0,
+            "text": side_index_candidate["text"],
+        }
+
+    # Spawn a worker thread per strategy. Each one streams tokens into a shared
+    # queue; the generator forwards them as SSE events.
+    llm_cards_offset = 1 if side_index_candidate else 0
+    evt_queue: queue.Queue[dict | object] = queue.Queue()
+    completed: list[Candidate | None] = [None] * len(strategies)
+    completed_lock = threading.Lock()
+
+    def _worker(slot: int, strategy: str, affect_override: str | None) -> None:
+        if is_present_state:
+            strategy_chunks = []  # present-state has no memory grounding
+        else:
+            strategy_chunks = _pick_strategy_chunks(list(chunks), strategy)
+        effective_affect = affect_override if affect_override is not None else affect
+        messages = _build_messages(
+            profile,
+            strategy_chunks,
+            history,
+            state["raw_query"],
+            style,
+            gen_cfg,
+            gesture_tag=gesture_tag,
+            air_written_text=air_written_text,
+            rejected_response=rejected_response,
+            rejected_candidates=rejected_candidates,
+            intent_kind=intent_kind,
+            affect=effective_affect,
+        )
+        buf: list[str] = []
+        try:
+            for piece in chat_complete_stream(
+                messages=messages,
+                max_tokens=max_tokens,
+                temperature=base_temp,
+                tier=tier,
+            ):
+                buf.append(piece)
+                evt_queue.put(
+                    {
+                        "type": "token",
+                        "idx": llm_cards_offset + slot,
+                        "delta": piece,
+                    }
+                )
+        except Exception as exc:
+            evt_queue.put(
+                {
+                    "type": "candidate_error",
+                    "idx": llm_cards_offset + slot,
+                    "error": repr(exc),
+                }
+            )
+            with completed_lock:
+                completed[slot] = None
+            evt_queue.put(_STREAM_SENTINEL)
+            return
+
+        final = finalize_streamed("".join(buf))
+        guard = check_output(final, strategy_chunks)
+        if not guard["passed"]:
+            final = guard["fallback"]
+        cand = Candidate(
+            text=final,
+            strategy=strategy,
+            grounded_buckets=[c.get("bucket", "") for c in strategy_chunks],
+        )
+        with completed_lock:
+            completed[slot] = cand
+        evt_queue.put(
+            {
+                "type": "candidate_done",
+                "idx": llm_cards_offset + slot,
+                "text": final,
+            }
+        )
+        evt_queue.put(_STREAM_SENTINEL)
+
+    threads = [
+        threading.Thread(target=_worker, args=(i, s, a), daemon=True)
+        for i, (s, a) in enumerate(strategies)
+    ]
+    for t in threads:
+        t.start()
+
+    remaining = len(threads)
+    while remaining > 0:
+        evt = evt_queue.get()
+        if evt is _STREAM_SENTINEL:
+            remaining -= 1
+            continue
+        yield evt  # type: ignore[misc]
+
+    for t in threads:
+        t.join()
+
+    with completed_lock:
+        llm_cands = [c for c in completed if c is not None]
+    all_cands: list[Candidate] = []
+    if side_index_candidate is not None:
+        all_cands.append(side_index_candidate)
+    all_cands.extend(llm_cands)
+
+    # De-dupe against rejected + each other.
+    seen: set[str] = {r.strip().lower() for r in rejected_candidates if r}
+    uniq: list[Candidate] = []
+    for c in all_cands:
+        key = c["text"].strip().lower()
+        if key and key not in seen:
+            seen.add(key)
+            uniq.append(c)
+    if not uniq:
+        # Every candidate was a dup-of-rejected or guardrail-rejected. Surface
+        # a non-empty placeholder so the UI isn't showing a blank bubble and
+        # the user knows they can regenerate. Logged so we notice if this ever
+        # fires in practice — it means something upstream collapsed.
+        print(
+            f"[planner] empty-candidate fallback fired "
+            f"user={state.get('user_id')!r} turn_id={state.get('turn_id')} "
+            f"raw_query={state.get('raw_query', '')[:80]!r}"
+        )
+        uniq = all_cands[:1] or [
+            Candidate(
+                text="I'm not sure how to answer that — try asking in a different way.",
+                strategy="empty",
+                grounded_buckets=[],
+            )
+        ]
+
+    selected = uniq[0]["text"]
+
+    t_gen = time.perf_counter() - t0
+    latency_log = dict(state.get("latency_log") or {})
+    latency_log["t_generation"] = round(t_gen, 4)
+    latency_log["t_total"] = round(
+        latency_log.get("t_sensing", 0)
+        + latency_log.get("t_intent", 0)
+        + latency_log.get("t_retrieval", 0)
+        + t_gen,
+        4,
+    )
+
+    yield {
+        "type": "complete",
+        "planner_update": {
+            "augmented_prompt": None,  # skipping for streaming — not worth rebuilding
+            "candidates": uniq,
+            "selected_response": selected,
+            "llm_tier_used": tier,
+            "llm_model_used": active_model(tier),
+            "latency_log": latency_log,
+            "guardrail_passed": True,
+        },
+    }
+
+
+def _pick_strategy_chunks(all_chunks: list[dict], strategy: str) -> list[dict]:
+    """Select which chunks become the *primary* grounding for a candidate.
+    Non-personal chunks (contextual, open_domain) always pass through —
+    they're small and query-grounded, not memory variation.
+    """
+    personal = [c for c in all_chunks if c.get("source", "personal") == "personal"]
+    others = [c for c in all_chunks if c.get("source", "personal") != "personal"]
+
+    if not personal:
+        return all_chunks
+
+    if strategy == "broad":
+        chosen = personal
+    elif strategy == "focused":
+        chosen = personal[:1]
+    elif strategy == "serendipitous":
+        if len(personal) >= 2:
+            pool = personal[1:]
+            k = min(len(pool), max(1, len(personal) - 1))
+            chosen = random.sample(pool, k)
+        else:
+            chosen = personal
+    else:
+        chosen = personal
+
+    return chosen + others
 
 
 def _run(state: PipelineState, tier: str) -> dict:
@@ -57,31 +371,114 @@ def _run(state: PipelineState, tier: str) -> dict:
     rejected_response: str | None = None
     if turnaround_triggered:
         rejected_response = state.get("selected_response")
+    rejected_candidates: list[str] = list(state.get("rejected_candidates") or [])
     intent_kind = classify_intent_kind(state.get("intent_route"))
-    messages = _build_messages(
-        profile,
-        chunks,
-        history,
-        state["raw_query"],
-        style,
-        gen_cfg,
-        gesture_tag=gesture_tag,
-        air_written_text=air_written_text,
-        rejected_response=rejected_response,
-        intent_kind=intent_kind,
-        affect=affect,
-    )
+    max_tokens = gen_cfg.get("max_tokens", settings.max_tokens_neutral)
 
-    selected = chat_complete(
-        messages=messages,
-        max_tokens=gen_cfg.get("max_tokens", settings.max_tokens_neutral),
-        temperature=0.8,
-        tier=tier,
-    )
+    # Turnaround rephrases are single-shot; everything else fans out. Present-
+    # state varies affect (good/fine/rough), memory questions vary chunks
+    # (broad/focused/serendipitous).
+    single_shot = turnaround_triggered
+    is_present_state = intent_kind == "present_state"
+    if single_shot:
+        strategies_cfg: list[tuple[str, str | None]] = [("focused", None)]
+    elif is_present_state:
+        strategies_cfg = list(_PRESENT_STATE_STRATEGIES)
+    else:
+        strategies_cfg = [
+            ("broad", None),
+            ("focused", None),
+            ("serendipitous", None),
+        ]
 
-    guard = check_output(selected, chunks)
-    if not guard["passed"]:
-        selected = guard["fallback"]
+    base_temp = 1.0 if (rejected_candidates or is_present_state) else 0.7
+
+    def _gen_one(cfg: tuple[str, str | None]) -> Candidate:
+        strategy, affect_override = cfg
+        if is_present_state:
+            strategy_chunks: list[dict] = []
+        else:
+            strategy_chunks = _pick_strategy_chunks(list(chunks), strategy)
+        effective_affect = affect_override if affect_override is not None else affect
+        messages = _build_messages(
+            profile,
+            strategy_chunks,
+            history,
+            state["raw_query"],
+            style,
+            gen_cfg,
+            gesture_tag=gesture_tag,
+            air_written_text=air_written_text,
+            rejected_response=rejected_response,
+            rejected_candidates=rejected_candidates,
+            intent_kind=intent_kind,
+            affect=effective_affect,
+        )
+        text = chat_complete(
+            messages=messages,
+            max_tokens=max_tokens,
+            temperature=base_temp,
+            tier=tier,
+        )
+        guard = check_output(text, strategy_chunks)
+        if not guard["passed"]:
+            text = guard["fallback"]
+        return Candidate(
+            text=text,
+            strategy=strategy,
+            grounded_buckets=[c.get("bucket", "") for c in strategy_chunks],
+        )
+
+    if len(strategies_cfg) == 1:
+        candidates = [_gen_one(strategies_cfg[0])]
+    else:
+        with concurrent.futures.ThreadPoolExecutor(
+            max_workers=len(strategies_cfg)
+        ) as pool:
+            candidates = list(pool.map(_gen_one, strategies_cfg))
+
+    # Side-index hit: if the user has picked a similar query before, surface the
+    # previously-picked text as an extra candidate. Not generated by the LLM;
+    # skipped on single-shot (turnaround/present-state) so rephrases always
+    # produce fresh text.
+    if not single_shot and not is_present_state:
+        try:
+            hit = pick_index.lookup(
+                query=state["raw_query"],
+                user_id=state["user_id"],
+                threshold=0.85,
+            )
+        except Exception as exc:
+            print(f"[planner] pick_index lookup failed: {exc!r}")
+            hit = None
+        if hit:
+            text = hit.get("picked_text", "").strip()
+            if text and text.lower() not in {
+                c["text"].strip().lower() for c in candidates
+            }:
+                candidates.insert(
+                    0,
+                    Candidate(
+                        text=text,
+                        strategy="side_index",
+                        grounded_buckets=[],
+                    ),
+                )
+
+    # De-dupe by normalised text — if two strategies produced the same response,
+    # keep the first. Also exclude anything the user already rejected this turn.
+    # Don't retry; latency budget matters more than N=3 on the dot.
+    seen: set[str] = {r.strip().lower() for r in rejected_candidates if r}
+    uniq: list[Candidate] = []
+    for c in candidates:
+        key = c["text"].strip().lower()
+        if key and key not in seen:
+            seen.add(key)
+            uniq.append(c)
+    if not uniq:
+        uniq = candidates[:1]  # every guardrail rejected — fall back to the first
+
+    selected = uniq[0]["text"]
 
     t_gen = time.perf_counter() - t0
     latency_log = dict(state.get("latency_log") or {})
@@ -94,15 +491,32 @@ def _run(state: PipelineState, tier: str) -> dict:
         4,
     )
 
-    augmented_prompt = "\n\n".join(f"[{m['role']}] {m['content']}" for m in messages)
+    # Represent the default-candidate prompt in augmented_prompt for logging.
+    default_strategy_chunks = _pick_strategy_chunks(list(chunks), uniq[0]["strategy"])
+    default_messages = _build_messages(
+        profile,
+        default_strategy_chunks,
+        history,
+        state["raw_query"],
+        style,
+        gen_cfg,
+        gesture_tag=gesture_tag,
+        air_written_text=air_written_text,
+        rejected_response=rejected_response,
+        intent_kind=intent_kind,
+        affect=affect,
+    )
+    augmented_prompt = "\n\n".join(
+        f"[{m['role']}] {m['content']}" for m in default_messages
+    )
     return {
         "augmented_prompt": augmented_prompt,
-        "candidates": [selected],
+        "candidates": uniq,
         "selected_response": selected,
         "llm_tier_used": tier,
         "llm_model_used": active_model(tier),
         "latency_log": latency_log,
-        "guardrail_passed": guard["passed"],
+        "guardrail_passed": True,
     }
 
 
@@ -128,6 +542,7 @@ def _build_messages(
     gesture_tag: str | None = None,
     air_written_text: str | None = None,
     rejected_response: str | None = None,
+    rejected_candidates: list[str] | None = None,
     intent_kind: str = "memory",
     affect: str = "NEUTRAL",
 ) -> list[dict]:
@@ -146,6 +561,7 @@ def _build_messages(
         air_written_text,
         profile["name"],
         rejected_response=rejected_response,
+        rejected_candidates=rejected_candidates,
         intent_kind=intent_kind,
         affect=affect,
     )
@@ -206,12 +622,14 @@ def _build_user(
     persona_name: str,
     *,
     rejected_response: str | None = None,
+    rejected_candidates: list[str] | None = None,
     intent_kind: str = "memory",
     affect: str = "NEUTRAL",
 ) -> str:
     personal_chunks = [c for c in chunks if c.get("source", "personal") == "personal"]
     contextual_chunks = [c for c in chunks if c.get("source") == "contextual"]
     open_domain_chunks = [c for c in chunks if c.get("source") == "open_domain"]
+    prior_pick_chunks = [c for c in chunks if c.get("source") == "prior_pick"]
 
     memory_block = (
         "\n".join(
@@ -219,6 +637,11 @@ def _build_user(
             for c in personal_chunks
         )
         or "  (no memories retrieved)"
+    )
+    prior_pick_block = (
+        "\n".join(f"  {c['text']}" for c in prior_pick_chunks)
+        if prior_pick_chunks
+        else ""
     )
     contextual_block = (
         "\n".join(f"  {c['text']}" for c in contextual_chunks)
@@ -277,6 +700,15 @@ def _build_user(
             f"\nYour previous reply (which you need to replace, not repeat): "
             f'"{safe_rejected}"'
         )
+    if rejected_candidates:
+        safe_list = [
+            r.replace('"', "'").replace("\n", " ")[:300] for r in rejected_candidates
+        ][:10]
+        rejected_block = "\n".join(f'  - "{r}"' for r in safe_list)
+        turnaround_line += (
+            f"\nThe user rejected these options you gave last time "
+            f"(do NOT re-use their wording or angle):\n{rejected_block}"
+        )
 
     if intent_kind == "present_state":
         affect_hint = _AFFECT_HINTS.get(affect, _AFFECT_HINTS["NEUTRAL"])
@@ -299,8 +731,16 @@ Reply as {persona_name} in 1–2 sentences, first person.
 - If the affect read is NEUTRAL or doesn't match what you'd say, it's better to say "I'm not sure" or "honestly, I don't really know right now" than to invent.
 - Do NOT use autobiographical facts (job, family, hobbies) unless the partner asked."""
 
+    prior_pick_section = (
+        f"\n\nWhen asked this kind of thing before, you answered like:\n{prior_pick_block}\n"
+        "Treat this as your own prior voice — re-use the phrasing if it still fits, "
+        "or stay in the same register if you'd answer slightly differently now."
+        if prior_pick_block
+        else ""
+    )
+
     return f"""\
-{directive_block}{air_writing_block}{turnaround_line}{persona_instruction_line}
+{directive_block}{air_writing_block}{turnaround_line}{persona_instruction_line}{prior_pick_section}
 
 Personal memories:
 {memory_block}

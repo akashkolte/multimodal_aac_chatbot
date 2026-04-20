@@ -18,6 +18,7 @@ env/
 
 # Data — indexes are rebuilt from source; do NOT commit binaries
 data/vector_store/
+data/pick_index/
 
 # Per-turn JSONL logs (contain user conversation content)
 logs/

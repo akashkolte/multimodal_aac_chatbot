@@ -34,3 +34,19 @@ def run_pipeline(state: PipelineState) -> PipelineState:
 
     _merge(state, feedback.run(state))
     return state
+
+
+def run_until_planner(state: PipelineState) -> PipelineState:
+    """Run intent + retrieval only. Used by the streaming endpoint so it can
+    then drive the planner's token stream itself and call feedback at the end.
+    """
+    _merge(state, intent.run(state))
+    if _route_by_affect(state) == "fast":
+        _merge(state, retrieval.run_fast(state))
+    else:
+        _merge(state, retrieval.run_full(state))
+    return state
+
+
+def choose_planner_tier(state: PipelineState) -> str:
+    return _route_by_latency(state)
