@@ -256,18 +256,21 @@ def run(state: PipelineState) -> dict:
             }
         ]
 
-    air_written = state.get("air_written_text")
-    if air_written:
-        # Classify the air-written supplement the same way as a normal fragment
-        # so a present-tense supplement ("tired") on a present-state question
+    # Prefer resolved_intent.text when the frontend did voice⇄air reconciliation;
+    # fall back to raw air_written_text when no voice was captured.
+    resolved = state.get("resolved_intent") or {}
+    supplement = (resolved.get("text") or "").strip() or state.get("air_written_text")
+    if supplement:
+        # Classify the supplement the same way as a normal fragment so a
+        # present-tense supplement ("tired") on a present-state question
         # doesn't silently flip the route to PERSONAL and re-enable retrieval.
-        air_cls = _classify(air_written)
+        sup_cls = _classify(supplement)
         sub_intents.append(
             {
-                "type": air_cls,
-                "query": air_written,
-                "bucket_hint": infer_bucket(air_written)
-                if air_cls == "PERSONAL"
+                "type": sup_cls,
+                "query": supplement,
+                "bucket_hint": infer_bucket(supplement)
+                if sup_cls == "PERSONAL"
                 else None,
                 "priority": priority,
             }

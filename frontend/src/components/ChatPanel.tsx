@@ -14,6 +14,9 @@ import {
   streamRegenerate,
 } from "../lib/api";
 import { EvalPanel } from "./EvalPanel";
+import { useVoice } from "../hooks/useVoice";
+import { isVoiceCapable } from "../lib/voiceEligibility";
+import { resolveIntent } from "../lib/resolveIntent";
 
 const STRATEGY_LABELS: Record<string, string> = {
   broad: "broad — all memories",
@@ -135,6 +138,10 @@ export function ChatPanel({
   const [turnaroundLoading, setTurnaroundLoading] = useState(false);
   const [regenerateLoading, setRegenerateLoading] = useState(false);
   const { queueToken, flushNow } = useTokenBatcher(setMessages);
+  const [voiceText, setVoiceText] = useState<string | null>(null);
+  const [voiceNote, setVoiceNote] = useState<string | null>(null);
+  const voice = useVoice();
+  const micAvailable = isVoiceCapable(userId) && voice.supported;
   const bottomRef = useRef<HTMLDivElement>(null);
   const lastResponseTsRef = useRef<number>(0);
   const lastTurnIdRef = useRef<number | null>(null);
@@ -156,6 +163,8 @@ export function ChatPanel({
     lastResponseTsRef.current = 0;
     evalPollAbortsRef.current.forEach((ac) => ac.abort());
     evalPollAbortsRef.current.clear();
+    setVoiceText(null);
+    setVoiceNote(null);
   }, [userId]);
 
   useEffect(() => {
@@ -432,6 +441,8 @@ export function ChatPanel({
     setLoading(true);
 
     const airText = sensing.airWrittenText || null;
+    const vText = voiceText;
+    const resolved = resolveIntent(vText, airText);
 
     // Push the partner bubble, and a placeholder AAC message we'll fill in
     // progressively. We need the placeholder's index to target updates — use
@@ -470,6 +481,8 @@ export function ChatPanel({
           gaze_bucket: sensing.gazeBucket,
           air_written_text: airText,
           head_signal: sensing.headSignal,
+          voice_text: vText,
+          resolved_intent: resolved.source === "none" ? null : resolved,
         },
         (evt) => {
           if (evt.type === "token") {
@@ -531,6 +544,10 @@ export function ChatPanel({
       }));
     } finally {
       if (airText) onAirTextConsumed();
+      // Clear voice state unconditionally — a failed send shouldn't silently
+      // re-attach a stale transcript to the next turn. User can re-tap mic.
+      setVoiceText(null);
+      setVoiceNote(null);
       setLoading(false);
     }
   }
@@ -567,6 +584,31 @@ export function ChatPanel({
     },
     [messages, setMessages, userId]
   );
+
+  const handleMic = useCallback(async () => {
+    if (!micAvailable || voice.listening) return;
+    setVoiceNote("Listening...");
+    try {
+      const cap = await voice.capture();
+      if (cap.transcript) {
+        setVoiceText(cap.transcript);
+        setVoiceNote(`Heard: "${cap.transcript}"`);
+      } else {
+        setVoiceNote("No speech detected.");
+      }
+    } catch (e) {
+      setVoiceNote(
+        `Mic error: ${e instanceof Error ? e.message : "failed"}`
+      );
+    }
+  }, [micAvailable, voice]);
+
+  const canTurnaround =
+    !!userId &&
+    backendReady &&
+    !loading &&
+    !turnaroundLoading &&
+    lastTurnIdRef.current !== null;
 
   return (
     <div className="chat-panel">
@@ -683,6 +725,11 @@ export function ChatPanel({
         )}
         <div ref={bottomRef} />
       </div>
+      {micAvailable && voiceNote && (
+        <div className="voice-status" aria-live="polite">
+          {voiceNote}
+        </div>
+      )}
       <div className="chat-input-row">
         <input
           type="text"
@@ -694,6 +741,26 @@ export function ChatPanel({
         />
         <button onClick={handleSend} disabled={!userId || loading || !backendReady || !input.trim()}>
           Send
+        </button>
+        {micAvailable && (
+          <button
+            type="button"
+            className={`mic-btn${voice.listening ? " listening" : ""}`}
+            onClick={handleMic}
+            disabled={!backendReady || loading || voice.listening}
+            title="Capture a short voice utterance — resolved against air-writing before sending"
+          >
+            {voice.listening ? "🎤 Listening…" : "🎤 Speak"}
+          </button>
+        )}
+        <button
+          type="button"
+          className="turnaround-btn"
+          onClick={() => handleTurnaround("manual")}
+          disabled={!canTurnaround}
+          title="Re-plan the last response (also triggered by a head shake / sharp nod)"
+        >
+          ↻ Not quite right
         </button>
       </div>
     </div>

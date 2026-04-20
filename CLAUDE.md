@@ -2,11 +2,12 @@
 
 ## What This Project Does
 
-An AI chatbot that **speaks as an AAC user**, not to them. Given a user persona
-(Mia, Gerald, or Arjun), it fuses real-time multimodal non-verbal signals with
-personal memory retrieval to generate responses in that person's authentic voice.
-Orchestrated as a **plain Python function chain** across five layers, with two
-conditional branches.
+An AI chatbot that **speaks as an AAC user**, not to them. Given one of 14
+personas — nine anchored in real memoirs and five in canonical fiction —
+it fuses real-time multimodal non-verbal signals with personal memory
+retrieval to generate responses in that person's authentic voice. Orchestrated
+as a **plain Python function chain** across five layers, with two conditional
+branches.
 
 ---
 
@@ -66,13 +67,31 @@ logs/                             Per-turn JSONL logs (gitignored)
 
 ## Personas
 
+Fourteen personas shipped. Real-memoir-anchored:
+
 | ID | Name | Condition | Access |
 |----|------|-----------|--------|
-| `mia_chen` | Mia Chen, 28 | Cerebral palsy | Webcam head-tracking |
-| `gerald_okafor` | Gerald Okafor, 61 | ALS (early-mid) | Eye-gaze device |
-| `arjun_mehta` | Arjun Mehta, 17 | Autism (non-verbal) | Tablet touch grid |
+| `stephen_hawking` | Stephen Hawking | ALS (advanced) | Cheek-twitch + ACAT predictive speech |
+| `jean_dominique_bauby` | Jean-Dominique Bauby | Locked-in syndrome | Alphabet-blink with amanuensis |
+| `michael_j_fox` | Michael J. Fox | Parkinson's | Voice + adaptive keyboard + dictation |
+| `gabby_giffords` | Gabby Giffords | Aphasia + right hemiparesis (post-TBI) | Left-hand typing + speech-to-text |
+| `jason_becker` | Jason Becker | ALS (fully locked-in) | Eye-gaze + father's letter-code board |
+| `tito_mukhopadhyay` | Tito Mukhopadhyay | Non-verbal autism | Letterboard + pencil |
+| `christopher_reeve` | Christopher Reeve | C1–C2 spinal cord injury | Dictation to assistants; sip-and-puff |
+| `christy_brown` | Christy Brown | Cerebral palsy (spastic quadriplegia) | Left foot typing / writing |
+| `wendy_mitchell` | Wendy Mitchell | Early-onset dementia | Laptop/phone typing + "brain-book" |
 
-25 memory chunks each (5 buckets × 5 memories). Arjun code-switches Hindi/English.
+Canonical fiction:
+
+| ID | Name | Condition | Access |
+|----|------|-----------|--------|
+| `abed_nadir` | Abed Nadir (*Community*) | Autism (coded); occasional selective mutism | Mostly verbal; text when overloaded |
+| `allie_calhoun` | Allie Hamilton Calhoun (*The Notebook*) | Late-stage Alzheimer's | Verbal when lucid; yes/no otherwise |
+| `forrest_gump` | Forrest Gump | Intellectual disability (IQ ~75) | Verbal primarily |
+| `raymond_babbitt` | Raymond Babbitt (*Rain Man*) | Savant autism | Verbal when calm + visual schedules |
+| `walter_jr_white` | Walter "Flynn" White Jr. (*Breaking Bad*) | Cerebral palsy | Verbal + smartphone typing |
+
+~25 bucketed memory chunks per persona (`family` / `medical` / `hobbies` / `daily_routine` / `social`; buckets tuned per-persona). A short-form voice push-to-talk mic surfaces only for personas whose modelled access method is verbal — see `VOICE_CAPABLE_PERSONAS` in [frontend/src/lib/voiceEligibility.ts](frontend/src/lib/voiceEligibility.ts).
 
 ---
 
@@ -129,8 +148,13 @@ Copy `.env.example` → `.env` and set:
 - **NEVER use local Ollama models** (e.g. `qwen3:8b`, `gemma3:1b`) — this machine
   is not powerful enough and will break. Always use cloud-backed models like
   `gemma4:31b-cloud` via Ollama Cloud.
-- **Adding a persona**: add to `PERSONAS` in `data/generate_users.py`, re-run it,
-  then `python -m backend.retrieval.vector_store` to rebuild indexes
+- **Adding a persona**: add a memory JSON under `data/memories/<uid>.json` and
+  a matching entry in `data/users.json` (or regenerate both via
+  `data/generate_users.py` if present), then
+  `python -m backend.retrieval.vector_store` to rebuild indexes. If the
+  persona's modelled access method includes live speech, also add their `id`
+  to `VOICE_CAPABLE_PERSONAS` in `frontend/src/lib/voiceEligibility.ts` so
+  the mic button surfaces.
 - **Changing LLM**: set `ACTIVE_LLM_TIER` in `.env` — no code changes needed
 - **Extending sensing**: sensing runs in the React frontend
   (`frontend/src/hooks/useSensing.ts`); to add a new signal, classify it

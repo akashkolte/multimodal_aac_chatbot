@@ -95,6 +95,10 @@ class PipelineState(TypedDict):
     gaze_bucket: str | None  # bucket hinted by gaze fixation
     air_written_text: str | None  # concatenated air-written chars
     head_signal: str | None  # "HEAD_SHAKE" | "HEAD_NOD_DISSATISFIED"
+    voice_text: str | None  # raw Web Speech transcript, pre-resolution
+    # Resolved voice⇄air-writing intent. Keys: text, source, voice_text, air_text.
+    # source ∈ voice_only | air_only | agree | conflict_air | conflict_voice.
+    resolved_intent: dict[str, Any] | None
     turnaround_triggered: bool  # true when re-planned from dissatisfaction signal
 
     # ── L2: Intent decomposition outputs ─────────────────────────────────────

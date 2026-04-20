@@ -525,6 +525,30 @@ input[type="text"]:hover {
   color: #ffffff !important;
 }
 
+.mic-btn {
+  background: transparent !important;
+  color: var(--accent) !important;
+  border: 1px solid var(--accent) !important;
+}
+
+.mic-btn.listening {
+  background: var(--accent) !important;
+  color: #ffffff !important;
+  animation: mic-pulse 1.1s ease-in-out infinite;
+}
+
+@keyframes mic-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.6; }
+}
+
+.voice-status {
+  padding: 4px 12px;
+  font-size: 12px;
+  color: var(--text-muted);
+  font-family: var(--sans);
+}
+
 .eval-panel {
   margin-top: 10px;
   border-top: 1px solid var(--border);

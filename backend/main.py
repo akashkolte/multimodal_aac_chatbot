@@ -171,6 +171,8 @@ def main() -> None:
             gesture_tag=None,
             gaze_bucket=None,
             air_written_text=None,
+            voice_text=None,
+            resolved_intent=None,
             raw_query=query,
             intent_route=pre_route,  # pre-filled → intent node sees it and skips LLM call
             generation_config=pre_gen_config,
