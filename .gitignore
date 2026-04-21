@@ -19,6 +19,14 @@ env/
 # Data — indexes are rebuilt from source; do NOT commit binaries
 data/vector_store/
 data/pick_index/
+data/faiss_store/
+
+# MLflow
+mlflow.db
+mlruns/
+
+# Personal / non-source files
+ProjectDetails.pdf
 
 # Per-turn JSONL logs (contain user conversation content)
 logs/
