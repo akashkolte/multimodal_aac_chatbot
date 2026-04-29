@@ -1,6 +1,4 @@
 # CLI entry point for the AAC chatbot pipeline.
-from __future__ import annotations
-
 import argparse
 import copy
 import json
