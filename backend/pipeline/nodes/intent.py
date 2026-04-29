@@ -1,6 +1,4 @@
 # Intent decomposition node — regex-split fragments + BGE zero-shot classifier.
-from __future__ import annotations
-
 import copy
 import re
 import time

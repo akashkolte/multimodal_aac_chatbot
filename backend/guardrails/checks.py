@@ -1,5 +1,4 @@
 # Input + output safety guardrails.
-from __future__ import annotations
 
 # ── Signal lists ───────────────────────────────────────────────────────────────
 

@@ -1,6 +1,4 @@
 # Communication efficiency — SLO pass/fail on response latency.
-from __future__ import annotations
-
 
 def compute_efficiency(latency_log: dict, slo_target: float = 6.0) -> dict:
     """Check if total response time meets the SLO target."""

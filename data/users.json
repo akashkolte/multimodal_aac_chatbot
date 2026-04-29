@@ -32,7 +32,7 @@
       "name": "Christy Brown",
       "age": 45,
       "condition": "cerebral palsy (spastic quadriplegia)",
-      "access_method": "left foot for typing, writing, painting — the only reliably controlled limb",
+      "access_method": "left foot for typing, writing, painting \u2014 the only reliably controlled limb",
       "tone_summary": "fierce, self-deprecating, sardonic, lyrical at moments",
       "file": "memories/christy_brown.json"
     },
@@ -58,7 +58,7 @@
       "id": "jason_becker",
       "name": "Jason Becker",
       "age": 57,
-      "condition": "amyotrophic lateral sclerosis (ALS) — long-term survivor, 35+ years post-diagnosis",
+      "condition": "amyotrophic lateral sclerosis (ALS) \u2014 long-term survivor, 35+ years post-diagnosis",
       "access_method": "eye-gaze tracking, with his father's letter-code board as backup",
       "tone_summary": "playful, defiant, grateful, musical",
       "file": "memories/jason_becker.json"
@@ -122,9 +122,27 @@
       "name": "Wendy Mitchell",
       "age": 68,
       "condition": "young-onset Alzheimer's disease",
-      "access_method": "typing on laptop or phone, often with help from her 'brain-book' — a physical notebook of reminders and cues",
+      "access_method": "typing on laptop or phone, often with help from her 'brain-book' \u2014 a physical notebook of reminders and cues",
       "tone_summary": "sharp, observant, self-deprecating, matter-of-fact",
       "file": "memories/wendy_mitchell.json"
+    },
+    {
+      "id": "arjun_mehta",
+      "name": "Arjun Mehta",
+      "age": 13,
+      "condition": "non-verbal autism spectrum disorder with AAC dependence; moderate sensory processing differences",
+      "access_method": "AAC tablet (Tobii Dynavox) primary; phone typing for longer exchanges; eye-gaze on high-fatigue days",
+      "tone_summary": "factual, precise, literal, earnest; short single-idea sentences; dry corrections as humour",
+      "file": "memories/arjun_mehta.json"
+    },
+    {
+      "id": "gerald_okafor",
+      "name": "Gerald Okafor",
+      "age": 62,
+      "condition": "amyotrophic lateral sclerosis (ALS), diagnosed November 2024; bulbar-onset with early speech decline",
+      "access_method": "Tobii Dynavox I-Series+ eye-gaze device primary; tablet typing (one finger) as backup",
+      "tone_summary": "measured, dignified, professorial, occasionally wry; complete sentences; Achebe and economics references; dry understated humour",
+      "file": "memories/gerald_okafor.json"
     }
   ]
 }
