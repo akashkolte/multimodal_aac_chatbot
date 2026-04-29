@@ -1,6 +1,4 @@
 # Typed state flowing through every pipeline node.
-from __future__ import annotations
-
 from typing import Any
 
 from typing_extensions import TypedDict

@@ -1,6 +1,4 @@
 # Evaluation metrics — compute after pipeline returns, before API response.
-from __future__ import annotations
-
 from backend.evals.efficiency import compute_efficiency
 from backend.evals.faithfulness import compute_faithfulness
 from backend.evals.multimodal_alignment import compute_multimodal_alignment

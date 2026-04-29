@@ -1,6 +1,4 @@
 # Retrieval node — dispatches each sub-intent to its pool, merges results.
-from __future__ import annotations
-
 import time
 
 import torch
