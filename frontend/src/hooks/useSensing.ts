@@ -15,7 +15,9 @@ import {
 } from "../lib/sensing";
 import { DEFAULT_AIR_TEMPLATES } from "../lib/airTemplates";
 
-const EMA_ALPHA = 0.4;
+const EMA_ALPHA = 0.2;
+const GESTURE_DEBOUNCE_FRAMES = 5;
+const AFFECT_DEBOUNCE_FRAMES = 8;
 
 export function useSensing() {
   const faceLandmarkerRef = useRef<FaceLandmarker | null>(null);
@@ -28,6 +30,8 @@ export function useSensing() {
   const neutralLCPRef = useRef<number | null>(null);
   const calibBufferRef = useRef<number[]>([]);
   const smoothedRef = useRef({ MAR: 0, EAR: 0.3, BRI: -0.3, LCP: 0 });
+  const gestureCountRef = useRef<{ tag: SensingState["gestureTag"]; count: number }>({ tag: null, count: 0 });
+  const affectCountRef = useRef<{ affect: SensingState["affect"]; count: number }>({ affect: null, count: 0 });
   const initingRef = useRef(false);
   const [ready, setReady] = useState(false);
   const [initError, setInitError] = useState<string | null>(null);
@@ -166,9 +170,27 @@ export function useSensing() {
 
       const newAirText = airWriterRef.current.getText();
 
+      if (gestureTag === gestureCountRef.current.tag) {
+        gestureCountRef.current.count++;
+      } else {
+        gestureCountRef.current = { tag: gestureTag, count: 1 };
+      }
+      const stableGesture = gestureCountRef.current.count >= GESTURE_DEBOUNCE_FRAMES
+        ? gestureTag
+        : null;
+
+      if (affect === affectCountRef.current.affect) {
+        affectCountRef.current.count++;
+      } else {
+        affectCountRef.current = { affect, count: 1 };
+      }
+      const stableAffect = affectCountRef.current.count >= AFFECT_DEBOUNCE_FRAMES
+        ? affect
+        : null;
+
       setSensing((prev) => ({
-        affect: affect ?? prev.affect,
-        gestureTag: gestureTag ?? prev.gestureTag,
+        affect: stableAffect ?? prev.affect,
+        gestureTag: stableGesture,
         gazeBucket: gazeBucket ?? prev.gazeBucket,
         airWrittenText: newAirText
           ? prev.airWrittenText + newAirText
@@ -198,6 +220,8 @@ export function useSensing() {
     neutralLCPRef.current = null;
     calibBufferRef.current = [];
     smoothedRef.current = { MAR: 0, EAR: 0.3, BRI: -0.3, LCP: 0 };
+    gestureCountRef.current = { tag: null, count: 0 };
+    affectCountRef.current = { affect: null, count: 0 };
     gazeTrackerRef.current.reset();
     headTrackerRef.current.reset();
     setSensing({
