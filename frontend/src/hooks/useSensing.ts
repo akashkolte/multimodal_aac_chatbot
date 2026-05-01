@@ -16,7 +16,7 @@ import {
 import { DEFAULT_AIR_TEMPLATES } from "../lib/airTemplates";
 
 const EMA_ALPHA = 0.2;
-const GESTURE_DEBOUNCE_FRAMES = 5;
+const GESTURE_DEBOUNCE_FRAMES = 3;
 const AFFECT_DEBOUNCE_FRAMES = 8;
 
 export function useSensing() {

@@ -10,6 +10,7 @@ from pathlib import Path
 from fastapi import BackgroundTasks, FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
+from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 
 from backend.config.settings import settings
@@ -976,3 +977,9 @@ def submit_rating(req: RatingRequest):
     with open(logs_dir / "ratings.jsonl", "a", encoding="utf-8") as f:
         f.write(json.dumps(entry, ensure_ascii=False) + "\n")
     return {"status": "ok"}
+
+
+# Serve React frontend — must be last so API routes take priority
+_frontend_dist = Path(__file__).parent.parent.parent / "frontend" / "dist"
+if _frontend_dist.exists():
+    app.mount("/", StaticFiles(directory=str(_frontend_dist), html=True), name="static")
