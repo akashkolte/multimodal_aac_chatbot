@@ -19,8 +19,7 @@ export function classifyAffect(v: AffectVector): Affect {
   // FRUSTRATED: a clear frown, OR brows lowered + squinting — either signals displeasure
   if (v.LCP < -0.015) return "FRUSTRATED";
   if (v.BRI > -0.2 && v.EAR < 0.18) return "FRUSTRATED";
-  // HAPPY: meaningful upward pull of lip corners (tighter than the old 0.005)
-  if (v.LCP > 0.015) return "HAPPY";
+  if (v.LCP > 0.008) return "HAPPY";
   return "NEUTRAL";
 }
 
@@ -105,20 +104,24 @@ export function classifyGesture(landmarks: Point3D[]): GestureName | null {
   const pinkyTip = p[20];
   const indexMcp = p[5];
 
+  // Require tip to be meaningfully closer to wrist than MCP (0.85×), not just barely under —
+  // prevents borderline pointing poses from satisfying the curl check.
   const fingersCurled = [
     [indexTip, p[5]],
     [middleTip, p[9]],
     [ringTip, p[13]],
-  ].every(([tip, mcp]) => norm3(tip) < norm3(mcp));
+  ].every(([tip, mcp]) => norm3(tip) < norm3(mcp) * 0.85);
 
-  if (thumbTip.y < -0.3 && fingersCurled) return "THUMBS_UP";
-  if (thumbTip.y > 0.3 && fingersCurled) return "THUMBS_DOWN";
-
+  // Check POINTING before THUMBS_UP — pointing with a raised thumb would otherwise
+  // satisfy fingersCurled on a noisy frame and fire the wrong label first.
   const indexExtended = norm3(indexTip) > norm3(indexMcp) * 1.3;
   const othersCurled = [middleTip, ringTip, pinkyTip].every(
     (tip) => norm3(tip) < 0.5
   );
   if (indexExtended && othersCurled) return "POINTING";
+
+  if (thumbTip.y < -0.3 && fingersCurled) return "THUMBS_UP";
+  if (thumbTip.y > 0.3 && fingersCurled) return "THUMBS_DOWN";
 
   const allExtended = [indexTip, middleTip, ringTip, pinkyTip].every(
     (tip) => norm3(tip) > 0.5
