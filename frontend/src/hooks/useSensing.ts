@@ -15,7 +15,7 @@ import {
 } from "../lib/sensing";
 import { DEFAULT_AIR_TEMPLATES } from "../lib/airTemplates";
 
-const EMA_ALPHA = 0.3;
+const EMA_ALPHA = 0.4;
 
 export function useSensing() {
   const faceLandmarkerRef = useRef<FaceLandmarker | null>(null);
