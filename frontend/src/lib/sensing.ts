@@ -17,9 +17,9 @@ export function classifyAffect(v: AffectVector): Affect {
   // EAR is absolute ratio — lower = eyes more closed / squinting
   if (v.BRI < -0.35 && v.MAR > 0.4) return "SURPRISED";
   // FRUSTRATED: a clear frown, OR brows lowered + squinting — either signals displeasure
-  if (v.LCP < -0.015) return "FRUSTRATED";
+  if (v.LCP < -0.018) return "FRUSTRATED";
   if (v.BRI > -0.2 && v.EAR < 0.18) return "FRUSTRATED";
-  if (v.LCP > 0.008) return "HAPPY";
+  if (v.LCP > 0.012) return "HAPPY";
   return "NEUTRAL";
 }
 
@@ -123,8 +123,8 @@ export function classifyGesture(landmarks: Point3D[]): GestureName | null {
   if (thumbTip.y < -0.3 && fingersCurled) return "THUMBS_UP";
   if (thumbTip.y > 0.3 && fingersCurled) return "THUMBS_DOWN";
 
-  const allExtended = [indexTip, middleTip, ringTip, pinkyTip].every(
-    (tip) => norm3(tip) > 0.5
+  const allExtended = [indexTip, middleTip, ringTip, pinkyTip, thumbTip].every(
+    (tip) => norm3(tip) > 0.7
   );
   if (allExtended) return "WAVING";
 
