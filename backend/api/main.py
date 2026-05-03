@@ -5,6 +5,7 @@ import re
 import threading
 import time
 from collections import OrderedDict
+from functools import lru_cache
 from pathlib import Path
 
 from fastapi import BackgroundTasks, FastAPI, HTTPException
@@ -977,6 +978,70 @@ def submit_rating(req: RatingRequest):
     with open(logs_dir / "ratings.jsonl", "a", encoding="utf-8") as f:
         f.write(json.dumps(entry, ensure_ascii=False) + "\n")
     return {"status": "ok"}
+
+
+class InkRecognizeRequest(BaseModel):
+    image_base64: str
+
+
+@lru_cache(maxsize=1)
+def _get_vision_client():
+    from openai import OpenAI as _OpenAI
+    return _OpenAI(
+        base_url=settings.ink_vision_base_url,
+        api_key=settings.ink_vision_api_key or "unused",
+    )
+
+
+@app.post("/ink/recognize")
+def ink_recognize(req: InkRecognizeRequest):
+    if not req.image_base64:
+        return {"text": ""}
+    if not settings.ink_vision_api_key:
+        _log.warning("/ink/recognize called but INK_VISION_API_KEY is not set")
+        raise HTTPException(status_code=503, detail="INK_VISION_API_KEY not configured")
+    try:
+        client = _get_vision_client()
+        response = client.chat.completions.create(
+            model=settings.ink_vision_model,
+            messages=[
+                {
+                    "role": "user",
+                    "content": [
+                        {
+                            "type": "image_url",
+                            "image_url": {
+                                "url": f"data:image/png;base64,{req.image_base64}"
+                            },
+                        },
+                        {
+                            "type": "text",
+                            # /no_think suppresses Qwen3 chain-of-thought so the
+                            # answer isn't buried inside <think> tags.
+                            "text": (
+                                "/no_think\n"
+                                "This is a single handwritten character or short word "
+                                "drawn in the air. Reply with ONLY the character or "
+                                "word, nothing else."
+                            ),
+                        },
+                    ],
+                }
+            ],
+            # 512 gives thinking models room to emit <think>…</think> + the answer
+            # before being cut off; the answer itself is stripped out below.
+            max_tokens=512,
+            temperature=0.0,
+        )
+        raw = (response.choices[0].message.content or "")
+        _log.info("/ink/recognize raw → %r", raw[:200])
+        # Strip <think>…</think> blocks emitted by reasoning models (Qwen3 etc.)
+        text = re.sub(r"<think>.*?</think>", "", raw, flags=re.DOTALL).strip()
+        _log.info("/ink/recognize → %r", text)
+        return {"text": text}
+    except Exception as exc:
+        _log.exception("/ink/recognize failed: %r", exc)
+        raise HTTPException(status_code=500, detail=str(exc)) from exc
 
 
 # Serve React frontend — must be last so API routes take priority
