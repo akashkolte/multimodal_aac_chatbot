@@ -326,76 +326,25 @@ export class HeadPoseTracker {
   }
 }
 
-// ── Air-writing DTW (ported from backend/sensing/air_writing.py) ─────────────
+// ── Air-writing stroke collector (recognition via Gemini Vision) ─────────────
 
 const INDEX_TIP = 8;
 const VELOCITY_START = 15;
 const VELOCITY_END = 5;
 const STROKE_GAP_MS = 200;
-const RESAMPLE_N = 32;
-
-function normaliseTrajectory(pts: [number, number][]): [number, number][] {
-  if (pts.length < 2) return pts;
-  let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
-  for (const [x, y] of pts) {
-    minX = Math.min(minX, x);
-    minY = Math.min(minY, y);
-    maxX = Math.max(maxX, x);
-    maxY = Math.max(maxY, y);
-  }
-  const scaleX = maxX - minX + 1e-6;
-  const scaleY = maxY - minY + 1e-6;
-  const norm = pts.map(([x, y]) => [(x - minX) / scaleX, (y - minY) / scaleY] as [number, number]);
-
-  // Resample to RESAMPLE_N points via linear interpolation
-  const resampled: [number, number][] = [];
-  for (let i = 0; i < RESAMPLE_N; i++) {
-    const t = (i / (RESAMPLE_N - 1)) * (norm.length - 1);
-    const lo = Math.floor(t);
-    const hi = Math.min(lo + 1, norm.length - 1);
-    const frac = t - lo;
-    resampled.push([
-      norm[lo][0] + frac * (norm[hi][0] - norm[lo][0]),
-      norm[lo][1] + frac * (norm[hi][1] - norm[lo][1]),
-    ]);
-  }
-  return resampled;
-}
-
-function dtwDistance(a: [number, number][], b: [number, number][]): number {
-  const n = a.length, m = b.length;
-  const dtw: number[][] = Array.from({ length: n + 1 }, () =>
-    Array(m + 1).fill(Infinity)
-  );
-  dtw[0][0] = 0;
-  for (let i = 1; i <= n; i++) {
-    for (let j = 1; j <= m; j++) {
-      const cost = Math.sqrt(
-        (a[i - 1][0] - b[j - 1][0]) ** 2 + (a[i - 1][1] - b[j - 1][1]) ** 2
-      );
-      dtw[i][j] = cost + Math.min(dtw[i - 1][j], dtw[i][j - 1], dtw[i - 1][j - 1]);
-    }
-  }
-  return dtw[n][m];
-}
 
 export class AirWriter {
   private trajectory: [number, number][] = [];
   private inStroke = false;
   private strokeEndTime = 0;
   private prevPt: [number, number] | null = null;
-  private buffer: string[] = [];
-  private templates: Map<string, [number, number][]>;
-
-  constructor(templates: Map<string, [number, number][]> = new Map()) {
-    this.templates = templates;
-  }
+  private pendingStroke: [number, number][] | null = null;
 
   processHandLandmarks(
     landmarks: { x: number; y: number }[],
     frameWidth: number,
     frameHeight: number
-  ): string | null {
+  ): void {
     const tip: [number, number] = [
       landmarks[INDEX_TIP].x * frameWidth,
       landmarks[INDEX_TIP].y * frameHeight,
@@ -413,70 +362,50 @@ export class AirWriter {
       this.inStroke = true;
       this.trajectory.push(tip);
       this.strokeEndTime = 0;
-      return null;
+      return;
     }
 
     if (this.inStroke && velocity < VELOCITY_END) {
       if (this.strokeEndTime === 0) {
         this.strokeEndTime = performance.now();
       }
-      return this.checkStrokeEnd();
+      this.checkStrokeEnd();
     }
-
-    return null;
   }
 
-  private checkStrokeEnd(): string | null {
-    if (!this.inStroke || this.strokeEndTime === 0) return null;
+  private checkStrokeEnd(): void {
+    if (!this.inStroke || this.strokeEndTime === 0) return;
     if (performance.now() - this.strokeEndTime >= STROKE_GAP_MS) {
-      const char = this.recognise(this.trajectory);
+      if (this.trajectory.length >= 5) {
+        this.pendingStroke = [...this.trajectory];
+      }
       this.trajectory = [];
       this.inStroke = false;
       this.strokeEndTime = 0;
-      if (char) this.buffer.push(char);
-      return char;
     }
-    return null;
   }
 
-  private recognise(trajectory: [number, number][]): string | null {
-    if (trajectory.length < 5) {
-      return null;
-    }
-    if (this.templates.size === 0) {
-      console.debug("[AirWriter] stroke completed but template bank is empty");
-      return null;
-    }
-    const query = normaliseTrajectory(trajectory);
-    let bestChar: string | null = null;
-    let bestDist = Infinity;
-    for (const [char, template] of this.templates) {
-      const d = dtwDistance(query, template);
-      if (d < bestDist) {
-        bestDist = d;
-        bestChar = char;
-      }
-    }
-    // Reject poor matches so we don't pass garbage to the LLM.
-    // Threshold is empirical — tune once real users test this.
-    const MATCH_THRESHOLD = 8.0;
-    if (bestDist > MATCH_THRESHOLD) {
-      console.debug(
-        `[AirWriter] no template matched (best='${bestChar}', dist=${bestDist.toFixed(2)})`
-      );
-      return null;
-    }
-    return bestChar;
+  get strokeActive(): boolean {
+    return this.inStroke;
   }
 
+  // Returns the completed stroke trajectory and clears it (call once per frame).
+  getCompletedStroke(): [number, number][] | null {
+    const s = this.pendingStroke;
+    this.pendingStroke = null;
+    return s;
+  }
+
+  // Kept for API compatibility — always returns "".
   getText(): string {
-    const text = this.buffer.join("");
-    this.buffer = [];
-    return text;
+    return "";
   }
 
-  noHand(): string | null {
+  noHand(): void {
+    if (this.inStroke && this.strokeEndTime === 0) {
+      this.strokeEndTime = performance.now();
+    }
     this.prevPt = null;
-    return this.checkStrokeEnd();
+    this.checkStrokeEnd();
   }
 }

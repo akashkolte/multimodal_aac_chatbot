@@ -46,6 +46,12 @@ class Settings(BaseSettings):
     # Active tier: "primary" | "fallback"
     active_llm_tier: str = "primary"
 
+    # Vision model used only by /ink/recognize (needs image_url support).
+    # Defaults to Gemini flash via the OpenAI-compatible endpoint.
+    ink_vision_model: str = "gemini-2.0-flash"
+    ink_vision_base_url: str = "https://generativelanguage.googleapis.com/v1beta/openai/"
+    ink_vision_api_key: str = ""
+
     # off | strip | full | suppress
     thinking_mode: str = "off"
     thinking_token_budget: int = 4096

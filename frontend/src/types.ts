@@ -16,6 +16,7 @@ export interface SensingState {
   gestureTag: GestureName | null;
   gazeBucket: MemoryBucket | null;
   airWrittenText: string;
+  airWritingActive: boolean;
   headSignal: HeadSignal | null;
   headCalibrated: boolean;
   headDebug: HeadDebug;

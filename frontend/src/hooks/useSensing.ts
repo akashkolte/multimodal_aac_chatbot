@@ -12,16 +12,20 @@ import {
   AirWriter,
   HeadPoseTracker,
 } from "../lib/sensing";
-import { DEFAULT_AIR_TEMPLATES } from "../lib/airTemplates";
+import { recognizeInkStroke } from "../lib/inkRecognizer";
 
 const GESTURE_DEBOUNCE_FRAMES = 3;
 const AFFECT_DEBOUNCE_FRAMES = 8;
+
+// Set VITE_AIRWRITING_ENABLED=false in .env to disable air-writing.
+const AIRWRITING_ENABLED = import.meta.env.VITE_AIRWRITING_ENABLED !== "false";
 
 export function useSensing() {
   const faceLandmarkerRef = useRef<FaceLandmarker | null>(null);
   const gestureRecognizerRef = useRef<GestureRecognizer | null>(null);
   const gazeTrackerRef = useRef(new GazeTracker());
-  const airWriterRef = useRef(new AirWriter(DEFAULT_AIR_TEMPLATES));
+  const airWriterRef = useRef(new AirWriter());
+  const inkBusyRef = useRef(false);
   const headTrackerRef = useRef(new HeadPoseTracker());
   const calibratePendingRef = useRef(false);
   const headDebugRef = useRef({ dx: 0, dy: 0, maxAbsDx: 0, maxAbsDy: 0, crossings: 0 });
@@ -35,6 +39,7 @@ export function useSensing() {
     gestureTag: null,
     gazeBucket: null,
     airWrittenText: "",
+    airWritingActive: false,
     headSignal: null,
     headCalibrated: false,
     headDebug: { dx: 0, dy: 0, maxAbsDx: 0, maxAbsDy: 0, crossings: 0 },
@@ -133,17 +138,35 @@ export function useSensing() {
       if (gestureResult.gestures && gestureResult.gestures.length > 0) {
         const topGesture = gestureResult.gestures[0][0];
         gestureTag = mapGestureLabel(topGesture.categoryName);
-        const handLandmarks = gestureResult.landmarks[0];
-        airWriterRef.current.processHandLandmarks(
-          handLandmarks,
-          video.videoWidth,
-          video.videoHeight
-        );
-      } else {
+        if (AIRWRITING_ENABLED) {
+          const handLandmarks = gestureResult.landmarks[0];
+          airWriterRef.current.processHandLandmarks(
+            handLandmarks,
+            video.videoWidth,
+            video.videoHeight
+          );
+        }
+      } else if (AIRWRITING_ENABLED) {
         airWriterRef.current.noHand();
       }
 
       const newAirText = airWriterRef.current.getText();
+
+      if (AIRWRITING_ENABLED) {
+        const completedStroke = airWriterRef.current.getCompletedStroke();
+        if (completedStroke && !inkBusyRef.current) {
+          inkBusyRef.current = true;
+          recognizeInkStroke(completedStroke).then((text) => {
+            inkBusyRef.current = false;
+            if (text) {
+              setSensing((prev) => ({
+                ...prev,
+                airWrittenText: prev.airWrittenText + text,
+              }));
+            }
+          });
+        }
+      }
 
       if (gestureTag === gestureCountRef.current.tag) {
         gestureCountRef.current.count++;
@@ -170,6 +193,7 @@ export function useSensing() {
         airWrittenText: newAirText
           ? prev.airWrittenText + newAirText
           : prev.airWrittenText,
+        airWritingActive: airWriterRef.current.strokeActive,
         headSignal: headSignal ?? prev.headSignal,
         headCalibrated: headTrackerRef.current.calibrated,
         headDebug: headDebugRef.current,
@@ -201,6 +225,7 @@ export function useSensing() {
       gestureTag: null,
       gazeBucket: null,
       airWrittenText: "",
+      airWritingActive: false,
       headSignal: null,
       headCalibrated: false,
       headDebug: { dx: 0, dy: 0, maxAbsDx: 0, maxAbsDy: 0, crossings: 0 },
