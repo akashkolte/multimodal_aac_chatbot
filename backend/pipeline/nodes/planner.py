@@ -659,7 +659,7 @@ def _format_multimodal_intent(
         if source == "conflict_air" and air_t:
             return (
                 f'\nThe user spoke "{voice_t}" but also air-wrote "{air_t}". '
-                "The air-written token is a canonical AAC signal "
+                "The air-writing token is a canonical AAC signal "
                 "(help/stop/water/done/more) — prioritise it over the spoken "
                 "words, which may have been misheard."
             )

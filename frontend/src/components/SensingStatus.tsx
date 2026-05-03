@@ -60,7 +60,7 @@ export function SensingStatus({ sensing, webcamActive }: Props) {
       )}
       {sensing.airWrittenText && (
         <div className="sensing-row">
-          <span className="sensing-label">Air-written</span>
+          <span className="sensing-label">Air-writing</span>
           <span className="sensing-value">{sensing.airWrittenText}</span>
         </div>
       )}
