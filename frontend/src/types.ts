@@ -1,14 +1,13 @@
 export type Affect = "HAPPY" | "FRUSTRATED" | "NEUTRAL" | "SURPRISED";
 export type GestureName = "THUMBS_UP" | "THUMBS_DOWN" | "POINTING_UP" | "CLOSED_FIST" | "OPEN_PALM" | "VICTORY" | "I_LOVE_YOU";
 export type MemoryBucket = "family" | "medical" | "hobbies" | "daily_routine" | "social";
-export type HeadSignal = "HEAD_SHAKE" | "HEAD_NOD_DISSATISFIED";
+export type HeadSignal = "HEAD_SHAKE" | "HEAD_NOD" | "HEAD_NOD_DISSATISFIED";
 
 export interface HeadDebug {
-  dx: number;
-  dy: number;
-  maxAbsDx: number;
-  maxAbsDy: number;
-  crossings: number;
+  pitch: number;     // degrees — nod angle
+  yaw: number;       // degrees — shake angle
+  roll: number;      // degrees — tilt angle
+  crossings: number; // yaw direction reversals in current window
 }
 
 export interface SensingState {
