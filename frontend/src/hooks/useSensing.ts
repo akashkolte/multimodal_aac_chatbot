@@ -27,7 +27,6 @@ export function useSensing() {
   const airWriterRef = useRef(new AirWriter());
   const inkBusyRef = useRef(false);
   const headTrackerRef = useRef(new HeadPoseTracker());
-  const calibratePendingRef = useRef(false);
   const headDebugRef = useRef({ dx: 0, dy: 0, maxAbsDx: 0, maxAbsDy: 0, crossings: 0 });
   const gestureCountRef = useRef<{ tag: SensingState["gestureTag"]; count: number }>({ tag: null, count: 0 });
   const affectCountRef = useRef<{ affect: SensingState["affect"]; count: number }>({ affect: null, count: 0 });
@@ -42,7 +41,7 @@ export function useSensing() {
     airWritingActive: false,
     headSignal: null,
     headCalibrated: false,
-    headDebug: { dx: 0, dy: 0, maxAbsDx: 0, maxAbsDy: 0, crossings: 0 },
+    headDebug: { pitch: 0, yaw: 0, roll: 0, crossings: 0 },
   });
 
   // Cleanup MediaPipe resources on unmount
@@ -73,7 +72,7 @@ export function useSensing() {
           runningMode: "VIDEO",
           numFaces: 1,
           outputFaceBlendshapes: true,
-          outputFacialTransformationMatrixes: false,
+          outputFacialTransformationMatrixes: true,
         }
       );
       gestureRecognizerRef.current = await GestureRecognizer.createFromOptions(
@@ -114,11 +113,6 @@ export function useSensing() {
       if (faceResult.faceLandmarks && faceResult.faceLandmarks.length > 0) {
         const landmarks = faceResult.faceLandmarks[0];
 
-        if (calibratePendingRef.current) {
-          headTrackerRef.current.calibrate(landmarks);
-          calibratePendingRef.current = false;
-        }
-
         if (faceResult.faceBlendshapes && faceResult.faceBlendshapes.length > 0) {
           const bs: Record<string, number> = {};
           for (const cat of faceResult.faceBlendshapes[0].categories) {
@@ -128,8 +122,12 @@ export function useSensing() {
         }
 
         gazeBucket = gazeTrackerRef.current.process(landmarks);
-        headSignal = headTrackerRef.current.process(landmarks);
-        headDebugRef.current = headTrackerRef.current.debug;
+
+        const matrix = faceResult.facialTransformationMatrixes?.[0];
+        if (matrix) {
+          headSignal = headTrackerRef.current.process(matrix);
+          headDebugRef.current = headTrackerRef.current.debug;
+        }
       }
 
       let gestureTag: SensingState["gestureTag"] = null;
@@ -210,11 +208,6 @@ export function useSensing() {
     setSensing((prev) => ({ ...prev, headSignal: null }));
   }, []);
 
-  const calibrateHeadPose = useCallback(() => {
-    calibratePendingRef.current = true;
-    setSensing((prev) => ({ ...prev, headSignal: null }));
-  }, []);
-
   const resetCalibration = useCallback(() => {
     gestureCountRef.current = { tag: null, count: 0 };
     affectCountRef.current = { affect: null, count: 0 };
@@ -228,7 +221,7 @@ export function useSensing() {
       airWritingActive: false,
       headSignal: null,
       headCalibrated: false,
-      headDebug: { dx: 0, dy: 0, maxAbsDx: 0, maxAbsDy: 0, crossings: 0 },
+      headDebug: { pitch: 0, yaw: 0, roll: 0, crossings: 0 },
     });
   }, []);
 
@@ -240,7 +233,6 @@ export function useSensing() {
     processFrame,
     clearAirWrittenText,
     clearHeadSignal,
-    calibrateHeadPose,
     resetCalibration,
   };
 }

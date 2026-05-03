@@ -40,7 +40,6 @@ function App() {
     processFrame,
     clearAirWrittenText,
     clearHeadSignal,
-    calibrateHeadPose,
     resetCalibration,
   } = useSensing();
 
@@ -101,16 +100,6 @@ function App() {
           </label>
           <WebcamSensing videoRef={videoRef} active={active} error={error || initError} />
           <SensingStatus sensing={sensing} webcamActive={active} />
-          <button
-            type="button"
-            className="calibrate-btn"
-            disabled={!active}
-            onClick={() => calibrateHeadPose()}
-          >
-            {sensing.headCalibrated
-              ? "Re-calibrate head pose"
-              : "Calibrate head pose"}
-          </button>
         </div>
 
         <div className="sidebar-section">

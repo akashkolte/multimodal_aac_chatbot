@@ -105,225 +105,153 @@ export class GazeTracker {
   }
 }
 
-// ── Head-pose tracker (shake / sharp-nod-dissatisfied) ──────────────────────
+// ── Head-pose tracker using facial transformation matrix ────────────────────
+//
+// MediaPipe FaceLandmarker produces a 4×4 column-major transformation matrix
+// that encodes the 3-D rotation of the canonical face model in camera space.
+// We decompose it to Euler angles (ZYX convention) — no calibration step needed
+// because the angles are always relative to the canonical neutral pose.
+//
+// Signals emitted:
+//   HEAD_SHAKE           — yaw oscillates ±N° (left/right), "no"
+//   HEAD_NOD             — gentle pitch dip + recovery, "yes"
+//   HEAD_NOD_DISSATISFIED — sharp/large pitch dip + recovery, discomfort
 
-export type HeadSignal = "HEAD_SHAKE" | "HEAD_NOD_DISSATISFIED";
-
-const NOSE_TIP = 1;
-
-interface NosePoint {
-  x: number;
-  y: number;
-  t: number;
-}
+export type HeadSignal = "HEAD_SHAKE" | "HEAD_NOD" | "HEAD_NOD_DISSATISFIED";
 
 export interface HeadDebug {
-  dx: number;        // current x displacement from neutral
-  dy: number;        // current y displacement from neutral
-  maxAbsDx: number;  // peak |dx| within the window
-  maxAbsDy: number;  // peak |dy| within the window
-  crossings: number; // side crossings within the window (deadband-filtered)
+  pitch: number;     // degrees — nod angle
+  yaw: number;       // degrees — shake angle
+  roll: number;      // degrees — tilt angle
+  crossings: number; // yaw direction reversals in current window
 }
 
-export class HeadPoseTracker {
-  private neutralX: number | null = null;
-  private neutralY: number | null = null;
-  private history: NosePoint[] = [];
-  private lastEmitTs = 0;
-  private lastDebug: HeadDebug = {
-    dx: 0,
-    dy: 0,
-    maxAbsDx: 0,
-    maxAbsDy: 0,
-    crossings: 0,
+interface AnglePoint { pitch: number; yaw: number; t: number }
+
+const RAD2DEG = 180 / Math.PI;
+
+function extractAngles(data: Float32Array): { pitch: number; yaw: number; roll: number } {
+  // Column-major 4×4: R[row][col] = data[col*4 + row]
+  // ZYX Euler (R = Rz·Ry·Rx):
+  //   pitch (X, nod)   = atan2(R[2][1], R[2][2]) = atan2(data[6],  data[10])
+  //   yaw   (Y, shake) = atan2(−R[2][0], √(R[2][1]²+R[2][2]²))
+  //   roll  (Z, tilt)  = atan2(R[1][0], R[0][0])  = atan2(data[1],  data[0])
+  const r20 = data[2], r21 = data[6], r22 = data[10];
+  const r10 = data[1], r00 = data[0];
+  return {
+    pitch: Math.atan2(r21, r22),
+    yaw:   Math.atan2(-r20, Math.sqrt(r21 * r21 + r22 * r22)),
+    roll:  Math.atan2(r10, r00),
   };
+}
 
-  private static WINDOW_MS = 1000;
-  private static REFRACTORY_MS = 2000;
-  private static SHAKE_AMPLITUDE = 0.015;
-  private static SHAKE_MIN_CROSSINGS = 3;
-  // Per-frame jitter below this magnitude is ignored when counting side
-  // crossings, so micro-fidgets near neutral can't rack up false crossings.
-  private static SHAKE_DEADBAND = 0.005;
-  private static NOD_DROP = 0.06;
-  private static NOD_WINDOW_MS = 600;
-  // Reject "nod" when horizontal motion exceeds this — it's a shake/sway.
-  private static NOD_MAX_HORIZONTAL = 0.015;
-  // Recovery: head must come back to within this of neutral.
-  private static NOD_RECOVERY = 0.015;
-  // The drop must start from near-neutral (not from a tilted resting pose).
-  private static NOD_START_THRESHOLD = 0.015;
-  // Minimum frames between drop start and peak — guards against single-frame
-  // landmark glitches that look like an instantaneous jerk.
-  private static NOD_MIN_DROP_FRAMES = 3;
-  // Minimum frames between peak and recovery — same reason, going up.
-  private static NOD_MIN_RECOVERY_FRAMES = 2;
+// Thresholds (radians unless noted)
+const WINDOW_MS       = 1200;
+const REFRACTORY_MS   = 2000;
+const NOD_WINDOW_MS   = 1000;
 
-  calibrate(landmarks: { x: number; y: number }[]): void {
-    if (!landmarks[NOSE_TIP]) return;
-    this.neutralX = landmarks[NOSE_TIP].x;
-    this.neutralY = landmarks[NOSE_TIP].y;
-    this.history = [];
-    this.lastEmitTs = 0;
-  }
+const SHAKE_RANGE_RAD    = 0.30;  // total yaw swing needed (~17°)
+const SHAKE_DEADBAND_RAD = 0.05;  // ignore jitter below ~3°
+const SHAKE_MIN_REVERSALS = 3;
 
-  process(landmarks: { x: number; y: number }[]): HeadSignal | null {
-    if (!landmarks[NOSE_TIP]) return null;
-    if (this.neutralX === null || this.neutralY === null) return null;
+const NOD_AMPLITUDE_RAD   = 0.15; // ~8.6° — min pitch deviation for any nod
+const NOD_SHARP_RAD       = 0.28; // ~16° — above this = DISSATISFIED
+const NOD_RECOVERY_RAD    = 0.15; // must return within ~8.6° of start pitch
+const NOD_MAX_YAW_RAD     = 0.25; // reject if too much lateral (~14°)
 
+export class HeadPoseTracker {
+  private history: AnglePoint[] = [];
+  private lastEmitTs = 0;
+  private lastDebug: HeadDebug = { pitch: 0, yaw: 0, roll: 0, crossings: 0 };
+
+  // No-op — angles are self-calibrating relative to the canonical face model.
+  // Kept so existing callers (calibrateHeadPose button) don't break.
+  calibrate(_landmarks: unknown): void {}
+
+  process(matrix: { data: Float32Array }): HeadSignal | null {
+    const { pitch, yaw, roll } = extractAngles(matrix.data);
     const now = performance.now();
-    const nose = landmarks[NOSE_TIP];
-    this.history.push({ x: nose.x, y: nose.y, t: now });
-    const cutoff = now - HeadPoseTracker.WINDOW_MS;
-    this.history = this.history.filter((p) => p.t >= cutoff);
 
-    this.updateDebug(nose);
+    this.history.push({ pitch, yaw, t: now });
+    this.history = this.history.filter((p) => p.t >= now - WINDOW_MS);
 
-    if (now - this.lastEmitTs < HeadPoseTracker.REFRACTORY_MS) return null;
+    this.updateDebug(pitch, yaw, roll);
+
+    if (now - this.lastEmitTs < REFRACTORY_MS) return null;
     if (this.history.length < 6) return null;
 
     const shake = this.detectShake();
-    if (shake) {
-      this.lastEmitTs = now;
-      return shake;
-    }
+    if (shake) { this.lastEmitTs = now; return shake; }
 
     const nod = this.detectNod(now);
-    if (nod) {
-      this.lastEmitTs = now;
-      return nod;
-    }
+    if (nod) { this.lastEmitTs = now; return nod; }
 
     return null;
   }
 
-  private updateDebug(nose: { x: number; y: number }): void {
-    if (this.neutralX === null || this.neutralY === null) return;
-    let maxAbsDx = 0;
-    let maxAbsDy = 0;
+  private updateDebug(pitch: number, yaw: number, roll: number): void {
     let crossings = 0;
-    let prevSide = 0;
-    for (const p of this.history) {
-      const dx = p.x - this.neutralX;
-      const dy = p.y - this.neutralY;
-      const absDx = Math.abs(dx);
-      maxAbsDx = Math.max(maxAbsDx, absDx);
-      maxAbsDy = Math.max(maxAbsDy, Math.abs(dy));
-      if (absDx < HeadPoseTracker.SHAKE_DEADBAND) continue;
-      const side = dx > 0 ? 1 : -1;
-      if (prevSide !== 0 && side !== prevSide) crossings += 1;
-      prevSide = side;
+    let prevDir = 0;
+    for (let i = 1; i < this.history.length; i++) {
+      const diff = this.history[i].yaw - this.history[i - 1].yaw;
+      if (Math.abs(diff) < SHAKE_DEADBAND_RAD) continue;
+      const dir = diff > 0 ? 1 : -1;
+      if (prevDir !== 0 && dir !== prevDir) crossings++;
+      prevDir = dir;
     }
     this.lastDebug = {
-      dx: nose.x - this.neutralX,
-      dy: nose.y - this.neutralY,
-      maxAbsDx,
-      maxAbsDy,
+      pitch: +(pitch * RAD2DEG).toFixed(1),
+      yaw:   +(yaw   * RAD2DEG).toFixed(1),
+      roll:  +(roll  * RAD2DEG).toFixed(1),
       crossings,
     };
   }
 
-  get debug(): HeadDebug {
-    return this.lastDebug;
-  }
-
   private detectShake(): HeadSignal | null {
-    if (this.neutralX === null) return null;
-    let crossings = 0;
-    let prevSide = 0;
-    let maxAbs = 0;
-    for (const p of this.history) {
-      const dx = p.x - this.neutralX;
-      const absDx = Math.abs(dx);
-      maxAbs = Math.max(maxAbs, absDx);
-      // Only commit to a side once the displacement clears the deadband —
-      // otherwise sub-millimeter jitter near neutral fakes crossings.
-      if (absDx < HeadPoseTracker.SHAKE_DEADBAND) continue;
-      const side = dx > 0 ? 1 : -1;
-      if (prevSide !== 0 && side !== prevSide) crossings += 1;
-      prevSide = side;
+    const yaws = this.history.map((p) => p.yaw);
+    const range = Math.max(...yaws) - Math.min(...yaws);
+    if (range < SHAKE_RANGE_RAD) return null;
+
+    let reversals = 0, prevDir = 0;
+    for (let i = 1; i < yaws.length; i++) {
+      const diff = yaws[i] - yaws[i - 1];
+      if (Math.abs(diff) < SHAKE_DEADBAND_RAD) continue;
+      const dir = diff > 0 ? 1 : -1;
+      if (prevDir !== 0 && dir !== prevDir) reversals++;
+      prevDir = dir;
     }
-    if (
-      crossings >= HeadPoseTracker.SHAKE_MIN_CROSSINGS &&
-      maxAbs >= HeadPoseTracker.SHAKE_AMPLITUDE
-    ) {
-      return "HEAD_SHAKE";
-    }
-    return null;
+    return reversals >= SHAKE_MIN_REVERSALS ? "HEAD_SHAKE" : null;
   }
 
   private detectNod(now: number): HeadSignal | null {
-    if (this.neutralX === null || this.neutralY === null) return null;
-    const windowStart = now - HeadPoseTracker.NOD_WINDOW_MS;
-    const recent = this.history.filter((p) => p.t >= windowStart);
+    const recent = this.history.filter((p) => p.t >= now - NOD_WINDOW_MS);
     if (recent.length < 6) return null;
 
-    // Reject if there's significant horizontal motion — that's a shake/sway.
-    let maxAbsDx = 0;
-    for (const p of recent) {
-      maxAbsDx = Math.max(maxAbsDx, Math.abs(p.x - this.neutralX));
-    }
-    if (maxAbsDx > HeadPoseTracker.NOD_MAX_HORIZONTAL) return null;
+    // Reject if there's significant lateral motion — it's a shake, not a nod.
+    const yawRange = Math.max(...recent.map((p) => Math.abs(p.yaw)));
+    if (yawRange > NOD_MAX_YAW_RAD) return null;
 
-    // Find the peak (lowest head position) within the window.
-    let maxDrop = 0;
-    let peakIdx = -1;
-    for (let i = 0; i < recent.length; i++) {
-      const drop = recent[i].y - this.neutralY;
-      if (drop > maxDrop) {
-        maxDrop = drop;
-        peakIdx = i;
-      }
-    }
-    if (maxDrop < HeadPoseTracker.NOD_DROP || peakIdx < 0) return null;
+    const pitches = recent.map((p) => p.pitch);
+    const startPitch = pitches[0];
+    const maxDev = Math.max(...pitches.map((p) => Math.abs(p - startPitch)));
+    if (maxDev < NOD_AMPLITUDE_RAD) return null;
 
-    // Find a near-neutral start before the peak — a nod is a deliberate
-    // motion *from* neutral, not a recovery from an already-tilted pose.
-    let startIdx = -1;
-    for (let i = peakIdx - 1; i >= 0; i--) {
-      if (
-        recent[i].y - this.neutralY <=
-        HeadPoseTracker.NOD_START_THRESHOLD
-      ) {
-        startIdx = i;
-        break;
-      }
-    }
-    if (
-      startIdx < 0 ||
-      peakIdx - startIdx < HeadPoseTracker.NOD_MIN_DROP_FRAMES
-    ) {
-      return null;
-    }
+    // Must recover back near the start pitch.
+    const lastPitch = pitches[pitches.length - 1];
+    if (Math.abs(lastPitch - startPitch) >= NOD_RECOVERY_RAD) return null;
 
-    // Recovery: head must return near neutral after the peak.
-    let recoveryIdx = -1;
-    for (let i = peakIdx + 1; i < recent.length; i++) {
-      if (recent[i].y - this.neutralY < HeadPoseTracker.NOD_RECOVERY) {
-        recoveryIdx = i;
-        break;
-      }
-    }
-    if (
-      recoveryIdx < 0 ||
-      recoveryIdx - peakIdx < HeadPoseTracker.NOD_MIN_RECOVERY_FRAMES
-    ) {
-      return null;
-    }
-
-    return "HEAD_NOD_DISSATISFIED";
+    return maxDev >= NOD_SHARP_RAD ? "HEAD_NOD_DISSATISFIED" : "HEAD_NOD";
   }
 
+  get debug(): HeadDebug { return this.lastDebug; }
+
   reset(): void {
-    this.neutralX = null;
-    this.neutralY = null;
     this.history = [];
     this.lastEmitTs = 0;
   }
 
-  get calibrated(): boolean {
-    return this.neutralX !== null && this.neutralY !== null;
-  }
+  // Always true — no manual calibration step required with the matrix approach.
+  get calibrated(): boolean { return true; }
 }
 
 // ── Air-writing stroke collector (recognition via Gemini Vision) ─────────────
