@@ -1,3 +1,4 @@
+import type { Matrix } from "@mediapipe/tasks-vision";
 import type { Affect, GestureName, MemoryBucket } from "../types";
 
 // ── Affect classification via MediaPipe blendshapes ──────────────────────────
@@ -34,64 +35,111 @@ export function mapGestureLabel(label: string): GestureName | null {
   }
 }
 
-// ── Gaze region mapping (ported from backend/sensing/gaze.py) ────────────────
+// ── Gaze tracker — world-space gaze via head rotation × eye blendshapes ──────
+//
+// Old approach: absolute iris X/Y position in frame → grid region.
+//   Problem: head shifting in frame changes the bucket even if eyes didn't move.
+//
+// New approach:
+//   1. Eye direction in face-local space from blendshapes (head-relative).
+//   2. Rotate into camera space using the facial transformation matrix.
+//   3. Perspective-project to a 2-D screen gaze point.
+//   4. Map that point to the 5 memory buckets with a dwell timer.
+//
+// Bucket layout (matches the 5 regions on the AAC interface):
+//
+//   family     │  medical
+//   (top-left) │  (top-right)
+//   ───────────┼───────────
+//   hobbies    │  daily_routine
+//   (bot-left) │  (bot-right)
+//            social
+//           (centre)
+//
+// If top/bottom buckets appear swapped on your device, set VITE_GAZE_INVERT_Y=true.
+const GAZE_INVERT_Y = import.meta.env.VITE_GAZE_INVERT_Y === "true";
+const GAZE_CENTER      = 0.10;  // radius around origin treated as "social"
+const GAZE_LATERAL     = 0.12;  // |x| must exceed this for left/right split
+const GAZE_VERTICAL    = 0.12;  // |y| must exceed this for top/bottom split
 
-const LEFT_IRIS_CENTER = 468;
-const RIGHT_IRIS_CENTER = 473;
+function worldGazeXY(
+  matrix: Matrix,
+  bs: Record<string, number>,
+): { x: number; y: number } {
+  // Eye direction in face-local space.
+  // MediaPipe "In" = toward nose, "Out" = away from nose.
+  // viewer-right  = InLeft  + OutRight
+  // viewer-left   = OutLeft + InRight
+  const eyeR = ((bs.eyeLookInLeft  ?? 0) + (bs.eyeLookOutRight ?? 0)) / 2;
+  const eyeL = ((bs.eyeLookOutLeft ?? 0) + (bs.eyeLookInRight  ?? 0)) / 2;
+  const eyeU = ((bs.eyeLookUpLeft  ?? 0) + (bs.eyeLookUpRight  ?? 0)) / 2;
+  const eyeD = ((bs.eyeLookDownLeft ?? 0) + (bs.eyeLookDownRight ?? 0)) / 2;
 
-interface GazeRegion {
-  bounds: [number, number, number, number]; // x_min, y_min, x_max, y_max
-  bucket: MemoryBucket;
+  // Face-local gaze vector (+X right, +Y up, +Z forward toward camera).
+  const lx = eyeR - eyeL;
+  const ly = eyeU - eyeD;
+  const lz = 1.0; // canonical forward direction
+
+  // Rotate to camera space using the 3×3 submatrix of the column-major 4×4.
+  // R[row][col] = data[col*4 + row]
+  const d = matrix.data;
+  const cx = d[0]*lx + d[4]*ly + d[8]*lz;
+  const cy = d[1]*lx + d[5]*ly + d[9]*lz;
+  const cz = d[2]*lx + d[6]*ly + d[10]*lz;
+
+  // Perspective-project onto screen plane.
+  const fwd = Math.abs(cz) > 0.01 ? cz : 0.01;
+  const y = GAZE_INVERT_Y ? -(cy / fwd) : (cy / fwd);
+  return { x: cx / fwd, y };
 }
 
-const GAZE_REGIONS: GazeRegion[] = [
-  // Centre checked first (most specific region)
-  { bounds: [0.3, 0.3, 0.7, 0.7], bucket: "social" },
-  { bounds: [0.0, 0.0, 0.5, 0.5], bucket: "family" },
-  { bounds: [0.5, 0.0, 1.0, 0.5], bucket: "medical" },
-  { bounds: [0.0, 0.5, 0.5, 1.0], bucket: "hobbies" },
-  { bounds: [0.5, 0.5, 1.0, 1.0], bucket: "daily_routine" },
-];
-
-function regionFor(x: number, y: number): MemoryBucket | null {
-  for (const { bounds, bucket } of GAZE_REGIONS) {
-    if (x >= bounds[0] && x <= bounds[2] && y >= bounds[1] && y <= bounds[3]) {
-      return bucket;
-    }
-  }
-  return null;
+function gazeToRegion(x: number, y: number): MemoryBucket | null {
+  const ax = Math.abs(x), ay = Math.abs(y);
+  if (ax < GAZE_CENTER && ay < GAZE_CENTER) return "social";
+  if (ax < GAZE_LATERAL && ay < GAZE_VERTICAL) return "social"; // near-centre
+  if (x < -GAZE_LATERAL && y >  GAZE_VERTICAL) return "family";
+  if (x >  GAZE_LATERAL && y >  GAZE_VERTICAL) return "medical";
+  if (x < -GAZE_LATERAL && y < -GAZE_VERTICAL) return "hobbies";
+  if (x >  GAZE_LATERAL && y < -GAZE_VERTICAL) return "daily_routine";
+  return null; // edge zone — don't fire
 }
 
 export class GazeTracker {
-  private currentRegion: MemoryBucket | null = null;
+  private currentBucket: MemoryBucket | null = null;
   private dwellStart = 0;
   private dwellThresholdMs: number;
+  private _activeZone: MemoryBucket | null = null;
 
   constructor(dwellThresholdMs = 1500) {
     this.dwellThresholdMs = dwellThresholdMs;
   }
 
-  process(landmarks: { x: number; y: number }[]): MemoryBucket | null {
-    if (landmarks.length <= RIGHT_IRIS_CENTER) return null;
+  // Current zone the user is looking at right now — updates every frame.
+  // Use this to highlight the zone map immediately.
+  get activeZone(): MemoryBucket | null {
+    return this._activeZone;
+  }
 
-    const gazeX =
-      (landmarks[LEFT_IRIS_CENTER].x + landmarks[RIGHT_IRIS_CENTER].x) / 2;
-    const gazeY =
-      (landmarks[LEFT_IRIS_CENTER].y + landmarks[RIGHT_IRIS_CENTER].y) / 2;
+  process(
+    matrix: Matrix | null,
+    bs: Record<string, number>,
+  ): MemoryBucket | null {
+    const { x, y } = matrix
+      ? worldGazeXY(matrix, bs)
+      : { x: 0, y: 0 };
 
-    const bucket = regionFor(gazeX, gazeY);
+    const bucket = matrix ? gazeToRegion(x, y) : null;
+    this._activeZone = bucket; // always reflect current zone
 
-    if (bucket !== this.currentRegion) {
-      this.currentRegion = bucket;
+    if (bucket !== this.currentBucket) {
+      this.currentBucket = bucket;
       this.dwellStart = performance.now();
       return null;
     }
 
-    if (
-      bucket !== null &&
-      performance.now() - this.dwellStart >= this.dwellThresholdMs
-    ) {
-      this.currentRegion = null;
+    if (bucket !== null &&
+        performance.now() - this.dwellStart >= this.dwellThresholdMs) {
+      this.currentBucket = null;
       this.dwellStart = 0;
       return bucket;
     }
@@ -100,7 +148,8 @@ export class GazeTracker {
   }
 
   reset() {
-    this.currentRegion = null;
+    this.currentBucket = null;
+    this._activeZone = null;
     this.dwellStart = 0;
   }
 }
@@ -168,7 +217,7 @@ export class HeadPoseTracker {
   // Kept so existing callers (calibrateHeadPose button) don't break.
   calibrate(_landmarks: unknown): void {}
 
-  process(matrix: { data: Float32Array }): HeadSignal | null {
+  process(matrix: Matrix): HeadSignal | null {
     const { pitch, yaw, roll } = extractAngles(matrix.data);
     const now = performance.now();
 
