@@ -1,11 +1,46 @@
-import type { SensingState } from "../types";
+import type { MemoryBucket, SensingState } from "../types";
 
 const AFFECT_EMOJI: Record<string, string> = {
-  HAPPY: "\ud83d\ude0a",
-  FRUSTRATED: "\ud83d\ude24",
-  NEUTRAL: "\ud83d\ude10",
-  SURPRISED: "\ud83d\ude32",
+  HAPPY: "😊",
+  FRUSTRATED: "😤",
+  NEUTRAL: "😐",
+  SURPRISED: "😲",
 };
+
+const ZONE_LABEL: Record<MemoryBucket, string> = {
+  family:        "👨‍👩‍👧 Family",
+  medical:       "🏥 Medical",
+  social:        "👥 Social",
+  hobbies:       "🎨 Hobbies",
+  daily_routine: "🌅 Routine",
+};
+
+function GazeZoneMap({ active }: { active: MemoryBucket | null }) {
+  const zone = (bucket: MemoryBucket) => (
+    <div
+      key={bucket}
+      className={`gaze-zone${active === bucket ? " gaze-zone--active" : ""}`}
+    >
+      {ZONE_LABEL[bucket]}
+    </div>
+  );
+
+  return (
+    <div className="gaze-zone-map">
+      <div className="gaze-zone-row">
+        {zone("family")}
+        {zone("medical")}
+      </div>
+      <div className="gaze-zone-row">
+        {zone("social")}
+      </div>
+      <div className="gaze-zone-row">
+        {zone("hobbies")}
+        {zone("daily_routine")}
+      </div>
+    </div>
+  );
+}
 
 interface Props {
   sensing: SensingState;
@@ -38,6 +73,7 @@ export function SensingStatus({ sensing, webcamActive }: Props) {
           {sensing.gazeBucket ?? "none"}
         </span>
       </div>
+      <GazeZoneMap active={sensing.gazeZone} />
       <div className="sensing-row">
         <span className="sensing-label">Head</span>
         <span className="sensing-value">{sensing.headSignal ?? "steady"}</span>

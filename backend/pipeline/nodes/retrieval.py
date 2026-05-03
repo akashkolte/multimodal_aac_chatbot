@@ -17,6 +17,11 @@ from backend.retrieval.vector_store import get_device, get_embedder, retrieve
 # but not overwhelming nudge — session-in-progress signals still dominate.
 _PICK_PRIOR_WEIGHT = 0.3
 
+# How much to up-weight the gaze bucket relative to others.
+# 3.0 means gaze bucket is 3× more likely to surface — strong nudge without
+# excluding chunks from other buckets that score higher on relevance.
+_GAZE_PRIOR_BOOST = 1.5
+
 _OPEN_DOMAIN_STUB_TEXT = (
     "(no external knowledge source wired — answer from general knowledge)"
 )
@@ -174,13 +179,29 @@ def _dispatch_all(
     return chunks + pinned, t_rerank
 
 
+def _boost_gaze_prior(
+    priors: dict[str, float] | None,
+    gaze_bucket: str | None,
+) -> dict[str, float] | None:
+    """Return a renormalized copy of priors with the gaze bucket up-weighted."""
+    if not gaze_bucket or not priors:
+        return priors
+    boosted = {
+        b: v * (_GAZE_PRIOR_BOOST if b == gaze_bucket else 1.0)
+        for b, v in priors.items()
+    }
+    total = sum(boosted.values())
+    return {b: v / total for b, v in boosted.items()} if total > 0 else priors
+
+
 def _retrieve_personal(
     sub: SubIntent, state: PipelineState, k: int
 ) -> list[tuple[RetrievedChunk, torch.Tensor | None]]:
-    # Gaze fixation is an explicit user signal — hard filter. Session priors
-    # (bucket + type) are applied as soft weights inside vector_store.retrieve().
-    hard_filter = state.get("gaze_bucket")
-    bucket_priors = state.get("bucket_priors")
+    # Gaze is a soft prior boost — the gaze bucket rises in ranking but
+    # higher-scoring chunks from other buckets are never excluded.
+    bucket_priors = _boost_gaze_prior(
+        state.get("bucket_priors"), state.get("gaze_bucket")
+    )
     type_priors = state.get("type_priors")
 
     if not settings.rerank_enabled:
@@ -189,7 +210,6 @@ def _retrieve_personal(
             user_id=state["user_id"],
             top_k=k,
             rerank_k=k,
-            bucket_filter=hard_filter,
             bucket_priors=bucket_priors,
             type_priors=type_priors,
         )
@@ -200,7 +220,6 @@ def _retrieve_personal(
         user_id=state["user_id"],
         top_k=k,
         rerank_k=k,
-        bucket_filter=hard_filter,
         bucket_priors=bucket_priors,
         type_priors=type_priors,
         return_vectors=True,

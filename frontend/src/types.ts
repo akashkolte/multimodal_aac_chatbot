@@ -13,7 +13,8 @@ export interface HeadDebug {
 export interface SensingState {
   affect: Affect | null;
   gestureTag: GestureName | null;
-  gazeBucket: MemoryBucket | null;
+  gazeZone: MemoryBucket | null;   // current zone (updates every frame)
+  gazeBucket: MemoryBucket | null; // fired bucket (only after dwell completes)
   airWrittenText: string;
   airWritingActive: boolean;
   headSignal: HeadSignal | null;

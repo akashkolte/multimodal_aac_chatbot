@@ -154,6 +154,40 @@ input[type="text"]:hover {
   font-weight: 500;
 }
 
+.gaze-zone-map {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  margin: 2px 0 4px;
+}
+
+.gaze-zone-row {
+  display: flex;
+  gap: 3px;
+}
+
+.gaze-zone {
+  flex: 1;
+  padding: 4px 6px;
+  font-size: 11px;
+  text-align: center;
+  border-radius: 5px;
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+  background: var(--surface);
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.gaze-zone--active {
+  background: var(--accent, #4f8ef7);
+  color: #fff;
+  border-color: var(--accent, #4f8ef7);
+  font-weight: 600;
+}
+
 .section-title {
   font-size: 11px;
   color: var(--text-muted);

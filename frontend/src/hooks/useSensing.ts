@@ -19,6 +19,8 @@ const AFFECT_DEBOUNCE_FRAMES = 8;
 
 // Set VITE_AIRWRITING_ENABLED=false in .env to disable air-writing.
 const AIRWRITING_ENABLED = import.meta.env.VITE_AIRWRITING_ENABLED !== "false";
+// Set VITE_GAZE_ENABLED=false in .env to disable gaze zone tracking.
+const GAZE_ENABLED = import.meta.env.VITE_GAZE_ENABLED !== "false";
 
 export function useSensing() {
   const faceLandmarkerRef = useRef<FaceLandmarker | null>(null);
@@ -27,7 +29,7 @@ export function useSensing() {
   const airWriterRef = useRef(new AirWriter());
   const inkBusyRef = useRef(false);
   const headTrackerRef = useRef(new HeadPoseTracker());
-  const headDebugRef = useRef({ dx: 0, dy: 0, maxAbsDx: 0, maxAbsDy: 0, crossings: 0 });
+  const headDebugRef = useRef({ pitch: 0, yaw: 0, roll: 0, crossings: 0 });
   const gestureCountRef = useRef<{ tag: SensingState["gestureTag"]; count: number }>({ tag: null, count: 0 });
   const affectCountRef = useRef<{ affect: SensingState["affect"]; count: number }>({ affect: null, count: 0 });
   const initingRef = useRef(false);
@@ -36,6 +38,7 @@ export function useSensing() {
   const [sensing, setSensing] = useState<SensingState>({
     affect: null,
     gestureTag: null,
+    gazeZone: null,
     gazeBucket: null,
     airWrittenText: "",
     airWritingActive: false,
@@ -111,19 +114,21 @@ export function useSensing() {
 
       const faceResult = faceLandmarker.detectForVideo(video, timestamp);
       if (faceResult.faceLandmarks && faceResult.faceLandmarks.length > 0) {
-        const landmarks = faceResult.faceLandmarks[0];
+        const matrix = faceResult.facialTransformationMatrixes?.[0] ?? null;
 
+        const bs: Record<string, number> = {};
         if (faceResult.faceBlendshapes && faceResult.faceBlendshapes.length > 0) {
-          const bs: Record<string, number> = {};
           for (const cat of faceResult.faceBlendshapes[0].categories) {
             bs[cat.categoryName] = cat.score;
           }
           affect = classifyAffect(bs);
         }
 
-        gazeBucket = gazeTrackerRef.current.process(landmarks);
+        // Both gaze and head use the transformation matrix + blendshapes.
+        if (GAZE_ENABLED) {
+          gazeBucket = gazeTrackerRef.current.process(matrix, bs);
+        }
 
-        const matrix = faceResult.facialTransformationMatrixes?.[0];
         if (matrix) {
           headSignal = headTrackerRef.current.process(matrix);
           headDebugRef.current = headTrackerRef.current.debug;
@@ -187,6 +192,7 @@ export function useSensing() {
       setSensing((prev) => ({
         affect: stableAffect ?? prev.affect,
         gestureTag: stableGesture,
+        gazeZone: GAZE_ENABLED ? gazeTrackerRef.current.activeZone : null,
         gazeBucket: gazeBucket ?? prev.gazeBucket,
         airWrittenText: newAirText
           ? prev.airWrittenText + newAirText
@@ -216,6 +222,7 @@ export function useSensing() {
     setSensing({
       affect: null,
       gestureTag: null,
+      gazeZone: null,
       gazeBucket: null,
       airWrittenText: "",
       airWritingActive: false,

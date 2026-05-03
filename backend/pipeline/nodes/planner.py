@@ -94,6 +94,7 @@ def _run_stream(state: PipelineState, tier: str) -> Iterator[dict]:
 
     style: StyleDirective = gen_cfg["style"]
     gesture_tag = state.get("gesture_tag")
+    head_signal = state.get("head_signal")
     air_written_text = state.get("air_written_text")
     resolved_intent = state.get("resolved_intent")
     turnaround_triggered = state.get("turnaround_triggered", False)
@@ -201,6 +202,7 @@ def _run_stream(state: PipelineState, tier: str) -> Iterator[dict]:
             rejected_candidates=rejected_candidates,
             intent_kind=intent_kind,
             affect=effective_affect,
+            head_signal=head_signal,
         )
         buf: list[str] = []
         try:
@@ -368,6 +370,7 @@ def _run(state: PipelineState, tier: str) -> dict:
 
     style: StyleDirective = gen_cfg["style"]
     gesture_tag = state.get("gesture_tag")
+    head_signal = state.get("head_signal")
     air_written_text = state.get("air_written_text")
     resolved_intent = state.get("resolved_intent")
     turnaround_triggered = state.get("turnaround_triggered", False)
@@ -417,6 +420,7 @@ def _run(state: PipelineState, tier: str) -> dict:
             rejected_candidates=rejected_candidates,
             intent_kind=intent_kind,
             affect=effective_affect,
+            head_signal=head_signal,
         )
         text = chat_complete(
             messages=messages,
@@ -510,6 +514,7 @@ def _run(state: PipelineState, tier: str) -> dict:
         rejected_response=rejected_response,
         intent_kind=intent_kind,
         affect=affect,
+        head_signal=head_signal,
     )
     augmented_prompt = "\n\n".join(
         f"[{m['role']}] {m['content']}" for m in default_messages
@@ -536,6 +541,30 @@ _AFFECT_HINTS = {
     "NEUTRAL": "Your current state is unclear from the affect signal.",
 }
 
+# Human-readable descriptions for each multimodal signal value, shown to the LLM.
+_AFFECT_DESCRIPTIONS = {
+    "HAPPY": "happy / positive / energetic",
+    "FRUSTRATED": "frustrated / tired / irritable",
+    "SURPRISED": "surprised / caught off-guard",
+    "NEUTRAL": "neutral / unclear",
+}
+
+_GESTURE_DESCRIPTIONS = {
+    "THUMBS_UP": "THUMBS_UP — agreeing, approving, or confirming",
+    "THUMBS_DOWN": "THUMBS_DOWN — disagreeing, declining, or disapproving",
+    "POINTING_UP": "POINTING_UP — referencing something specific",
+    "CLOSED_FIST": "CLOSED_FIST — emphatic, something important to say",
+    "OPEN_PALM": "OPEN_PALM — greeting or welcoming",
+    "VICTORY": "VICTORY / peace sign — celebrating or excited",
+    "I_LOVE_YOU": "I_LOVE_YOU — expressing warmth or affection",
+}
+
+_HEAD_DESCRIPTIONS = {
+    "HEAD_NOD": "HEAD_NOD — nodding yes / agreeing",
+    "HEAD_NOD_DISSATISFIED": "HEAD_NOD_DISSATISFIED — nodding but with dissatisfaction",
+    "HEAD_SHAKE": "HEAD_SHAKE — shaking no / disagreeing",
+}
+
 
 def _build_messages(
     profile: dict,
@@ -551,6 +580,7 @@ def _build_messages(
     rejected_candidates: list[str] | None = None,
     intent_kind: str = "memory",
     affect: str = "NEUTRAL",
+    head_signal: str | None = None,
 ) -> list[dict]:
     # Split into a stable system message (same per persona — gets cached by the
     # provider) and a turn-specific user message. Anything that changes per
@@ -571,6 +601,7 @@ def _build_messages(
         rejected_candidates=rejected_candidates,
         intent_kind=intent_kind,
         affect=affect,
+        head_signal=head_signal,
     )
     return [
         {"role": "system", "content": system_content},
@@ -625,6 +656,26 @@ def _safe_user_text(s: str) -> str:
     # of the quoted region and could inject instructions. Strip those and cap
     # length. Same pattern as `safe_rejected` for `rejected_response`.
     return s.replace('"', "'").replace("\n", " ").replace("\r", " ")[:200]
+
+
+def _format_nonverbal_signals(
+    affect: str,
+    gesture_tag: str | None,
+    head_signal: str | None,
+) -> str:
+    """Build an explicit non-verbal cues block so the LLM can reason about them."""
+    lines = []
+    affect_desc = _AFFECT_DESCRIPTIONS.get(affect, affect)
+    lines.append(f"- Facial affect: {affect} ({affect_desc})")
+    if gesture_tag:
+        lines.append(f"- Hand gesture: {_GESTURE_DESCRIPTIONS.get(gesture_tag, gesture_tag)}")
+    else:
+        lines.append("- Hand gesture: none detected")
+    if head_signal:
+        lines.append(f"- Head movement: {_HEAD_DESCRIPTIONS.get(head_signal, head_signal)}")
+    else:
+        lines.append("- Head movement: none / steady")
+    return "Non-verbal cues from the AAC user right now:\n" + "\n".join(lines)
 
 
 def _format_multimodal_intent(
@@ -696,6 +747,7 @@ def _build_user(
     rejected_candidates: list[str] | None = None,
     intent_kind: str = "memory",
     affect: str = "NEUTRAL",
+    head_signal: str | None = None,
 ) -> str:
     personal_chunks = [c for c in chunks if c.get("source", "personal") == "personal"]
     contextual_chunks = [c for c in chunks if c.get("source") == "contextual"]
@@ -737,6 +789,7 @@ def _build_user(
             merged_opener = directive["opener_hint"]
 
     air_writing_block = _format_multimodal_intent(resolved_intent, air_written_text)
+    nonverbal_block = "\n\n" + _format_nonverbal_signals(affect, gesture_tag, head_signal)
 
     persona_mod = gen_cfg.get("persona_mod", "baseline")
     persona_instruction_line = (
@@ -777,7 +830,7 @@ def _build_user(
     if intent_kind == "present_state":
         affect_hint = _AFFECT_HINTS.get(affect, _AFFECT_HINTS["NEUTRAL"])
         return f"""\
-{directive_block}{air_writing_block}{turnaround_line}{persona_instruction_line}
+{directive_block}{nonverbal_block}{air_writing_block}{turnaround_line}{persona_instruction_line}
 
 The partner is asking about your present state (right now, today).
 Your autobiographical memories do NOT contain this — do not fabricate details from them.
@@ -804,7 +857,7 @@ Reply as {persona_name} in 1–2 sentences, first person.
     )
 
     return f"""\
-{directive_block}{air_writing_block}{turnaround_line}{persona_instruction_line}{prior_pick_section}
+{directive_block}{nonverbal_block}{air_writing_block}{turnaround_line}{persona_instruction_line}{prior_pick_section}
 
 Personal memories:
 {memory_block}
