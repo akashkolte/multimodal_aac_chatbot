@@ -1,35 +1,30 @@
 import { useRef, useCallback, useState, useEffect } from "react";
 import {
   FaceLandmarker,
-  HandLandmarker,
+  GestureRecognizer,
   FilesetResolver,
 } from "@mediapipe/tasks-vision";
 import type { SensingState } from "../types";
 import {
-  computeAffectVector,
   classifyAffect,
-  classifyGesture,
+  mapGestureLabel,
   GazeTracker,
   AirWriter,
   HeadPoseTracker,
 } from "../lib/sensing";
 import { DEFAULT_AIR_TEMPLATES } from "../lib/airTemplates";
 
-const EMA_ALPHA = 0.2;
 const GESTURE_DEBOUNCE_FRAMES = 3;
 const AFFECT_DEBOUNCE_FRAMES = 8;
 
 export function useSensing() {
   const faceLandmarkerRef = useRef<FaceLandmarker | null>(null);
-  const handLandmarkerRef = useRef<HandLandmarker | null>(null);
+  const gestureRecognizerRef = useRef<GestureRecognizer | null>(null);
   const gazeTrackerRef = useRef(new GazeTracker());
   const airWriterRef = useRef(new AirWriter(DEFAULT_AIR_TEMPLATES));
   const headTrackerRef = useRef(new HeadPoseTracker());
   const calibratePendingRef = useRef(false);
   const headDebugRef = useRef({ dx: 0, dy: 0, maxAbsDx: 0, maxAbsDy: 0, crossings: 0 });
-  const neutralLCPRef = useRef<number | null>(null);
-  const calibBufferRef = useRef<number[]>([]);
-  const smoothedRef = useRef({ MAR: 0, EAR: 0.3, BRI: -0.3, LCP: 0 });
   const gestureCountRef = useRef<{ tag: SensingState["gestureTag"]; count: number }>({ tag: null, count: 0 });
   const affectCountRef = useRef<{ affect: SensingState["affect"]; count: number }>({ affect: null, count: 0 });
   const initingRef = useRef(false);
@@ -49,9 +44,9 @@ export function useSensing() {
   useEffect(() => {
     return () => {
       faceLandmarkerRef.current?.close();
-      handLandmarkerRef.current?.close();
+      gestureRecognizerRef.current?.close();
       faceLandmarkerRef.current = null;
-      handLandmarkerRef.current = null;
+      gestureRecognizerRef.current = null;
     };
   }, []);
 
@@ -72,16 +67,16 @@ export function useSensing() {
           },
           runningMode: "VIDEO",
           numFaces: 1,
-          outputFaceBlendshapes: false,
+          outputFaceBlendshapes: true,
           outputFacialTransformationMatrixes: false,
         }
       );
-      handLandmarkerRef.current = await HandLandmarker.createFromOptions(
+      gestureRecognizerRef.current = await GestureRecognizer.createFromOptions(
         vision,
         {
           baseOptions: {
             modelAssetPath:
-              "https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/1/hand_landmarker.task",
+              "https://storage.googleapis.com/mediapipe-models/gesture_recognizer/gesture_recognizer/float16/1/gesture_recognizer.task",
             delegate: "GPU",
           },
           runningMode: "VIDEO",
@@ -103,8 +98,8 @@ export function useSensing() {
   const processFrame = useCallback(
     (video: HTMLVideoElement, timestamp: number) => {
       const faceLandmarker = faceLandmarkerRef.current;
-      const handLandmarker = handLandmarkerRef.current;
-      if (!faceLandmarker || !handLandmarker) return;
+      const gestureRecognizer = gestureRecognizerRef.current;
+      if (!faceLandmarker || !gestureRecognizer) return;
 
       let affect: SensingState["affect"] = null;
       let gazeBucket: SensingState["gazeBucket"] = null;
@@ -114,38 +109,17 @@ export function useSensing() {
       if (faceResult.faceLandmarks && faceResult.faceLandmarks.length > 0) {
         const landmarks = faceResult.faceLandmarks[0];
 
-        // Average the raw LCP (vertical corner pull, pre-offset) over ~30 frames
-        // of the user's face before locking neutral. Single-frame calibration is
-        // too noisy and tended to bake in a momentary smile as "neutral".
-        // During calibration, affect stays null but gaze/head/gesture still flow.
-        if (neutralLCPRef.current === null) {
-          const raw0 = computeAffectVector(landmarks, 0);
-          calibBufferRef.current.push(raw0.LCP);
-          if (calibBufferRef.current.length >= 30) {
-            const sum = calibBufferRef.current.reduce((a, b) => a + b, 0);
-            neutralLCPRef.current = sum / calibBufferRef.current.length;
-            calibBufferRef.current = [];
-          }
-        }
-
         if (calibratePendingRef.current) {
           headTrackerRef.current.calibrate(landmarks);
           calibratePendingRef.current = false;
         }
 
-        if (neutralLCPRef.current !== null) {
-          const raw = computeAffectVector(landmarks, neutralLCPRef.current);
-
-          const prev = smoothedRef.current;
-          const smoothed = {
-            MAR: EMA_ALPHA * raw.MAR + (1 - EMA_ALPHA) * prev.MAR,
-            EAR: EMA_ALPHA * raw.EAR + (1 - EMA_ALPHA) * prev.EAR,
-            BRI: EMA_ALPHA * raw.BRI + (1 - EMA_ALPHA) * prev.BRI,
-            LCP: EMA_ALPHA * raw.LCP + (1 - EMA_ALPHA) * prev.LCP,
-          };
-          smoothedRef.current = smoothed;
-
-          affect = classifyAffect(smoothed);
+        if (faceResult.faceBlendshapes && faceResult.faceBlendshapes.length > 0) {
+          const bs: Record<string, number> = {};
+          for (const cat of faceResult.faceBlendshapes[0].categories) {
+            bs[cat.categoryName] = cat.score;
+          }
+          affect = classifyAffect(bs);
         }
 
         gazeBucket = gazeTrackerRef.current.process(landmarks);
@@ -155,10 +129,11 @@ export function useSensing() {
 
       let gestureTag: SensingState["gestureTag"] = null;
 
-      const handResult = handLandmarker.detectForVideo(video, timestamp);
-      if (handResult.landmarks && handResult.landmarks.length > 0) {
-        const handLandmarks = handResult.landmarks[0];
-        gestureTag = classifyGesture(handLandmarks);
+      const gestureResult = gestureRecognizer.recognizeForVideo(video, timestamp);
+      if (gestureResult.gestures && gestureResult.gestures.length > 0) {
+        const topGesture = gestureResult.gestures[0][0];
+        gestureTag = mapGestureLabel(topGesture.categoryName);
+        const handLandmarks = gestureResult.landmarks[0];
         airWriterRef.current.processHandLandmarks(
           handLandmarks,
           video.videoWidth,
@@ -217,9 +192,6 @@ export function useSensing() {
   }, []);
 
   const resetCalibration = useCallback(() => {
-    neutralLCPRef.current = null;
-    calibBufferRef.current = [];
-    smoothedRef.current = { MAR: 0, EAR: 0.3, BRI: -0.3, LCP: 0 };
     gestureCountRef.current = { tag: null, count: 0 };
     affectCountRef.current = { affect: null, count: 0 };
     gazeTrackerRef.current.reset();

@@ -2,7 +2,7 @@ import { DEFAULT_AIR_TEMPLATES } from "./airTemplates";
 
 // Canonical AAC tokens that carry high signal when someone air-writes them —
 // short, action-oriented, and hard to confuse for casual chat. When the
-// voice transcript and the air-written text disagree, these tokens win.
+// voice transcript and the air-writing text disagree, these tokens win.
 const AAC_PRIORITY_TOKENS: ReadonlySet<string> = new Set(
   ["help", "stop", "water", "done", "more"].filter((t) =>
     DEFAULT_AIR_TEMPLATES.has(t)

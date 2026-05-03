@@ -1,132 +1,37 @@
 import type { Affect, GestureName, MemoryBucket } from "../types";
 
-// ── Affect classification (ported from backend/sensing/face_mesh.py) ────────
+// ── Affect classification via MediaPipe blendshapes ──────────────────────────
 
-interface AffectVector {
-  MAR: number;
-  EAR: number;
-  BRI: number;
-  LCP: number;
-}
+export function classifyAffect(bs: Record<string, number>): Affect {
+  const smileLeft   = bs["mouthSmileLeft"]  ?? 0;
+  const smileRight  = bs["mouthSmileRight"] ?? 0;
+  const browDownL   = bs["browDownLeft"]    ?? 0;
+  const browDownR   = bs["browDownRight"]   ?? 0;
+  const squintL     = bs["eyeSquintLeft"]   ?? 0;
+  const squintR     = bs["eyeSquintRight"]  ?? 0;
+  const jawOpen     = bs["jawOpen"]         ?? 0;
+  const browInnerUp = bs["browInnerUp"]     ?? 0;
 
-export function classifyAffect(v: AffectVector): Affect {
-  // BRI is relative (browMid.y - eyeCenter.y) / interOcular — more negative = brows raised higher
-  // LCP is vertical offset of lip corners from mouth center, normalised by inter-ocular,
-  //   relative to calibrated neutral — positive = corners pulled UP (smile), negative = DOWN (frown)
-  // MAR is absolute ratio — higher = mouth more open
-  // EAR is absolute ratio — lower = eyes more closed / squinting
-  if (v.BRI < -0.35 && v.MAR > 0.4) return "SURPRISED";
-  // FRUSTRATED: a clear frown, OR brows lowered + squinting — either signals displeasure
-  if (v.LCP < -0.018) return "FRUSTRATED";
-  if (v.BRI > -0.2 && v.EAR < 0.18) return "FRUSTRATED";
-  if (v.LCP > 0.012) return "HAPPY";
+  if (jawOpen > 0.4 && browInnerUp > 0.5) return "SURPRISED";
+  if (browDownL > 0.4 || browDownR > 0.4) return "FRUSTRATED";
+  if (squintL > 0.5 && squintR > 0.5)     return "FRUSTRATED";
+  if (smileLeft > 0.5 && smileRight > 0.5) return "HAPPY";
   return "NEUTRAL";
 }
 
-// Face landmark indices (MediaPipe 478-point mesh)
-const MOUTH_TOP = 13, MOUTH_BOTTOM = 14, MOUTH_LEFT = 61, MOUTH_RIGHT = 291;
-const EYE_TOP = 159, EYE_BOTTOM = 145, EYE_LEFT = 33, EYE_RIGHT = 133;
-const BROW_LEFT = 70, BROW_RIGHT = 300;
-const CORNER_LEFT = 61, CORNER_RIGHT = 291;
+// ── Gesture label mapping from MediaPipe GestureRecognizer ───────────────────
 
-function dist(a: { x: number; y: number }, b: { x: number; y: number }): number {
-  return Math.sqrt((a.x - b.x) ** 2 + (a.y - b.y) ** 2);
-}
-
-export function computeAffectVector(
-  landmarks: { x: number; y: number }[],
-  neutralLCP: number
-): AffectVector {
-  const MAR =
-    dist(landmarks[MOUTH_TOP], landmarks[MOUTH_BOTTOM]) /
-    (dist(landmarks[MOUTH_LEFT], landmarks[MOUTH_RIGHT]) + 1e-6);
-
-  const EAR =
-    dist(landmarks[EYE_TOP], landmarks[EYE_BOTTOM]) /
-    (dist(landmarks[EYE_LEFT], landmarks[EYE_RIGHT]) + 1e-6);
-
-  const eyeCenter = {
-    x: (landmarks[EYE_LEFT].x + landmarks[EYE_RIGHT].x) / 2,
-    y: (landmarks[EYE_LEFT].y + landmarks[EYE_RIGHT].y) / 2,
-  };
-  const interOcular = dist(landmarks[EYE_LEFT], landmarks[EYE_RIGHT]);
-  const browMid = {
-    x: (landmarks[BROW_LEFT].x + landmarks[BROW_RIGHT].x) / 2,
-    y: (landmarks[BROW_LEFT].y + landmarks[BROW_RIGHT].y) / 2,
-  };
-  // MediaPipe y increases downward, so browMid.y < eyeCenter.y when brows are above eyes.
-  // Raising brows moves them toward y=0, making this value more negative.
-  const BRI = (browMid.y - eyeCenter.y) / (interOcular + 1e-6);
-
-  // Lip-corner pull: average y of the two corners vs. mouth vertical centre,
-  // normalised by inter-ocular distance, relative to calibrated neutral.
-  // MediaPipe y increases downward, so corners rising above the mouth centre → negative raw,
-  // which we flip so smile = positive. Subtracting the calibrated neutral removes per-face bias.
-  const mouthCentreY = (landmarks[MOUTH_TOP].y + landmarks[MOUTH_BOTTOM].y) / 2;
-  const cornerAvgY = (landmarks[CORNER_LEFT].y + landmarks[CORNER_RIGHT].y) / 2;
-  const rawLCP = (mouthCentreY - cornerAvgY) / (interOcular + 1e-6);
-  const LCP = rawLCP - neutralLCP;
-
-  return { MAR, EAR, BRI, LCP };
-}
-
-// ── Gesture classification (ported from backend/sensing/gesture.py) ─────────
-
-interface Point3D {
-  x: number;
-  y: number;
-  z: number;
-}
-
-function norm3(a: Point3D): number {
-  return Math.sqrt(a.x ** 2 + a.y ** 2 + a.z ** 2);
-}
-
-function sub3(a: Point3D, b: Point3D): Point3D {
-  return { x: a.x - b.x, y: a.y - b.y, z: a.z - b.z };
-}
-
-function scale3(a: Point3D, s: number): Point3D {
-  return { x: a.x * s, y: a.y * s, z: a.z * s };
-}
-
-export function classifyGesture(landmarks: Point3D[]): GestureName | null {
-  const wrist = landmarks[0];
-  const palmWidth =
-    norm3(sub3(landmarks[5], landmarks[17])) + 1e-6;
-
-  const p = landmarks.map((lm) => scale3(sub3(lm, wrist), 1 / palmWidth));
-
-  const thumbTip = p[4];
-  const indexTip = p[8];
-  const middleTip = p[12];
-  const ringTip = p[16];
-  const pinkyTip = p[20];
-  const indexMcp = p[5];
-
-  const fingersCurled = [
-    [indexTip, p[5]],
-    [middleTip, p[9]],
-    [ringTip, p[13]],
-  ].every(([tip, mcp]) => norm3(tip) < norm3(mcp));
-
-  // Check POINTING before THUMBS_UP — pointing with a raised thumb would otherwise
-  // satisfy fingersCurled on a noisy frame and fire the wrong label first.
-  const indexExtended = norm3(indexTip) > norm3(indexMcp) * 1.3;
-  const othersCurled = [middleTip, ringTip, pinkyTip].every(
-    (tip) => norm3(tip) < 0.7
-  );
-  if (indexExtended && othersCurled) return "POINTING";
-
-  if (thumbTip.y < -0.3 && fingersCurled) return "THUMBS_UP";
-  if (thumbTip.y > 0.3 && fingersCurled) return "THUMBS_DOWN";
-
-  const allExtended = [indexTip, middleTip, ringTip, pinkyTip, thumbTip].every(
-    (tip) => norm3(tip) > 0.7
-  );
-  if (allExtended) return "WAVING";
-
-  return null;
+export function mapGestureLabel(label: string): GestureName | null {
+  switch (label) {
+    case "Thumb_Up":    return "THUMBS_UP";
+    case "Thumb_Down":  return "THUMBS_DOWN";
+    case "Pointing_Up": return "POINTING_UP";
+    case "Closed_Fist": return "CLOSED_FIST";
+    case "Open_Palm":   return "OPEN_PALM";
+    case "Victory":     return "VICTORY";
+    case "ILoveYou":    return "I_LOVE_YOU";
+    default:            return null;
+  }
 }
 
 // ── Gaze region mapping (ported from backend/sensing/gaze.py) ────────────────

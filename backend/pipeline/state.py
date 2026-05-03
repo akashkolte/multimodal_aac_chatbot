@@ -91,7 +91,7 @@ class PipelineState(TypedDict):
     affect: AffectState | None
     gesture_tag: str | None  # e.g. "THUMBS_UP"
     gaze_bucket: str | None  # bucket hinted by gaze fixation
-    air_written_text: str | None  # concatenated air-written chars
+    air_written_text: str | None  # concatenated air-writing chars
     head_signal: str | None  # "HEAD_SHAKE" | "HEAD_NOD_DISSATISFIED"
     voice_text: str | None  # raw Web Speech transcript, pre-resolution
     # Resolved voice⇄air-writing intent. Keys: text, source, voice_text, air_text.

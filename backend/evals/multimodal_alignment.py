@@ -40,7 +40,9 @@ _AFFECT_TARGET = {
 _GESTURE_OPENER_PATTERNS = {
     "THUMBS_UP": re.compile(r"^\s*(yes|yeah|totally|for sure|absolutely|sure)\b", re.I),
     "THUMBS_DOWN": re.compile(r"^\s*(no|nah|not really|i'd rather not)\b", re.I),
-    "WAVING": re.compile(r"^\s*(hi|hey|hello)\b", re.I),
+    "OPEN_PALM": re.compile(r"^\s*(hi|hey|hello)\b", re.I),
+    "VICTORY": re.compile(r"^\s*(yes|awesome|great|fantastic|amazing|woo)\b", re.I),
+    "I_LOVE_YOU": re.compile(r"^\s*(love|i love|adore|care)\b", re.I),
 }
 
 
