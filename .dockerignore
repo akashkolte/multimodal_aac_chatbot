@@ -1,9 +1,0 @@
-.git
-.venv
-.env
-.claude
-.code-review-graph
-frontend/node_modules
-**/__pycache__
-**/*.pyc
-logs/*.jsonl
