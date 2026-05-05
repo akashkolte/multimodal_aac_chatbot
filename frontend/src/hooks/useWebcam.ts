@@ -38,6 +38,7 @@ export function useWebcam({
   useEffect(() => {
     if (!enabled) {
       teardown();
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setActive(false);
       return;
     }
@@ -95,7 +96,6 @@ export function useWebcam({
       teardown();
       setActive(false);
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [enabled, processEveryN]);
 
   return { videoRef, active, error };

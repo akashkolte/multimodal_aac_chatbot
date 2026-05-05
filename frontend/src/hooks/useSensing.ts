@@ -254,13 +254,13 @@ export function useSensing() {
           headDebug.roll !== prev.headDebug.roll ||
           headDebug.crossings !== prev.headDebug.crossings;
         if (
+          !debugChanged &&
+          activeZone === prev.gazeZone &&
           nextAffect === prev.affect &&
           stableGesture === prev.gestureTag &&
-          activeZone === prev.gazeZone &&
           nextGazeBucket === prev.gazeBucket &&
-          airWritingActive === prev.airWritingActive &&
           nextHeadSignal === prev.headSignal &&
-          !debugChanged
+          airWritingActive === prev.airWritingActive
         ) {
           return prev;
         }

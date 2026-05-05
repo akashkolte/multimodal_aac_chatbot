@@ -187,14 +187,24 @@ const GAZE_INVERT_Y = import.meta.env.VITE_GAZE_INVERT_Y === "true";
 const GAZE_LATERAL_DELTA  = 0.12;
 const GAZE_VERTICAL_DELTA = 0.12;
 
+type GazeBlendshape =
+  | "eyeLookInLeft" | "eyeLookInRight"
+  | "eyeLookOutLeft" | "eyeLookOutRight"
+  | "eyeLookUpLeft" | "eyeLookUpRight"
+  | "eyeLookDownLeft" | "eyeLookDownRight";
+
+function gazeBs(bs: Record<string, number>, name: GazeBlendshape): number {
+  return bs[name] ?? 0;
+}
+
 export function worldGazeXY(
   matrix: Matrix,
   bs: Record<string, number>,
 ): { x: number; y: number } {
-  const eyeR = ((bs.eyeLookInLeft  ?? 0) + (bs.eyeLookOutRight ?? 0)) / 2;
-  const eyeL = ((bs.eyeLookOutLeft ?? 0) + (bs.eyeLookInRight  ?? 0)) / 2;
-  const eyeU = ((bs.eyeLookUpLeft  ?? 0) + (bs.eyeLookUpRight  ?? 0)) / 2;
-  const eyeD = ((bs.eyeLookDownLeft ?? 0) + (bs.eyeLookDownRight ?? 0)) / 2;
+  const eyeR = (gazeBs(bs, "eyeLookInLeft")   + gazeBs(bs, "eyeLookOutRight")) / 2;
+  const eyeL = (gazeBs(bs, "eyeLookOutLeft")  + gazeBs(bs, "eyeLookInRight"))  / 2;
+  const eyeU = (gazeBs(bs, "eyeLookUpLeft")   + gazeBs(bs, "eyeLookUpRight"))  / 2;
+  const eyeD = (gazeBs(bs, "eyeLookDownLeft") + gazeBs(bs, "eyeLookDownRight")) / 2;
 
   const lx = eyeR - eyeL;
   const ly = eyeU - eyeD;
