@@ -675,7 +675,7 @@ def chat_turnaround(req: TurnaroundRequest, background_tasks: BackgroundTasks):
         guardrail_passed=replan_state.get("guardrail_passed", True),
         run_id=run_id,
         turn_id=replan_state["turn_id"],
-        eval_scores=eval_scores,
+        eval_scores=None,
     )
 
 
@@ -957,7 +957,7 @@ def chat_regenerate(req: RegenerateRequest):
         guardrail_passed=replan_state.get("guardrail_passed", True),
         run_id=run_id,
         turn_id=replan_state["turn_id"],
-        eval_scores=None,
+        eval_scores=eval_scores,
     )
 
 
@@ -987,6 +987,7 @@ class InkRecognizeRequest(BaseModel):
 @lru_cache(maxsize=1)
 def _get_vision_client():
     from openai import OpenAI as _OpenAI
+
     return _OpenAI(
         base_url=settings.ink_vision_base_url,
         api_key=settings.ink_vision_api_key or "unused",
@@ -1016,10 +1017,7 @@ def ink_recognize(req: InkRecognizeRequest):
                         },
                         {
                             "type": "text",
-                            # /no_think suppresses Qwen3 chain-of-thought so the
-                            # answer isn't buried inside <think> tags.
                             "text": (
-                                "/no_think\n"
                                 "This is a single handwritten character or short word "
                                 "drawn in the air. Reply with ONLY the character or "
                                 "word, nothing else."
@@ -1028,14 +1026,12 @@ def ink_recognize(req: InkRecognizeRequest):
                     ],
                 }
             ],
-            # 512 gives thinking models room to emit <think>…</think> + the answer
-            # before being cut off; the answer itself is stripped out below.
-            max_tokens=512,
+            max_tokens=64,
             temperature=0.0,
         )
-        raw = (response.choices[0].message.content or "")
+        raw = response.choices[0].message.content or ""
         _log.info("/ink/recognize raw → %r", raw[:200])
-        # Strip <think>…</think> blocks emitted by reasoning models (Qwen3 etc.)
+        # Strip <think>…</think> blocks emitted by reasoning models, harmless on others.
         text = re.sub(r"<think>.*?</think>", "", raw, flags=re.DOTALL).strip()
         _log.info("/ink/recognize → %r", text)
         return {"text": text}

@@ -742,3 +742,85 @@ input[type="text"]:hover {
 ::-webkit-scrollbar-thumb:hover {
   background: var(--text-faint);
 }
+
+.calibration-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.calibration-card {
+  background: var(--bg, #fff);
+  color: var(--text, #111);
+  padding: 28px 32px;
+  border-radius: 12px;
+  max-width: 420px;
+  text-align: center;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.25);
+  border: 1px solid var(--border, #ddd);
+}
+
+.calibration-card h2 {
+  font-size: 20px;
+  margin-bottom: 12px;
+}
+
+.calibration-instructions {
+  font-size: 14px;
+  line-height: 1.5;
+  margin-bottom: 18px;
+  opacity: 0.85;
+}
+
+.calibration-bar {
+  height: 8px;
+  background: rgba(127, 127, 127, 0.2);
+  border-radius: 4px;
+  overflow: hidden;
+  margin-bottom: 10px;
+}
+
+.calibration-bar-fill {
+  height: 100%;
+  background: var(--accent, #4a8af4);
+  transition: width 120ms linear;
+}
+
+.calibration-countdown {
+  font-size: 12px;
+  opacity: 0.65;
+  margin-bottom: 14px;
+}
+
+.calibration-cancel {
+  background: transparent;
+  border: 1px solid var(--border, #ccc);
+  color: inherit;
+  padding: 6px 14px;
+  border-radius: 6px;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.calibration-cancel:hover {
+  background: rgba(127, 127, 127, 0.1);
+}
+
+.recalibrate-btn {
+  margin-left: 8px;
+  padding: 2px 8px;
+  font-size: 11px;
+  background: transparent;
+  border: 1px solid var(--border, #ccc);
+  border-radius: 4px;
+  color: inherit;
+  cursor: pointer;
+}
+
+.recalibrate-btn:hover {
+  background: rgba(127, 127, 127, 0.1);
+}

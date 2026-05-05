@@ -1,26 +1,172 @@
 import type { Matrix } from "@mediapipe/tasks-vision";
-import type { Affect, GestureName, MemoryBucket } from "../types";
+import type { Affect, GestureName, HeadDebug, HeadSignal, MemoryBucket } from "../types";
 
-// ── Affect classification via MediaPipe blendshapes ──────────────────────────
+const SIGMA_K = 2.0;
+const CALIBRATION_DURATION_MS = 5000;
+const CALIBRATION_WARMUP_MS   = 1000;
+const OUTLIER_TRIM_FRACTION   = 0.10;
 
-export function classifyAffect(bs: Record<string, number>): Affect {
-  const smileLeft   = bs["mouthSmileLeft"]  ?? 0;
-  const smileRight  = bs["mouthSmileRight"] ?? 0;
-  const browDownL   = bs["browDownLeft"]    ?? 0;
-  const browDownR   = bs["browDownRight"]   ?? 0;
-  const squintL     = bs["eyeSquintLeft"]   ?? 0;
-  const squintR     = bs["eyeSquintRight"]  ?? 0;
-  const jawOpen     = bs["jawOpen"]         ?? 0;
-  const browInnerUp = bs["browInnerUp"]     ?? 0;
+const AFFECT_BLENDSHAPES = [
+  "mouthSmileLeft", "mouthSmileRight",
+  "browDownLeft", "browDownRight",
+  "eyeSquintLeft", "eyeSquintRight",
+  "jawOpen", "browInnerUp",
+] as const;
+type AffectBlendshape = typeof AFFECT_BLENDSHAPES[number];
 
-  if (jawOpen > 0.4 && browInnerUp > 0.5) return "SURPRISED";
-  if (browDownL > 0.4 || browDownR > 0.4) return "FRUSTRATED";
-  if (squintL > 0.5 && squintR > 0.5)     return "FRUSTRATED";
-  if (smileLeft > 0.5 && smileRight > 0.5) return "HAPPY";
-  return "NEUTRAL";
+interface Stats { mean: number; std: number }
+
+interface Baseline {
+  affect: Record<string, Stats>;
+  gaze: { x: number; y: number };
+  head: { pitch: number; yaw: number; roll: number };
+  faceBboxSize: number;  // normalised face size — proxy for distance
 }
 
-// ── Gesture label mapping from MediaPipe GestureRecognizer ───────────────────
+function trimmedStats(values: number[]): Stats {
+  if (values.length === 0) return { mean: 0, std: 0 };
+  const sorted = [...values].sort((a, b) => a - b);
+  const trim = Math.floor(sorted.length * OUTLIER_TRIM_FRACTION);
+  const kept = sorted.slice(trim, sorted.length - trim);
+  if (kept.length === 0) return { mean: 0, std: 0 };
+  const mean = kept.reduce((s, v) => s + v, 0) / kept.length;
+  const variance = kept.reduce((s, v) => s + (v - mean) ** 2, 0) / kept.length;
+  const std = Math.max(Math.sqrt(variance), 0.01);
+  return { mean, std };
+}
+
+function trimmedMean(values: number[]): number {
+  return trimmedStats(values).mean;
+}
+
+export class Calibrator {
+  private startTs = 0;
+  private active = false;
+  private done = false;
+
+  private affectSamples: Record<string, number[]> = {};
+  private gazeSamples: { x: number; y: number }[] = [];
+  private headSamples: { pitch: number; yaw: number; roll: number }[] = [];
+  private bboxSamples: number[] = [];
+
+  private baseline: Baseline | null = null;
+
+  start(): void {
+    this.startTs = performance.now();
+    this.active = true;
+    this.done = false;
+    this.baseline = null;
+    this.affectSamples = {};
+    for (const name of AFFECT_BLENDSHAPES) this.affectSamples[name] = [];
+    this.gazeSamples = [];
+    this.headSamples = [];
+    this.bboxSamples = [];
+  }
+
+  cancel(): void {
+    this.active = false;
+    this.done = false;
+    this.baseline = null;
+  }
+
+  get isActive(): boolean { return this.active; }
+  get isReady(): boolean  { return this.done && this.baseline !== null; }
+
+  // 0 → 1 over the calibration window (excluding warm-up).
+  get progress(): number {
+    if (!this.active) return this.done ? 1 : 0;
+    const elapsed = performance.now() - this.startTs - CALIBRATION_WARMUP_MS;
+    if (elapsed <= 0) return 0;
+    return Math.min(1, elapsed / (CALIBRATION_DURATION_MS - CALIBRATION_WARMUP_MS));
+  }
+
+  // Feed a frame's signals during calibration. After the window elapses,
+  // the baseline is computed and `isReady` becomes true.
+  addSample(args: {
+    blendshapes: Record<string, number>;
+    gaze: { x: number; y: number } | null;
+    head: { pitch: number; yaw: number; roll: number } | null;
+    faceBboxSize: number | null;
+  }): void {
+    if (!this.active) return;
+    const elapsed = performance.now() - this.startTs;
+
+    if (elapsed < CALIBRATION_WARMUP_MS) return;
+
+    if (elapsed >= CALIBRATION_DURATION_MS) {
+      this.finalise();
+      return;
+    }
+
+    for (const name of AFFECT_BLENDSHAPES) {
+      const v = args.blendshapes[name];
+      if (typeof v === "number") this.affectSamples[name].push(v);
+    }
+    if (args.gaze) this.gazeSamples.push(args.gaze);
+    if (args.head) this.headSamples.push(args.head);
+    if (typeof args.faceBboxSize === "number") this.bboxSamples.push(args.faceBboxSize);
+  }
+
+  private finalise(): void {
+    const affect: Record<string, Stats> = {};
+    for (const name of AFFECT_BLENDSHAPES) {
+      affect[name] = trimmedStats(this.affectSamples[name] ?? []);
+    }
+    const gaze = {
+      x: trimmedMean(this.gazeSamples.map((g) => g.x)),
+      y: trimmedMean(this.gazeSamples.map((g) => g.y)),
+    };
+    const head = {
+      pitch: trimmedMean(this.headSamples.map((h) => h.pitch)),
+      yaw:   trimmedMean(this.headSamples.map((h) => h.yaw)),
+      roll:  trimmedMean(this.headSamples.map((h) => h.roll)),
+    };
+    // Floor at a small positive value so we never divide by zero when scaling.
+    const faceBboxSize = Math.max(trimmedMean(this.bboxSamples), 0.01);
+
+    this.baseline = { affect, gaze, head, faceBboxSize };
+    this.active = false;
+    this.done = true;
+  }
+
+  getBaseline(): Baseline | null { return this.baseline; }
+}
+
+const AFFECT_FALLBACK_THRESHOLD = 0.4;
+
+function isAbove(
+  bs: Record<string, number>,
+  name: AffectBlendshape,
+  baseline: Baseline | null,
+): boolean {
+  const v = bs[name] ?? 0;
+  if (baseline) {
+    const stats = baseline.affect[name];
+    if (!stats) return false;
+    return v - stats.mean > SIGMA_K * stats.std;
+  }
+  return v > AFFECT_FALLBACK_THRESHOLD;
+}
+
+export function classifyAffect(
+  bs: Record<string, number>,
+  baseline: Baseline | null = null,
+): Affect {
+  const smileL  = isAbove(bs, "mouthSmileLeft",  baseline);
+  const smileR  = isAbove(bs, "mouthSmileRight", baseline);
+  const browDL  = isAbove(bs, "browDownLeft",    baseline);
+  const browDR  = isAbove(bs, "browDownRight",   baseline);
+  const squintL = isAbove(bs, "eyeSquintLeft",   baseline);
+  const squintR = isAbove(bs, "eyeSquintRight",  baseline);
+  const jawOpen = isAbove(bs, "jawOpen",         baseline);
+  const browIn  = isAbove(bs, "browInnerUp",     baseline);
+
+  if (jawOpen && browIn)  return "SURPRISED";
+  if (browDL || browDR)   return "FRUSTRATED";
+  if (squintL && squintR) return "FRUSTRATED";
+  if (smileL && smileR)   return "HAPPY";
+  return "NEUTRAL";
+}
 
 export function mapGestureLabel(label: string): GestureName | null {
   switch (label) {
@@ -35,73 +181,43 @@ export function mapGestureLabel(label: string): GestureName | null {
   }
 }
 
-// ── Gaze tracker — world-space gaze via head rotation × eye blendshapes ──────
-//
-// Old approach: absolute iris X/Y position in frame → grid region.
-//   Problem: head shifting in frame changes the bucket even if eyes didn't move.
-//
-// New approach:
-//   1. Eye direction in face-local space from blendshapes (head-relative).
-//   2. Rotate into camera space using the facial transformation matrix.
-//   3. Perspective-project to a 2-D screen gaze point.
-//   4. Map that point to the 5 memory buckets with a dwell timer.
-//
-// Bucket layout (matches the 5 regions on the AAC interface):
-//
-//   family     │  medical
-//   (top-left) │  (top-right)
-//   ───────────┼───────────
-//   hobbies    │  daily_routine
-//   (bot-left) │  (bot-right)
-//            social
-//           (centre)
-//
-// If top/bottom buckets appear swapped on your device, set VITE_GAZE_INVERT_Y=true.
+// Bucket layout matches the 5 regions on the AAC interface:
+//   family / medical (top), social (centre), hobbies / daily_routine (bottom).
 const GAZE_INVERT_Y = import.meta.env.VITE_GAZE_INVERT_Y === "true";
-const GAZE_CENTER      = 0.10;  // radius around origin treated as "social"
-const GAZE_LATERAL     = 0.12;  // |x| must exceed this for left/right split
-const GAZE_VERTICAL    = 0.12;  // |y| must exceed this for top/bottom split
+const GAZE_LATERAL_DELTA  = 0.12;
+const GAZE_VERTICAL_DELTA = 0.12;
 
-function worldGazeXY(
+export function worldGazeXY(
   matrix: Matrix,
   bs: Record<string, number>,
 ): { x: number; y: number } {
-  // Eye direction in face-local space.
-  // MediaPipe "In" = toward nose, "Out" = away from nose.
-  // viewer-right  = InLeft  + OutRight
-  // viewer-left   = OutLeft + InRight
   const eyeR = ((bs.eyeLookInLeft  ?? 0) + (bs.eyeLookOutRight ?? 0)) / 2;
   const eyeL = ((bs.eyeLookOutLeft ?? 0) + (bs.eyeLookInRight  ?? 0)) / 2;
   const eyeU = ((bs.eyeLookUpLeft  ?? 0) + (bs.eyeLookUpRight  ?? 0)) / 2;
   const eyeD = ((bs.eyeLookDownLeft ?? 0) + (bs.eyeLookDownRight ?? 0)) / 2;
 
-  // Face-local gaze vector (+X right, +Y up, +Z forward toward camera).
   const lx = eyeR - eyeL;
   const ly = eyeU - eyeD;
-  const lz = 1.0; // canonical forward direction
+  const lz = 1.0;
 
-  // Rotate to camera space using the 3×3 submatrix of the column-major 4×4.
-  // R[row][col] = data[col*4 + row]
   const d = matrix.data;
   const cx = d[0]*lx + d[4]*ly + d[8]*lz;
   const cy = d[1]*lx + d[5]*ly + d[9]*lz;
   const cz = d[2]*lx + d[6]*ly + d[10]*lz;
 
-  // Perspective-project onto screen plane.
   const fwd = Math.abs(cz) > 0.01 ? cz : 0.01;
   const y = GAZE_INVERT_Y ? -(cy / fwd) : (cy / fwd);
   return { x: cx / fwd, y };
 }
 
-function gazeToRegion(x: number, y: number): MemoryBucket | null {
-  const ax = Math.abs(x), ay = Math.abs(y);
-  if (ax < GAZE_CENTER && ay < GAZE_CENTER) return "social";
-  if (ax < GAZE_LATERAL && ay < GAZE_VERTICAL) return "social"; // near-centre
-  if (x < -GAZE_LATERAL && y >  GAZE_VERTICAL) return "family";
-  if (x >  GAZE_LATERAL && y >  GAZE_VERTICAL) return "medical";
-  if (x < -GAZE_LATERAL && y < -GAZE_VERTICAL) return "hobbies";
-  if (x >  GAZE_LATERAL && y < -GAZE_VERTICAL) return "daily_routine";
-  return null; // edge zone — don't fire
+function deflectionToRegion(dx: number, dy: number): MemoryBucket | null {
+  const ax = Math.abs(dx), ay = Math.abs(dy);
+  if (ax < GAZE_LATERAL_DELTA && ay < GAZE_VERTICAL_DELTA) return "social";
+  if (dx < -GAZE_LATERAL_DELTA && dy >  GAZE_VERTICAL_DELTA) return "family";
+  if (dx >  GAZE_LATERAL_DELTA && dy >  GAZE_VERTICAL_DELTA) return "medical";
+  if (dx < -GAZE_LATERAL_DELTA && dy < -GAZE_VERTICAL_DELTA) return "hobbies";
+  if (dx >  GAZE_LATERAL_DELTA && dy < -GAZE_VERTICAL_DELTA) return "daily_routine";
+  return null;
 }
 
 export class GazeTracker {
@@ -109,27 +225,36 @@ export class GazeTracker {
   private dwellStart = 0;
   private dwellThresholdMs: number;
   private _activeZone: MemoryBucket | null = null;
+  private _lastSeenAt = 0;
+  private static ACTIVE_ZONE_TIMEOUT_MS = 500;
 
   constructor(dwellThresholdMs = 1500) {
     this.dwellThresholdMs = dwellThresholdMs;
   }
 
-  // Current zone the user is looking at right now — updates every frame.
-  // Use this to highlight the zone map immediately.
   get activeZone(): MemoryBucket | null {
+    if (performance.now() - this._lastSeenAt > GazeTracker.ACTIVE_ZONE_TIMEOUT_MS) {
+      this._activeZone = null;
+    }
     return this._activeZone;
   }
 
   process(
     matrix: Matrix | null,
     bs: Record<string, number>,
+    baseline: Baseline | null,
   ): MemoryBucket | null {
-    const { x, y } = matrix
-      ? worldGazeXY(matrix, bs)
-      : { x: 0, y: 0 };
+    if (!matrix) return null;
 
-    const bucket = matrix ? gazeToRegion(x, y) : null;
-    this._activeZone = bucket; // always reflect current zone
+    const { x, y } = worldGazeXY(matrix, bs);
+    const dx = baseline ? x - baseline.gaze.x : x;
+    const dy = baseline ? y - baseline.gaze.y : y;
+
+    const bucket = deflectionToRegion(dx, dy);
+    if (bucket !== null) {
+      this._activeZone = bucket;
+      this._lastSeenAt = performance.now();
+    }
 
     if (bucket !== this.currentBucket) {
       this.currentBucket = bucket;
@@ -151,40 +276,17 @@ export class GazeTracker {
     this.currentBucket = null;
     this._activeZone = null;
     this.dwellStart = 0;
+    this._lastSeenAt = 0;
   }
-}
-
-// ── Head-pose tracker using facial transformation matrix ────────────────────
-//
-// MediaPipe FaceLandmarker produces a 4×4 column-major transformation matrix
-// that encodes the 3-D rotation of the canonical face model in camera space.
-// We decompose it to Euler angles (ZYX convention) — no calibration step needed
-// because the angles are always relative to the canonical neutral pose.
-//
-// Signals emitted:
-//   HEAD_SHAKE           — yaw oscillates ±N° (left/right), "no"
-//   HEAD_NOD             — gentle pitch dip + recovery, "yes"
-//   HEAD_NOD_DISSATISFIED — sharp/large pitch dip + recovery, discomfort
-
-export type HeadSignal = "HEAD_SHAKE" | "HEAD_NOD" | "HEAD_NOD_DISSATISFIED";
-
-export interface HeadDebug {
-  pitch: number;     // degrees — nod angle
-  yaw: number;       // degrees — shake angle
-  roll: number;      // degrees — tilt angle
-  crossings: number; // yaw direction reversals in current window
 }
 
 interface AnglePoint { pitch: number; yaw: number; t: number }
 
 const RAD2DEG = 180 / Math.PI;
 
-function extractAngles(data: Float32Array): { pitch: number; yaw: number; roll: number } {
-  // Column-major 4×4: R[row][col] = data[col*4 + row]
-  // ZYX Euler (R = Rz·Ry·Rx):
-  //   pitch (X, nod)   = atan2(R[2][1], R[2][2]) = atan2(data[6],  data[10])
-  //   yaw   (Y, shake) = atan2(−R[2][0], √(R[2][1]²+R[2][2]²))
-  //   roll  (Z, tilt)  = atan2(R[1][0], R[0][0])  = atan2(data[1],  data[0])
+export function extractAngles(
+  data: number[],
+): { pitch: number; yaw: number; roll: number } {
   const r20 = data[2], r21 = data[6], r22 = data[10];
   const r10 = data[1], r00 = data[0];
   return {
@@ -194,35 +296,41 @@ function extractAngles(data: Float32Array): { pitch: number; yaw: number; roll: 
   };
 }
 
-// Thresholds (radians unless noted)
 const WINDOW_MS       = 1200;
 const REFRACTORY_MS   = 2000;
 const NOD_WINDOW_MS   = 1000;
+// Hard cap covers backgrounded-tab catch-up where many frames arrive at once.
+const HISTORY_MAX     = 100;
 
-const SHAKE_RANGE_RAD    = 0.30;  // total yaw swing needed (~17°)
-const SHAKE_DEADBAND_RAD = 0.05;  // ignore jitter below ~3°
+const SHAKE_RANGE_RAD     = 0.30;
+const SHAKE_DEADBAND_RAD  = 0.05;
 const SHAKE_MIN_REVERSALS = 3;
 
-const NOD_AMPLITUDE_RAD   = 0.15; // ~8.6° — min pitch deviation for any nod
-const NOD_SHARP_RAD       = 0.28; // ~16° — above this = DISSATISFIED
-const NOD_RECOVERY_RAD    = 0.15; // must return within ~8.6° of start pitch
-const NOD_MAX_YAW_RAD     = 0.25; // reject if too much lateral (~14°)
+const NOD_AMPLITUDE_RAD = 0.12;
+const NOD_SHARP_RAD     = 0.25;
+const NOD_RECOVERY_RAD  = 0.12;
+const NOD_MAX_YAW_RAD   = 0.25;
 
 export class HeadPoseTracker {
   private history: AnglePoint[] = [];
   private lastEmitTs = 0;
   private lastDebug: HeadDebug = { pitch: 0, yaw: 0, roll: 0, crossings: 0 };
 
-  // No-op — angles are self-calibrating relative to the canonical face model.
-  // Kept so existing callers (calibrateHeadPose button) don't break.
-  calibrate(_landmarks: unknown): void {}
-
-  process(matrix: Matrix): HeadSignal | null {
-    const { pitch, yaw, roll } = extractAngles(matrix.data);
+  process(matrix: Matrix, baseline: Baseline | null): HeadSignal | null {
+    const raw = extractAngles(matrix.data);
+    const pitch = baseline ? raw.pitch - baseline.head.pitch : raw.pitch;
+    const yaw   = baseline ? raw.yaw   - baseline.head.yaw   : raw.yaw;
+    const roll  = baseline ? raw.roll  - baseline.head.roll  : raw.roll;
     const now = performance.now();
 
     this.history.push({ pitch, yaw, t: now });
-    this.history = this.history.filter((p) => p.t >= now - WINDOW_MS);
+    const cutoff = now - WINDOW_MS;
+    let drop = 0;
+    while (drop < this.history.length && this.history[drop].t < cutoff) drop++;
+    if (this.history.length - drop > HISTORY_MAX) {
+      drop = this.history.length - HISTORY_MAX;
+    }
+    if (drop > 0) this.history.splice(0, drop);
 
     this.updateDebug(pitch, yaw, roll);
 
@@ -276,7 +384,6 @@ export class HeadPoseTracker {
     const recent = this.history.filter((p) => p.t >= now - NOD_WINDOW_MS);
     if (recent.length < 6) return null;
 
-    // Reject if there's significant lateral motion — it's a shake, not a nod.
     const yawRange = Math.max(...recent.map((p) => Math.abs(p.yaw)));
     if (yawRange > NOD_MAX_YAW_RAD) return null;
 
@@ -285,7 +392,6 @@ export class HeadPoseTracker {
     const maxDev = Math.max(...pitches.map((p) => Math.abs(p - startPitch)));
     if (maxDev < NOD_AMPLITUDE_RAD) return null;
 
-    // Must recover back near the start pitch.
     const lastPitch = pitches[pitches.length - 1];
     if (Math.abs(lastPitch - startPitch) >= NOD_RECOVERY_RAD) return null;
 
@@ -298,12 +404,22 @@ export class HeadPoseTracker {
     this.history = [];
     this.lastEmitTs = 0;
   }
-
-  // Always true — no manual calibration step required with the matrix approach.
-  get calibrated(): boolean { return true; }
 }
 
-// ── Air-writing stroke collector (recognition via Gemini Vision) ─────────────
+export function faceBboxSize(landmarks: { x: number; y: number }[]): number | null {
+  if (!landmarks || landmarks.length < 3) return null;
+  let minX = 1, maxX = 0, minY = 1, maxY = 0;
+  for (const p of landmarks) {
+    if (p.x < minX) minX = p.x;
+    if (p.x > maxX) maxX = p.x;
+    if (p.y < minY) minY = p.y;
+    if (p.y > maxY) maxY = p.y;
+  }
+  const w = maxX - minX;
+  const h = maxY - minY;
+  if (w <= 0 || h <= 0) return null;
+  return Math.sqrt(w * h);
+}
 
 const INDEX_TIP = 8;
 const VELOCITY_START = 15;
@@ -366,16 +482,10 @@ export class AirWriter {
     return this.inStroke;
   }
 
-  // Returns the completed stroke trajectory and clears it (call once per frame).
   getCompletedStroke(): [number, number][] | null {
     const s = this.pendingStroke;
     this.pendingStroke = null;
     return s;
-  }
-
-  // Kept for API compatibility — always returns "".
-  getText(): string {
-    return "";
   }
 
   noHand(): void {

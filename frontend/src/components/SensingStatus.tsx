@@ -45,15 +45,34 @@ function GazeZoneMap({ active }: { active: MemoryBucket | null }) {
 interface Props {
   sensing: SensingState;
   webcamActive: boolean;
+  calibrated?: boolean;
+  onRecalibrate?: () => void;
 }
 
-export function SensingStatus({ sensing, webcamActive }: Props) {
+export function SensingStatus({ sensing, webcamActive, calibrated, onRecalibrate }: Props) {
   if (!webcamActive) {
     return <p className="sensing-off">Webcam off</p>;
   }
 
   return (
     <div className="sensing-status">
+      {calibrated !== undefined && (
+        <div className="sensing-row">
+          <span className="sensing-label">Calibration</span>
+          <span className="sensing-value">
+            {calibrated ? "✓ ready" : "—"}
+            {onRecalibrate && (
+              <button
+                type="button"
+                className="recalibrate-btn"
+                onClick={onRecalibrate}
+              >
+                Recalibrate
+              </button>
+            )}
+          </span>
+        </div>
+      )}
       <div className="sensing-row">
         <span className="sensing-label">Affect</span>
         <span className="sensing-value">

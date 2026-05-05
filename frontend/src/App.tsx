@@ -8,6 +8,7 @@ import { ChatPanel } from "./components/ChatPanel";
 import { WebcamSensing } from "./components/WebcamSensing";
 import { SensingStatus } from "./components/SensingStatus";
 import { LatencyMetrics } from "./components/LatencyMetrics";
+import { CalibrationOverlay } from "./components/CalibrationOverlay";
 import "./App.css";
 
 function App() {
@@ -36,8 +37,13 @@ function App() {
     sensing,
     ready,
     initError,
+    isCalibrating,
+    isCalibrated,
+    calibrationProgress,
     init,
     processFrame,
+    startCalibration,
+    cancelCalibration,
     clearAirWrittenText,
     clearHeadSignal,
     resetCalibration,
@@ -55,12 +61,22 @@ function App() {
     onFrame,
   });
 
+  const autoCalibratedRef = useRef(false);
+
+  useEffect(() => {
+    if (active && ready && !autoCalibratedRef.current) {
+      autoCalibratedRef.current = true;
+      startCalibration();
+    }
+  }, [active, ready, startCalibration]);
+
   async function handleWebcamToggle() {
     if (!webcamEnabled) {
       const ok = await init();
       if (ok) setWebcamEnabled(true);
     } else {
       setWebcamEnabled(false);
+      autoCalibratedRef.current = false;
       resetCalibration();
     }
   }
@@ -99,7 +115,12 @@ function App() {
             Enable webcam
           </label>
           <WebcamSensing videoRef={videoRef} active={active} error={error || initError} />
-          <SensingStatus sensing={sensing} webcamActive={active} />
+          <SensingStatus
+            sensing={sensing}
+            webcamActive={active}
+            calibrated={isCalibrated}
+            onRecalibrate={active ? startCalibration : undefined}
+          />
         </div>
 
         <div className="sidebar-section">
@@ -138,6 +159,12 @@ function App() {
           backendReady={backendReady}
         />
       </main>
+
+      <CalibrationOverlay
+        active={isCalibrating}
+        progress={calibrationProgress}
+        onCancel={cancelCalibration}
+      />
     </div>
   );
 }

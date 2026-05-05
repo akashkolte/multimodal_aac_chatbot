@@ -18,7 +18,6 @@ export interface SensingState {
   airWrittenText: string;
   airWritingActive: boolean;
   headSignal: HeadSignal | null;
-  headCalibrated: boolean;
   headDebug: HeadDebug;
 }
 
