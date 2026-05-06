@@ -11,6 +11,9 @@ from pathlib import Path
 
 from backend.config.settings import settings
 
+# Mean pairwise cosine distance below this means the picker showed near-paraphrases.
+_DIVERSITY_FLOOR = 0.10
+
 
 def _load(path: Path) -> list[dict]:
     if not path.exists():
@@ -256,11 +259,11 @@ def report_picker(turns: list[dict], picks: list[dict], evals: list[dict]) -> No
     ]
     if div_scored:
         diversities = [float(e["candidate_diversity"]) for e in div_scored]
-        low = sum(1 for d in diversities if d < 0.1)
+        low = sum(1 for d in diversities if d < _DIVERSITY_FLOOR)
         print(
             f"\nCandidate diversity (n={len(div_scored)} turns): "
             f"mean={statistics.mean(diversities):.2f}  "
-            f"low (<0.10): {low}/{len(div_scored)} ({low / len(div_scored):.0%})"
+            f"low (<{_DIVERSITY_FLOOR:.2f}): {low}/{len(div_scored)} ({low / len(div_scored):.0%})"
         )
 
 

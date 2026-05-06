@@ -265,23 +265,21 @@ function EvalPanelImpl({
             )}
           </>
         )}
-        <span className="tip" data-tip="Rate how authentic this response felt as the persona (1 = off, 5 = spot on). Logged to ratings.jsonl.">
-          <div className="star-rating">
-            {[1, 2, 3, 4, 5].map((star) => (
-              <button
-                key={star}
-                className={`star ${star <= (hover || (value ?? 0)) ? "active" : ""}`}
-                onMouseEnter={() => setHover(star)}
-                onMouseLeave={() => setHover(0)}
-                onClick={() => rate(star)}
-                disabled={value !== null || submitting}
-              >
-                ★
-              </button>
-            ))}
-            {value !== null && <span className="star-label">{value}/5</span>}
-          </div>
-        </span>
+        <div className="tip star-rating" data-tip="Rate how authentic this response felt as the persona (1 = off, 5 = spot on). Logged to ratings.jsonl.">
+          {[1, 2, 3, 4, 5].map((star) => (
+            <button
+              key={star}
+              className={`star ${star <= (hover || (value ?? 0)) ? "active" : ""}`}
+              onMouseEnter={() => setHover(star)}
+              onMouseLeave={() => setHover(0)}
+              onClick={() => rate(star)}
+              disabled={value !== null || submitting}
+            >
+              ★
+            </button>
+          ))}
+          {value !== null && <span className="star-label">{value}/5</span>}
+        </div>
       </div>
     </div>
   );

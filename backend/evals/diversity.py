@@ -4,7 +4,9 @@ import torch
 def compute_candidate_diversity(candidates: list[dict]) -> dict:
     """Mean pairwise cosine *distance* among candidate texts.
 
-    1.0 = maximally different, 0.0 = identical paraphrases.
+    1.0 = maximally different, 0.0 = identical paraphrases. Empty candidate
+    texts are filtered out before encoding, so `n_candidates` in the result
+    is the count of *non-empty* texts (may be < len(candidates)).
     """
     texts = [c.get("text", "").strip() for c in candidates]
     texts = [t for t in texts if t]

@@ -32,14 +32,12 @@ def _score_candidates_batched(
     else:
         relevances = [0.0] * len(texts)
 
-    scores = [{**faiths[i], "relevance": relevances[i]} for i in range(len(candidates))]
+    scores = [{**f, "relevance": r} for f, r in zip(faiths, relevances, strict=True)]
     return scores, cand_vecs
 
 
 def _diversity_from_vecs(cand_vecs: "torch.Tensor") -> dict:
     n = cand_vecs.shape[0]
-    if n < 2:
-        return {"candidate_diversity": 0.0, "n_candidates": n}
     sims = cand_vecs @ cand_vecs.T
     iu = torch.triu_indices(n, n, offset=1)
     return {
@@ -75,11 +73,11 @@ def compute_evals(
     per_cand: list[dict] = []
     cand_vecs = None
     if candidates:
-        if selected_idx is None and response:
-            for i, c in enumerate(candidates):
-                if c.get("text", "").strip() == response.strip():
-                    selected_idx = i
-                    break
+        # The planner serves uniq[0] as `selected_response`, so when caller
+        # didn't pass selected_idx explicitly, default to 0 rather than
+        # text-matching (which can collide on duplicate candidate texts).
+        if selected_idx is None:
+            selected_idx = 0
         scored, cand_vecs = _score_candidates_batched(candidates, chunks, query)
         per_cand = [
             {
@@ -117,11 +115,16 @@ def compute_evals(
 
     if per_cand:
         out["candidates_eval"] = per_cand
-        # Reuse cand_vecs from the relevance pass when available; falls back to
-        # standalone BGE encode (e.g. when query was empty).
-        if cand_vecs is not None:
+        n = len(candidates)
+        if n < 2:
+            out["candidate_diversity"] = 0.0
+            out["n_candidates"] = n
+        elif cand_vecs is not None:
+            # Reuse vectors from the relevance pass.
             out.update(_diversity_from_vecs(cand_vecs))
         else:
+            # Standalone BGE encode (e.g. when query was empty so the relevance
+            # pass was skipped).
             out.update(compute_candidate_diversity(candidates))
     else:
         out["candidate_diversity"] = 0.0
