@@ -1,0 +1,12 @@
+# Docker / HF Space install — uses CPU-only torch to avoid pulling ~2GB of
+# CUDA wheels we can't use on HF Spaces' free CPU instance.
+#
+# The PyTorch CPU index serves wheels with a `+cpu` local-version tag.
+# Listing it FIRST (via --index-url) makes pip prefer those wheels for torch;
+# the PyPI fallback covers everything else.
+--index-url https://download.pytorch.org/whl/cpu
+--extra-index-url https://pypi.org/simple
+
+# Everything from the standard requirements file. Torch will resolve to the
+# CPU wheel from the index above; the rest from PyPI.
+-r requirements.txt

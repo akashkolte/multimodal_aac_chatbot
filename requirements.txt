@@ -3,6 +3,10 @@ openai>=1.0          # talks to Ollama Cloud over OpenAI-compatible HTTP
 
 # ── Retrieval ──────────────────────────────────────────────────────────────────
 sentence-transformers>=3.0
+# torch is installed separately in the Dockerfile from the CPU-only wheel
+# index. For local conda dev (./setup.sh) we use the default platform torch
+# (which on macOS gives MPS acceleration). The constraint is satisfied either
+# way; the comment is here so a fresh reader doesn't try to pin it.
 torch>=2.0
 transformers>=4.40
 numpy>=1.24

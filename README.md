@@ -1,3 +1,14 @@
+---
+title: Multimodal AAC Chatbot
+emoji: 🌸
+colorFrom: pink
+colorTo: indigo
+sdk: docker
+app_port: 7860
+pinned: false
+license: other
+---
+
 # Multimodal AAC Chatbot
 
 A chatbot that **speaks as an AAC user, not to them.** You pick a persona — fourteen are shipped, anchored in real memoirs and canonical fiction — and the partner talks to them. The bot replies in that person's voice, using their memories, and adjusts what it says based on what the webcam sees: facial expression, hand gestures, where they're looking, and letters they trace in the air.
@@ -14,6 +25,7 @@ It's a training-free agentic RAG pipeline — a plain Python function chain with
 - [Setup](#setup)
 - [Configuration](#configuration)
 - [Running the Project](#running-the-project)
+- [Hosting](#hosting)
 - [Project Structure](#project-structure)
 - [Personas](#personas)
 - [Team](#team)
@@ -315,6 +327,44 @@ python -m backend.evals.aggregate
 ```
 
 Output covers latency quantiles + SLO pass rate, faithfulness (groundedness / hallucination), multimodal alignment, and the distribution of Likert ratings. Reads `logs/turns.jsonl`, `logs/evals.jsonl`, and `logs/ratings.jsonl`.
+
+---
+
+## Hosting
+
+The project ships with a single [Dockerfile](Dockerfile) that builds the React frontend in stage 1 (Node 22 + pnpm) and runs the FastAPI backend in stage 2 (Python 3.12 + torch + sentence-transformers). The backend serves the built `frontend/dist/` as static files, so it's one container, one process, one port.
+
+The same image runs identically in two places.
+
+### Locally (for development that mirrors production)
+
+```bash
+docker build -t aac-chatbot .
+docker run --rm -p 8000:8000 -e PORT=8000 --env-file .env aac-chatbot
+# → http://localhost:8000
+```
+
+The `--env-file .env` injects your Ollama Cloud key + endpoints (same `.env` you use for `./run.sh`). Conda + `./run.sh` is still the fastest dev loop because it hot-reloads; the docker path is for when you want byte-identical-to-production behaviour.
+
+### On Hugging Face Spaces (public URL for graders)
+
+The repo doubles as an HF Space — `README.md` carries the YAML frontmatter HF needs (`sdk: docker`, `app_port: 7860`).
+
+1. Create a new Space on huggingface.co (Docker SDK, public).
+2. Add this repo as a remote:
+   ```bash
+   git remote add space https://huggingface.co/spaces/<your-username>/aac-chatbot
+   git push space main
+   ```
+3. In the Space's *Settings → Variables and secrets*, add the LLM-tier secrets (don't commit them):
+   - `PRIMARY_API_KEY`, `PRIMARY_BASE_URL`, `PRIMARY_MODEL`
+   - `FALLBACK_API_KEY`, `FALLBACK_BASE_URL`, `FALLBACK_MODEL`
+   - `INK_VISION_API_KEY`, `INK_VISION_BASE_URL`, `INK_VISION_MODEL`
+4. The Space rebuilds the Dockerfile on every push. First build takes ~5-8 min (downloads BGE + builds vector indexes for all personas); subsequent builds reuse Docker layer cache and finish in 2-3 min.
+
+The deployed instance won't persist `logs/` or `data/pick_index/` across container restarts (HF Spaces filesystem is read-only outside `/tmp`). For the writeup, your local logs are the source of truth — the Space is just a click-around demo for graders.
+
+**Webcam note.** `getUserMedia` requires HTTPS, which both HF Spaces and `localhost` provide. Random IP addresses don't, so don't try to demo from a LAN IP without a tunnel.
 
 ---
 

@@ -1,0 +1,43 @@
+.git
+.gitignore
+.github
+.vscode
+.idea
+.claude
+.code-review-graph
+.ruff_cache
+.pre-commit-config.yaml
+ruff.toml
+
+# Keep build deterministic — rebuild indexes inside the container
+data/vector_store/
+data/pick_index/
+data/faiss_store/
+
+# Logs and ephemeral state
+logs/
+mlflow.db
+mlruns/
+*.csv
+
+# Local dev artefacts
+**/__pycache__/
+**/*.pyc
+**/*.pyo
+**/.pytest_cache
+**/.mypy_cache
+
+# Frontend build artefacts (rebuilt in Docker stage 1)
+frontend/node_modules/
+frontend/dist/
+
+# Misc
+.DS_Store
+*.swp
+.env
+ProjectDetails.pdf
+docs/
+
+README.md
+lessons.md
+references.md
