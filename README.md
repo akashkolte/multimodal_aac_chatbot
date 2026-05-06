@@ -15,6 +15,8 @@ A chatbot that **speaks as an AAC user, not to them.** You pick a persona — fo
 
 It's a training-free agentic RAG pipeline — a plain Python function chain with two branching points, torch matmul for retrieval, JSONL for logging. The goal was to keep every piece simple enough to read top-to-bottom in an afternoon.
 
+> **Live demo:** [huggingface.co/spaces/ub-aac-chatbot/aac-chatbot](https://huggingface.co/spaces/ub-aac-chatbot/aac-chatbot) — pick a persona, allow webcam access, and chat. First turn after a cold start adds ~3s for the one-time NLI model load; subsequent turns run at normal speed.
+
 ---
 
 ## Table of Contents
@@ -353,7 +355,7 @@ The repo doubles as an HF Space — `README.md` carries the YAML frontmatter HF 
 1. Create a new Space on huggingface.co (Docker SDK, public).
 2. Add this repo as a remote:
    ```bash
-   git remote add space https://huggingface.co/spaces/<your-username>/aac-chatbot
+   git remote add space https://huggingface.co/spaces/ub-aac-chatbot/aac-chatbot
    git push space main
    ```
 3. In the Space's *Settings → Variables and secrets*, add the LLM-tier secrets (don't commit them):
