@@ -1,7 +1,7 @@
 import type { Matrix } from "@mediapipe/tasks-vision";
 import type { Affect, GestureName, HeadDebug, HeadSignal, MemoryBucket } from "../types";
 
-const SIGMA_K = 2.0;
+const SIGMA_K = 2.8;
 const CALIBRATION_DURATION_MS = 5000;
 const CALIBRATION_WARMUP_MS   = 1000;
 const OUTLIER_TRIM_FRACTION   = 0.10;
@@ -161,10 +161,15 @@ export function classifyAffect(
   const jawOpen = isAbove(bs, "jawOpen",         baseline);
   const browIn  = isAbove(bs, "browInnerUp",     baseline);
 
-  if (jawOpen && browIn)  return "SURPRISED";
-  if (browDL || browDR)   return "FRUSTRATED";
-  if (squintL && squintR) return "FRUSTRATED";
-  if (smileL && smileR)   return "HAPPY";
+  // Order matters here — first match wins. HAPPY is checked before FRUSTRATED
+  // because smile+concentration (smile + slight brow furrow) is a common
+  // pose while reading a reply, and we'd rather miss frustration than
+  // mis-read a smiling user as frustrated. Both sides required for every
+  // affect to suppress one-sided twitches.
+  if (jawOpen && browIn)         return "SURPRISED";
+  if (smileL && smileR)          return "HAPPY";
+  if (browDL && browDR)          return "FRUSTRATED";
+  if (squintL && squintR)        return "FRUSTRATED";
   return "NEUTRAL";
 }
 
