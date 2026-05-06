@@ -18,6 +18,7 @@ export interface SensingState {
   airWrittenText: string;
   airWritingActive: boolean;
   headSignal: HeadSignal | null;
+  headCalibrated: boolean;
   headDebug: HeadDebug;
 }
 
@@ -69,43 +70,10 @@ export interface LatencyLog {
   t_total: number;
 }
 
-export interface CandidateEval {
-  idx: number;
-  strategy: string;
-  selected: boolean;
-  groundedness: number;
-  hallucination_rate: number;
-  no_evidence: boolean;
-  relevance: number;
-}
-
-export interface EvalExplain {
-  affect?: {
-    target: string;
-    pos_words: number;
-    neg_words: number;
-    sentiment: number;
-  };
-  gesture?: {
-    tag: string;
-    has_pattern: boolean;
-    matched: boolean | null;
-  };
-  gaze?: {
-    bucket: string;
-    matched_chunks: number;
-    total_chunks: number;
-  };
-}
-
 export interface EvalScores {
   groundedness: number;
   hallucination_rate: number;
   no_evidence: boolean;
-  sentences_total?: number;
-  sentences_grounded?: number;
-  nli_threshold?: number;
-  relevance?: number;
   t_total_s: number;
   slo_target_s: number;
   slo_passed: boolean;
@@ -114,10 +82,6 @@ export interface EvalScores {
   affect_alignment: number;
   gesture_alignment: number;
   gaze_alignment: number;
-  candidate_diversity?: number;
-  n_candidates?: number;
-  candidates_eval?: CandidateEval[];
-  explain?: EvalExplain;
 }
 
 export type CandidateStrategy =

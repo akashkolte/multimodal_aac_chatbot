@@ -9,7 +9,7 @@ interface UseWebcamOptions {
 export function useWebcam({
   enabled,
   onFrame,
-  processEveryN = 3,
+  processEveryN = 2,
 }: UseWebcamOptions) {
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
