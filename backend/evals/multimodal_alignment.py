@@ -77,11 +77,18 @@ def _gesture_alignment(response: str, gesture_tag: str | None) -> float:
     return 1.0 if pattern.search(response) else 0.0
 
 
-def _gaze_alignment(chunks: list[dict], gaze_bucket: str | None) -> float:
+def _gaze_alignment(
+    chunks: list[dict], gaze_bucket: str | None
+) -> tuple[float, int, int]:
     if not gaze_bucket or not chunks:
-        return 0.0
+        return 0.0, 0, len(chunks) if chunks else 0
     matches = sum(1 for c in chunks if c.get("bucket") == gaze_bucket)
-    return matches / len(chunks)
+    return matches / len(chunks), matches, len(chunks)
+
+
+def _affect_breakdown(response: str) -> tuple[int, int]:
+    toks = _tokens(response)
+    return len(toks & _POSITIVE), len(toks & _NEGATIVE)
 
 
 def compute_multimodal_alignment(
@@ -92,16 +99,37 @@ def compute_multimodal_alignment(
     chunks: list[dict],
 ) -> dict:
     scores: dict[str, float] = {}
+    explain: dict[str, dict] = {}
     if affect:
         scores["affect_alignment"] = _affect_alignment(response, affect)
+        pos, neg = _affect_breakdown(response)
+        explain["affect"] = {
+            "target": affect,
+            "pos_words": pos,
+            "neg_words": neg,
+            "sentiment": round(_sentiment_score(response), 4),
+        }
     if gesture_tag:
         scores["gesture_alignment"] = _gesture_alignment(response, gesture_tag)
+        pattern = _GESTURE_OPENER_PATTERNS.get(gesture_tag)
+        explain["gesture"] = {
+            "tag": gesture_tag,
+            "has_pattern": pattern is not None,
+            "matched": bool(pattern.search(response)) if pattern else None,
+        }
     if gaze_bucket:
-        scores["gaze_alignment"] = _gaze_alignment(chunks, gaze_bucket)
+        score, matches, total = _gaze_alignment(chunks, gaze_bucket)
+        scores["gaze_alignment"] = score
+        explain["gaze"] = {
+            "bucket": gaze_bucket,
+            "matched_chunks": matches,
+            "total_chunks": total,
+        }
     overall = sum(scores.values()) / len(scores) if scores else 0.0
     return {
         "overall_score": round(overall, 4),
         "affect_alignment": round(scores.get("affect_alignment", 0.0), 4),
         "gesture_alignment": round(scores.get("gesture_alignment", 0.0), 4),
         "gaze_alignment": round(scores.get("gaze_alignment", 0.0), 4),
+        "explain": explain,
     }

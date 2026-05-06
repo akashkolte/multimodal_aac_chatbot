@@ -168,6 +168,10 @@ class RatingRequest(BaseModel):
 # ── Helpers ────────────────────────────────────────────────────────────────────
 
 
+def _candidate_dicts(state) -> list[dict]:
+    return [dict(c) for c in (state.get("candidates") or [])]
+
+
 def _load_persona_profile(user_id: str) -> dict:
     memories_path = settings.memories_dir / f"{user_id}.json"
     try:
@@ -351,6 +355,8 @@ def _compute_and_persist_evals(
     affect: str,
     gesture_tag: str | None,
     gaze_bucket: str | None,
+    query: str = "",
+    candidates: list[dict] | None = None,
 ) -> dict | None:
     if not settings.evals_enabled or not run_id:
         return None
@@ -363,6 +369,8 @@ def _compute_and_persist_evals(
             gesture_tag=gesture_tag,
             gaze_bucket=gaze_bucket,
             slo_target=settings.slo_target_s,
+            query=query,
+            candidates=candidates,
         )
     except Exception:
         _log.exception("evals scoring failed for run %s", run_id)
@@ -434,6 +442,8 @@ def chat(req: ChatRequest, background_tasks: BackgroundTasks):
             affect=affect_emotion,
             gesture_tag=req.gesture_tag,
             gaze_bucket=req.gaze_bucket,
+            query=req.query,
+            candidates=_candidate_dicts(result),
         )
 
     return ChatResponse(
@@ -512,6 +522,7 @@ def chat_stream(req: ChatRequest):
         run_id = state.get("run_id")
 
         # Evals run off the response path; UI polls GET /evals/{run_id}.
+        cand_dicts = _candidate_dicts(state)
         if run_id and settings.evals_enabled:
             _reserve_eval_slot(run_id)
             threading.Thread(
@@ -526,6 +537,8 @@ def chat_stream(req: ChatRequest):
                     affect=affect_emotion,
                     gesture_tag=req.gesture_tag,
                     gaze_bucket=req.gaze_bucket,
+                    query=req.query,
+                    candidates=cand_dicts,
                 ),
                 daemon=True,
             ).start()
@@ -534,7 +547,7 @@ def chat_stream(req: ChatRequest):
             "user_id": req.user_id,
             "query": req.query,
             "response": state["selected_response"] or "",
-            "candidates": [dict(c) for c in state.get("candidates") or []],
+            "candidates": cand_dicts,
             "affect": affect_emotion,
             "llm_tier": state.get("llm_tier_used", "unknown"),
             "llm_model": state.get("llm_model_used", "unknown"),
@@ -660,6 +673,8 @@ def chat_turnaround(req: TurnaroundRequest, background_tasks: BackgroundTasks):
             affect=affect_emotion,
             gesture_tag=replan_state.get("gesture_tag"),
             gaze_bucket=replan_state.get("gaze_bucket"),
+            query=replan_state.get("raw_query") or "",
+            candidates=_candidate_dicts(replan_state),
         )
 
     return ChatResponse(
@@ -827,6 +842,7 @@ def chat_regenerate_stream(req: RegenerateRequest):
 
         affect_emotion = (replan_state.get("affect") or {}).get("emotion", "NEUTRAL")
         run_id = replan_state.get("run_id")
+        cand_dicts = _candidate_dicts(replan_state)
         eval_scores = _compute_and_persist_evals(
             run_id=run_id,
             user_id=req.user_id,
@@ -837,12 +853,14 @@ def chat_regenerate_stream(req: RegenerateRequest):
             affect=affect_emotion,
             gesture_tag=replan_state.get("gesture_tag"),
             gaze_bucket=replan_state.get("gaze_bucket"),
+            query=replan_state.get("raw_query") or "",
+            candidates=cand_dicts,
         )
         final = {
             "user_id": req.user_id,
             "query": replan_state["raw_query"],
             "response": replan_state["selected_response"] or "",
-            "candidates": [dict(c) for c in replan_state.get("candidates") or []],
+            "candidates": cand_dicts,
             "affect": affect_emotion,
             "llm_tier": replan_state.get("llm_tier_used", "unknown"),
             "llm_model": replan_state.get("llm_model_used", "unknown"),
@@ -942,6 +960,8 @@ def chat_regenerate(req: RegenerateRequest):
         affect=affect_emotion,
         gesture_tag=replan_state.get("gesture_tag"),
         gaze_bucket=replan_state.get("gaze_bucket"),
+        query=replan_state.get("raw_query") or "",
+        candidates=_candidate_dicts(replan_state),
     )
 
     return ChatResponse(

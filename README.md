@@ -71,7 +71,15 @@ The per-turn JSONL log includes both `bucket_priors_after` and `type_priors_afte
 
 ### Per-turn eval pills in the UI
 
-Every AAC-user bubble renders its eval scores inline: the SLO latency badge, a groundedness pill (faithfulness against retrieved memory), and three multimodal-alignment pills (affect / gesture / gaze). Pills go green / grey / red on 0.75 / 0.4 thresholds, and groundedness renders `—` when the turn had no retrieved evidence to check against. Authenticity stars sit on the right. All values come from `eval_scores` on the `/chat` response, computed synchronously and persisted to `logs/evals.jsonl`.
+Every AAC-user bubble renders its eval scores inline. Up to seven pills, depending on what the turn produced:
+
+- **SLO latency badge** — `t_total` against the configured target (default 6s). Green ✓ on pass, red ✗ on miss.
+- **`grounded`** — sentence-level NLI faithfulness against retrieved memories. Renders `—` when there's no retrieved evidence to check (e.g. a `PRESENT_STATE` turn that skipped retrieval).
+- **`relevant`** — BGE cosine similarity between query and response embeddings. Catches the "perfectly grounded but off-topic" failure mode that groundedness can't see.
+- **`affect` / `gesture` / `gaze`** — multimodal alignment: sentiment match against the detected affect, opener-pattern match against the detected gesture, fraction of retrieved chunks from the gazed-at bucket.
+- **`diversity`** — mean pairwise cosine distance across the candidate slate (only shown when ≥2 candidates). Low values flag the "aloha problem" — three paraphrases of the same answer.
+
+Pills go green / grey / red on 0.75 / 0.4 thresholds. **Hover any pill** for a tooltip with the actual math from this turn (e.g. "2/2 sentences had NLI entailment prob ≥ 0.50", "3/3 retrieved chunks were from the family bucket"), powered by the `explain` block each scorer returns alongside its score. Authenticity stars sit on the right; clicking one fires `POST /feedback/rating` → `logs/ratings.jsonl`. All pill values come from `eval_scores` on the `/chat` response, computed in a `BackgroundTask` after the response returns and persisted to `logs/evals.jsonl`.
 
 ![eval pills rendered inline under an AAC response](docs/images/eval-pills.png)
 
@@ -401,7 +409,6 @@ Heads up: all camera/sensing stuff is in the frontend (MediaPipe JS). Backend ju
 - [x] **[Core]** Gestures come from MediaPipe's pretrained `GestureRecognizer` rather than hand-rolled landmark geometry. Mapped labels: `THUMBS_UP` / `THUMBS_DOWN` / `POINTING_UP` / `CLOSED_FIST` / `OPEN_PALM` / `VICTORY` / `I_LOVE_YOU` (see `mapGestureLabel` in [sensing.ts](frontend/src/lib/sensing.ts)). Each label carries an `opener_hint` via `GESTURE_DIRECTIVES` in [backend/sensing/labels.py](backend/sensing/labels.py) — a detected thumbs-up overrides the affect opener and tells the LLM to lead with an affirmation.
 - [x] **[Core]** Air-writing uses a vision LLM (`gemma4:31b-cloud` via Ollama Cloud, configurable through `INK_VISION_MODEL`) instead of the older in-browser DTW template bank. Stroke segmentation lives in `AirWriter` in [sensing.ts](frontend/src/lib/sensing.ts) — index-fingertip velocity gates open/close strokes; finished strokes get rendered to a 200×200 PNG by [inkRecognizer.ts](frontend/src/lib/inkRecognizer.ts) and POSTed to `/ink/recognize` ([backend/api/main.py](backend/api/main.py)), which asks the model to return the traced character or short word. The recognized text accumulates in `sensing.airWrittenText` and flows through the pipeline three ways: (1) retrieval picks the word up as an extra `PERSONAL` sub-intent with a bucket hint (`infer_bucket` in [backend/sensing/bucket_keywords.py](backend/sensing/bucket_keywords.py)), (2) the planner adds an explicit "the user air-wrote X — incorporate verbatim if appropriate" instruction, and (3) the word appears in `logs/turns.jsonl` for debugging. Set `VITE_AIRWRITING_ENABLED=false` to disable stroke capture; if `INK_VISION_API_KEY` is unset the endpoint returns 503 and the frontend silently keeps tracing without recognition.
 - [x] **[Bonus]** Voice + air-writing conflict resolution. A push-to-talk mic ([frontend/src/hooks/useVoice.ts](frontend/src/hooks/useVoice.ts)) captures a short Web Speech utterance; [frontend/src/lib/resolveIntent.ts](frontend/src/lib/resolveIntent.ts) merges it against the air-written text using Jaccard token overlap + AAC-priority tokens (`help/stop/water/done/more` win ties). The resolver emits a `{text, source, voice_text, air_text}` payload — `source ∈ voice_only | air_only | agree | conflict_air | conflict_voice` — which the backend uses in [backend/pipeline/nodes/intent.py](backend/pipeline/nodes/intent.py) to pick the supplemental sub-intent, and in [backend/pipeline/nodes/planner.py](backend/pipeline/nodes/planner.py) to render source-aware prompt copy (conflicts are acknowledged instead of silently overwritten). The mic is gated by persona via `VOICE_CAPABLE_PERSONAS` in [frontend/src/lib/voiceEligibility.ts](frontend/src/lib/voiceEligibility.ts) — only personas whose modelled access method is verbal (Abed, Allie, Forrest, Gabby, Michael J. Fox, Raymond, Walter Jr.) see the button; non-verbal / locked-in / letterboard personas don't.
-- [ ] Thumbs-up currently biases the opener via the prompt. Once generation emits N candidates, move this to candidate reranking for a stronger signal.
 
 ### Intent decomposition
 
@@ -422,7 +429,6 @@ Heads up: all camera/sensing stuff is in the frontend (MediaPipe JS). Backend ju
   - return a canned response if we blow the budget entirely
   - threshold is 3.5s, spec says 6s — pick one
 - [ ] **[Bonus]** Cache encoded user-turn embeddings across the session — `build_context_vector` re-encodes the same recent turns every turn (~50ms steady-state cost)
-- [ ] **[Scale]** past ~100k chunks per user, swap torch matmul for `hnswlib`; consider a cross-encoder reranker (e.g. `bge-reranker-base`) if `rerank_pool_k` grows past ~30
 
 ### Generation
 
@@ -433,33 +439,47 @@ Heads up: all camera/sensing stuff is in the frontend (MediaPipe JS). Backend ju
 
 ### Evals
 
-Scoring runs synchronously on the `/chat` response path and the `eval_scores` dict is returned inline so the frontend can render pills on the AAC bubble immediately. Each scored turn is also appended to `logs/evals.jsonl`, keyed by `run_id`, so it joins back to `logs/turns.jsonl` offline. Likert ratings from the UI go to `logs/ratings.jsonl`.
+Scoring runs in a FastAPI `BackgroundTask` after `/chat` returns, so it never blocks the response. The frontend polls `GET /evals/{run_id}` to render pills once they're ready. Each scored turn is appended to `logs/evals.jsonl`, keyed by `run_id`, so it joins back to `logs/turns.jsonl` offline. Likert ratings go to `logs/ratings.jsonl`. Picks go to `logs/picks.jsonl`.
 
-| Metric | Status | Where |
-|--------|--------|-------|
-| Efficiency | per-turn SLO on `t_total`, aggregate p50/p95/p99 | [efficiency.py](backend/evals/efficiency.py), [aggregate.py](backend/evals/aggregate.py) |
-| Faithfulness | sentence-level NLI, `no_evidence` short-circuit | [faithfulness.py](backend/evals/faithfulness.py) |
-| Multimodal alignment | affect (sentiment lexicon), gesture (opener regex), gaze (bucket overlap) | [multimodal_alignment.py](backend/evals/multimodal_alignment.py) |
-| Authenticity | star rating under every assistant bubble → `POST /feedback/rating` → `logs/ratings.jsonl` | [EvalPanel.tsx](frontend/src/components/EvalPanel.tsx), [api/main.py](backend/api/main.py) |
+| Metric | What it answers | Where |
+|--------|-----------------|-------|
+| Efficiency | SLO pass/fail on `t_total`, aggregate p50/p95/p99 | [efficiency.py](backend/evals/efficiency.py), [aggregate.py](backend/evals/aggregate.py) |
+| Faithfulness (`grounded`) | Did the response stick to retrieved memories, or hallucinate? Sentence-level NLI; `no_evidence` short-circuit when nothing was retrieved | [faithfulness.py](backend/evals/faithfulness.py) |
+| Relevance (`relevant`) | Did the response actually address the partner's query? BGE cosine query↔response | [relevance.py](backend/evals/relevance.py) |
+| Multimodal alignment | `affect` (sentiment lexicon vs target), `gesture` (opener regex vs detected tag), `gaze` (matched/total retrieved chunks vs gazed bucket) | [multimodal_alignment.py](backend/evals/multimodal_alignment.py) |
+| Candidate diversity | Are the picker's candidates actually different, or paraphrases? Mean pairwise cosine distance over the candidate slate | [diversity.py](backend/evals/diversity.py) |
+| Per-candidate breakdown | Each candidate scored for `grounded` + `relevance` (not just the selected one) — answers "did the picker beat candidate 0?" offline | `candidates_eval` block in [evals/__init__.py](backend/evals/__init__.py) |
+| Authenticity | Star rating under every assistant bubble → `POST /feedback/rating` → `logs/ratings.jsonl` | [EvalPanel.tsx](frontend/src/components/EvalPanel.tsx), [api/main.py](backend/api/main.py) |
 
-**First-turn caveat:** the NLI model (`cross-encoder/nli-deberta-v3-small`, ~140MB) is lazy-loaded on the first score after a server restart, so turn 1 pays a one-time ~2-3s warmup on top of the LLM call. Every turn after that adds ~100-300ms for sentence-level scoring.
+**Performance note.** When the turn produces multiple candidates, scoring is fully batched: a single NLI `model.predict` over all `(candidate × sentence × chunk)` pairs and a single BGE `embed_texts` over `[query, c1, c2, c3]` (the candidate vectors feed both relevance and diversity). The selected candidate's per-candidate score is reused as the top-level pill values rather than re-scored. End result: 1 NLI pass + 1 BGE pass per turn regardless of candidate count.
+
+**First-turn caveat:** the NLI model (`cross-encoder/nli-deberta-v3-small`, ~140MB) is lazy-loaded on the first score after a server restart, so turn 1 pays a one-time ~2-3s warmup. Every turn after that adds ~100-300ms for sentence-level scoring.
+
+**Offline analysis.** `python -m backend.evals.aggregate` joins all four log files and prints per-persona reports: latency p50/p95/p99 by tier, mean groundedness/hallucination, multimodal alignment coverage, picker behaviour (pick rate, regenerate rate, strategy win rate, "did picker beat cand 0?", diversity floor), and authenticity Likert distribution.
 
 - [x] **[Eval]** Faithfulness — NLI scorer, sentence split, threshold on entailment prob. `no_evidence` flagged when nothing retrieved
 - [x] **[Eval]** Efficiency — per-turn SLO + aggregate latency (p50/p95/p99) via `aggregate.py`, grouped by `user_id × llm_tier`
 - [x] **[Eval]** Multimodal alignment — affect scored by positive/negative lexicon overlap vs. target sentiment, gesture by opener-phrase regex (THUMBS_UP/THUMBS_DOWN/WAVING), gaze by fraction of retrieved chunks matching the looked-at bucket
 - [x] **[Eval]** Authenticity — per-turn stars under each assistant bubble, POST to `/feedback/rating`, logged with `run_id + rater_id`
 - [ ] **[Eval]** For the live in-class eval: figure out the actual session — who rates (partners + experts per spec), how many turns each, what gets shown to them. The Likert form is the easy part; the protocol isn't written down anywhere
-- [ ] **[Eval]** Relevance score — one NLI call per turn asking "does the response address the partner's query?" Fills the biggest current gap: a perfectly grounded but off-topic reply scores 100% grounded today and we'd never catch it
-- [ ] **[Eval]** Candidate diversity — mean pairwise cosine distance among the 3 candidates in a picker round. Low diversity = picker showing three paraphrases of the same answer (the "aloha" problem), which is a signal that retrieval or temperature needs tuning for that query
-- [ ] **[Eval]** Picker-aware metrics from `turns.jsonl` + `picks.jsonl`: which strategy wins most (`broad` vs `focused` vs `serendipitous` vs `side_index`), pick rate (% of turns where user clicked a card), regenerate rate (% of turns where user clicked "try again"). All computable offline, no runtime cost
-- [ ] **[Eval]** Score alternate candidates too, not just the selected one. Right now `compute_evals` only scores `selected_response`; scoring all 3 would let us measure whether the picker actually improves quality over taking candidate 0 blindly
-- [ ] **[Eval]** UI coverage gap: `compute_evals` returns 12 fields but `EvalPanel` renders only 5 pills (latency, grounded, affect, gesture, gaze). Hallucination rate, overall multimodal_alignment, SLO target/margin are computed and logged but never surfaced in the bubble. Decide what belongs as a pill vs a tooltip-only number vs an offline-only log field
-- [ ] **[Eval]** On pill hover, tooltip should explain *how* the number was computed, not just what it means. Today the `title` attributes say "Groundedness: fraction of response sentences supported by retrieved memories" — which is the definition but not the math. Want: "5/8 sentences had NLI entailment prob ≥ 0.5 against the retrieved chunks" for groundedness; "3/4 positive-lexicon words matched HAPPY target" for affect; raw scorer inputs + thresholds exposed inline so the number isn't a black box
+- [x] **[Eval]** Relevance score — BGE cosine similarity between query and response. Originally specced as an NLI call, but a question rarely *entails* its answer (the on-topic and off-topic NLI scores both pinned near 10⁻⁴), so the embedder we already load for retrieval is the right tool. Fills the gap where a perfectly grounded but off-topic reply scored 100% grounded. See [backend/evals/relevance.py](backend/evals/relevance.py).
+- [x] **[Eval]** Candidate diversity — mean pairwise cosine distance among the 3 candidates in a picker round, computed on BGE embeddings (no extra model). Low diversity = picker showing three paraphrases of the same answer (the "aloha" problem), which is a signal that retrieval or temperature needs tuning for that query. See [backend/evals/diversity.py](backend/evals/diversity.py).
+- [x] **[Eval]** Picker-aware metrics — `report_picker` in [backend/evals/aggregate.py](backend/evals/aggregate.py) joins `turns.jsonl` + `picks.jsonl` + `evals.jsonl` and prints: pick rate (% of multi-candidate turns where the user clicked a card), regenerate rate (% of (user, turn_id) pairs that ran the planner more than once), strategy win rate among committed picks, head-to-head "did picker beat candidate 0 on grounded/relevance" using the per-candidate scoring from L453, and diversity coverage (% of turns with mean pairwise cosine distance < 0.10 — the "aloha" floor). Run via `python -m backend.evals.aggregate`.
+- [x] **[Eval]** Score alternate candidates too, not just the selected one. `compute_evals` now scores groundedness + relevance for every candidate and stamps which one was selected; full breakdown lands in `eval_scores.candidates_eval` and `logs/evals.jsonl`, top-level pills still describe the selected response. Unlocks "did the picker actually beat candidate 0?" offline analysis.
+- [x] **[Eval]** UI coverage — `EvalPanel` now also renders a relevance pill (BGE cosine query↔response) and a candidate-diversity pill (mean pairwise cosine distance, hidden when fewer than 2 candidates). Hallucination rate is conveyed inside the grounded tooltip rather than as its own pill (it's `1 − groundedness`, no extra info). SLO margin is in the latency tooltip. See [EvalPanel.tsx](frontend/src/components/EvalPanel.tsx).
+- [x] **[Eval]** Tooltip math — every pill's `title` now shows the actual computation, not just the definition. Each scorer returns its raw inputs in an `explain` block (sentence count + entailment threshold for groundedness, pos/neg word counts + sentiment for affect, matched/total chunks for gaze, gesture pattern match), and `EvalPanel` formats them into specific tooltips like "2/2 sentences had NLI entailment prob ≥ 0.50". See `groundednessTip` / `affectTip` / `gestureTip` / `gazeTip` in [EvalPanel.tsx](frontend/src/components/EvalPanel.tsx) and `explain` in [multimodal_alignment.py](backend/evals/multimodal_alignment.py).
 
 ### Cleanup
 
 - [x] delete `backend/sensing/` (dead code, sensing is in frontend) — done, only `labels.py` remains
 - [x] per-persona affect overrides (`_PERSONA_TONE_OVERRIDES`) deleted — redundant with `stylistic_preferences` in the new persona JSONs
+
+### Out of scope
+
+Not in the spec — engineering nice-to-haves we'd pick up if the rest is done. Don't block grading on these.
+
+- [ ] Thumbs-up currently biases the opener via the prompt. Once generation emits N candidates, move this to candidate reranking for a stronger signal. _(Sensing — untagged in spec)_
+- [ ] **[Scale]** past ~100k chunks per user, swap torch matmul for `hnswlib`; consider a cross-encoder reranker (e.g. `bge-reranker-base`) if `rerank_pool_k` grows past ~30 _(Retrieval — far beyond current corpus size)_
 
 ---
 

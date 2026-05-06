@@ -149,6 +149,121 @@ def report_authenticity(ratings: list[dict]) -> None:
         print(f"{uid:<18} {len(scores):>5} {mean:>6.2f} {dist_str:>22}")
 
 
+def report_picker(turns: list[dict], picks: list[dict], evals: list[dict]) -> None:
+    """Picker behaviour: pick rate, regenerate rate, strategy win rate, and
+    whether the user's pick beat candidate 0 on grounded/relevance.
+
+    Sources:
+      - turns.jsonl    one row per turn, includes `candidates` and `n_candidates`
+      - picks.jsonl    one row per /chat/pick — strategy, picked_idx, run_id
+      - evals.jsonl    candidates_eval[] with per-candidate grounded + relevance
+    """
+    print("\n=== Picker Behaviour ===")
+    multi = [t for t in turns if (t.get("n_candidates") or 0) >= 2]
+    if not multi:
+        print(
+            "(no multi-candidate turns logged — older format or single-candidate runs)"
+        )
+        return
+
+    picks_by_run = {p["run_id"]: p for p in picks if p.get("run_id")}
+    evals_by_run = {e["run_id"]: e for e in evals if e.get("run_id")}
+
+    n_multi = len(multi)
+    n_picked = sum(1 for t in multi if t["run_id"] in picks_by_run)
+    # A (user_id, turn_id) seen more than once means the planner re-ran for
+    # the same partner query — that's a regenerate. The denominator is the
+    # number of distinct (user, turn) conversations that had at least one
+    # multi-candidate run, not the raw row count.
+    seen: dict[tuple[str, int], int] = defaultdict(int)
+    for t in multi:
+        seen[(t.get("user_id", "?"), t.get("turn_id", -1))] += 1
+    n_regenerated_turns = sum(1 for c in seen.values() if c > 1)
+    n_distinct_turns = max(1, len(seen))
+    print(
+        f"multi-candidate turns: {n_multi} ({n_distinct_turns} distinct)   "
+        f"pick rate: {n_picked / n_multi:.0%}   "
+        f"regenerate rate: {n_regenerated_turns / n_distinct_turns:.0%} "
+        f"(% of distinct turns that re-ran)"
+    )
+
+    # Strategy win rate — among multi-candidate picks only, how often does
+    # each strategy win. Picks on single-candidate turns aren't a real "win"
+    # (no alternative to lose to) so we filter them out.
+    multi_run_ids = {t["run_id"] for t in multi}
+    strategy_count: dict[str, int] = defaultdict(int)
+    for run_id, p in picks_by_run.items():
+        if run_id in multi_run_ids:
+            strategy_count[p.get("strategy", "unknown")] += 1
+    if strategy_count:
+        total = sum(strategy_count.values())
+        print(f"\nStrategy win rate (n={total} picks):")
+        print(f"  {'strategy':<16} {'picks':>6} {'pct':>6}")
+        for s, n in sorted(strategy_count.items(), key=lambda x: -x[1]):
+            print(f"  {s:<16} {n:>6} {n / total:>5.0%}")
+
+    # Did the picker beat candidate 0? Only meaningful when we have per-candidate
+    # eval scores AND the user picked a non-zero index. A "win" = picked
+    # candidate scored strictly higher on the metric than candidate 0.
+    head_to_head = []
+    for run_id, pick in picks_by_run.items():
+        ev = evals_by_run.get(run_id)
+        if not ev or not ev.get("candidates_eval"):
+            continue
+        cands = ev["candidates_eval"]
+        if len(cands) < 2:
+            continue
+        picked_idx = pick.get("picked_idx", 0)
+        if picked_idx == 0 or picked_idx >= len(cands):
+            continue
+        head_to_head.append(
+            {
+                "picked_grounded": cands[picked_idx]["groundedness"],
+                "cand0_grounded": cands[0]["groundedness"],
+                "picked_relevance": cands[picked_idx].get("relevance", 0.0),
+                "cand0_relevance": cands[0].get("relevance", 0.0),
+            }
+        )
+
+    if head_to_head:
+        n = len(head_to_head)
+        beat_grounded = sum(
+            1 for h in head_to_head if h["picked_grounded"] > h["cand0_grounded"]
+        )
+        tied_grounded = sum(
+            1 for h in head_to_head if h["picked_grounded"] == h["cand0_grounded"]
+        )
+        beat_rel = sum(
+            1 for h in head_to_head if h["picked_relevance"] > h["cand0_relevance"]
+        )
+        print(f"\nDid picker beat candidate 0? (n={n} picks where picked_idx > 0)")
+        print(
+            f"  groundedness:  picker > cand0 = {beat_grounded}/{n} ({beat_grounded / n:.0%}), "
+            f"tied = {tied_grounded}/{n}"
+        )
+        print(f"  relevance:     picker > cand0 = {beat_rel}/{n} ({beat_rel / n:.0%})")
+    else:
+        print(
+            "\n(no picks of candidate 1+ with per-candidate eval data — can't measure picker quality yet)"
+        )
+
+    # Diversity: among multi-candidate turns with eval data, how often is the
+    # picker showing near-paraphrases (the "aloha" problem)?
+    div_scored = [
+        ev
+        for ev in evals_by_run.values()
+        if ev.get("n_candidates", 0) >= 2 and "candidate_diversity" in ev
+    ]
+    if div_scored:
+        diversities = [float(e["candidate_diversity"]) for e in div_scored]
+        low = sum(1 for d in diversities if d < 0.1)
+        print(
+            f"\nCandidate diversity (n={len(div_scored)} turns): "
+            f"mean={statistics.mean(diversities):.2f}  "
+            f"low (<0.10): {low}/{len(div_scored)} ({low / len(div_scored):.0%})"
+        )
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description="Aggregate AAC eval metrics")
     parser.add_argument("--logs", type=Path, default=settings.logs_dir)
@@ -157,11 +272,16 @@ def main() -> None:
     turns = _load(args.logs / "turns.jsonl")
     evals = _load(args.logs / "evals.jsonl")
     ratings = _load(args.logs / "ratings.jsonl")
+    picks = _load(args.logs / "picks.jsonl")
 
-    print(f"Loaded: {len(turns)} turns, {len(evals)} evals, {len(ratings)} ratings")
+    print(
+        f"Loaded: {len(turns)} turns, {len(evals)} evals, "
+        f"{len(picks)} picks, {len(ratings)} ratings"
+    )
     report_latency(turns)
     report_faithfulness(evals)
     report_multimodal(evals)
+    report_picker(turns, picks, evals)
     report_authenticity(ratings)
 
 

@@ -54,6 +54,15 @@ def get_embedder():
     return _get_embedder()
 
 
+def embed_texts(texts: list[str]) -> torch.Tensor:
+    return _get_embedder().encode(
+        texts,
+        convert_to_tensor=True,
+        normalize_embeddings=True,
+        device=_DEVICE,
+    )
+
+
 # Index cache: one (vectors_tensor, meta) per user_id.
 _index_cache: dict[str, tuple[torch.Tensor, list[dict]]] = {}
 

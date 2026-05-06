@@ -49,46 +49,76 @@ def _split_sentences(text: str) -> list[str]:
     return [s for s in parts if len(s.split()) >= _MIN_SENTENCE_WORDS]
 
 
-def compute_faithfulness(response: str, chunks: list[dict]) -> dict:
-    """Sentence-level NLI: each sentence must be entailed by at least one chunk."""
-    if not chunks:
-        return {"groundedness": 0.0, "hallucination_rate": 0.0, "no_evidence": True}
+def _no_evidence_result() -> dict:
+    return {
+        "groundedness": 0.0,
+        "hallucination_rate": 0.0,
+        "no_evidence": True,
+        "sentences_total": 0,
+        "sentences_grounded": 0,
+        "nli_threshold": settings.faithfulness_threshold,
+    }
 
-    sentences = _split_sentences(response)
-    # Too short to score meaningfully (one-word replies, fragments). Flagging as
-    # no_evidence is honest: we're not scoring it, so it should be excluded from
-    # groundedness averages downstream.
-    if not sentences:
-        return {"groundedness": 0.0, "hallucination_rate": 0.0, "no_evidence": True}
 
-    chunk_texts = [c.get("text", "") for c in chunks if c.get("text")]
-    if not chunk_texts:
-        return {"groundedness": 0.0, "hallucination_rate": 0.0, "no_evidence": True}
-
-    if len(sentences) > _MAX_SENTENCES:
-        sentences = sentences[:_MAX_SENTENCES]
-
-    model = _get_model()
-    # NLI pair order: (premise, hypothesis). Chunks are evidence (premise),
-    # response sentences are the claims being checked (hypothesis).
-    pairs = [(chunk, sent) for sent in sentences for chunk in chunk_texts]
-    with _predict_sem:
-        logits = model.predict(pairs, convert_to_numpy=True, show_progress_bar=False)
-    probs = torch.softmax(torch.tensor(logits), dim=1).numpy()
-    entail = probs[:, _entail_idx]
-
-    n_chunks = len(chunk_texts)
+def _score_from_entail(entail, sentences: list[str], n_chunks: int) -> dict:
     threshold = settings.faithfulness_threshold
     grounded = 0
     for i in range(len(sentences)):
         sent_scores = entail[i * n_chunks : (i + 1) * n_chunks]
         if sent_scores.max() >= threshold:
             grounded += 1
-
     total = len(sentences)
-    groundedness = grounded / total
     return {
-        "groundedness": round(groundedness, 4),
-        "hallucination_rate": round(1.0 - groundedness, 4),
+        "groundedness": round(grounded / total, 4),
+        "hallucination_rate": round(1.0 - grounded / total, 4),
         "no_evidence": False,
+        "sentences_total": total,
+        "sentences_grounded": grounded,
+        "nli_threshold": threshold,
     }
+
+
+def compute_faithfulness(response: str, chunks: list[dict]) -> dict:
+    """Sentence-level NLI: each sentence must be entailed by at least one chunk."""
+    return compute_faithfulness_batch([response], chunks)[0]
+
+
+def compute_faithfulness_batch(responses: list[str], chunks: list[dict]) -> list[dict]:
+    """Score multiple candidate responses against the same chunks in a single
+    model.predict call. Caller passes `responses` in candidate order; we return
+    results in the same order. Falls back to _no_evidence_result when there's
+    nothing to score for a given response."""
+    chunk_texts = [c.get("text", "") for c in chunks if c.get("text")] if chunks else []
+    if not chunk_texts:
+        return [_no_evidence_result() for _ in responses]
+
+    per_resp_sentences = [
+        _split_sentences(r)[:_MAX_SENTENCES] if r else [] for r in responses
+    ]
+    pairs: list[tuple[str, str]] = []
+    for sents in per_resp_sentences:
+        for sent in sents:
+            for chunk in chunk_texts:
+                pairs.append((chunk, sent))
+    if not pairs:
+        return [_no_evidence_result() for _ in responses]
+
+    model = _get_model()
+    with _predict_sem:
+        logits = model.predict(pairs, convert_to_numpy=True, show_progress_bar=False)
+    probs = torch.softmax(torch.tensor(logits), dim=1).numpy()
+    entail = probs[:, _entail_idx]
+
+    out: list[dict] = []
+    cursor = 0
+    n_chunks = len(chunk_texts)
+    for sentences in per_resp_sentences:
+        if not sentences:
+            out.append(_no_evidence_result())
+            continue
+        n_pairs = len(sentences) * n_chunks
+        out.append(
+            _score_from_entail(entail[cursor : cursor + n_pairs], sentences, n_chunks)
+        )
+        cursor += n_pairs
+    return out
