@@ -183,7 +183,7 @@ export class HeadPoseTracker {
   private lastDebug: HeadDebug = { pitch: 0, yaw: 0, roll: 0, crossings: 0 };
 
   // No-op — angles are self-calibrating relative to the canonical face model.
-  calibrate(_landmarks: unknown): void {}
+  calibrate(): void {}
 
   process(matrix: Matrix): HeadSignal | null {
     const { pitch, yaw, roll } = extractAngles(matrix.data);

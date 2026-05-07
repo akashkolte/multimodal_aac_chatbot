@@ -70,6 +70,31 @@ export interface LatencyLog {
   t_total: number;
 }
 
+export interface EvalExplainAffect {
+  target: string;
+  pos_words: number;
+  neg_words: number;
+  sentiment: number;
+}
+
+export interface EvalExplainGesture {
+  tag: string;
+  has_pattern: boolean;
+  matched: boolean | null;
+}
+
+export interface EvalExplainGaze {
+  bucket: string;
+  matched_chunks: number;
+  total_chunks: number;
+}
+
+export interface EvalExplain {
+  affect?: EvalExplainAffect;
+  gesture?: EvalExplainGesture;
+  gaze?: EvalExplainGaze;
+}
+
 export interface EvalScores {
   groundedness: number;
   hallucination_rate: number;
@@ -82,6 +107,13 @@ export interface EvalScores {
   affect_alignment: number;
   gesture_alignment: number;
   gaze_alignment: number;
+  sentences_total?: number;
+  sentences_grounded?: number;
+  nli_threshold?: number;
+  relevance?: number;
+  n_candidates?: number;
+  candidate_diversity?: number;
+  explain?: EvalExplain;
 }
 
 export type CandidateStrategy =
