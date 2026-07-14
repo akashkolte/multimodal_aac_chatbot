@@ -1,5 +1,5 @@
 # ── LLM client ────────────────────────────────────────────────────────────────
-openai>=1.0          # talks to Ollama Cloud over OpenAI-compatible HTTP
+openai>=1.0,<2.0   # v2.x breaks auth with NVIDIA NIM's OpenAI-compatible endpoint
 
 # ── Retrieval ──────────────────────────────────────────────────────────────────
 sentence-transformers>=3.0
