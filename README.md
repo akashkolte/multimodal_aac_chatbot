@@ -94,6 +94,70 @@ Or use the convenience script (requires conda):
 
 ---
 
+## Deploying to Oracle Cloud (VM.Standard.A1.Flex)
+
+### First-time setup
+
+```bash
+# 1. SSH into the VM
+ssh -i ~/Downloads/ssh-key.key ubuntu@<YOUR_VM_PUBLIC_IP>
+
+# 2. Install Docker
+sudo apt update && sudo apt upgrade -y
+sudo apt install -y docker.io
+sudo systemctl enable --now docker
+sudo usermod -aG docker ubuntu
+newgrp docker
+
+# 3. Clone the repo
+git clone https://github.com/akashkolte/multimodal_aac_chatbot.git
+cd multimodal_aac_chatbot
+
+# 4. Create your .env file (fill in your API keys)
+nano .env
+
+# 5. Open port in Ubuntu firewall
+sudo iptables -I INPUT 6 -m state --state NEW -p tcp --dport 7860 -j ACCEPT
+sudo netfilter-persistent save
+
+# 6. If Docker has DNS issues, restart the daemon
+sudo systemctl daemon-reload
+sudo systemctl restart docker
+
+# 7. Build and run
+docker build -t aac-chatbot .
+docker run -d --name chatbot --restart unless-stopped \
+  -p 7860:7860 \
+  --env-file ~/multimodal_aac_chatbot/.env \
+  aac-chatbot
+```
+
+> **HTTPS & Camera:** Camera access requires HTTPS. Use [Caddy](https://caddyserver.com/) as a reverse proxy with your domain to get automatic SSL. Point it to `localhost:7860`.
+
+### Re-deploying after code changes
+
+```bash
+ssh -i ~/Downloads/ssh-key.key ubuntu@<YOUR_VM_PUBLIC_IP>
+cd ~/multimodal_aac_chatbot
+git pull
+docker stop chatbot && docker rm chatbot
+docker build -t aac-chatbot .
+docker run -d --name chatbot --restart unless-stopped \
+  -p 7860:7860 \
+  --env-file ~/multimodal_aac_chatbot/.env \
+  aac-chatbot
+```
+
+### Useful commands
+
+```bash
+docker logs -f chatbot        # watch live logs
+docker ps                     # check container is running
+docker exec -it chatbot bash  # shell into the container
+```
+
+---
+
 ## License
 
 All rights reserved. See the [LICENSE](LICENSE) file for details.
